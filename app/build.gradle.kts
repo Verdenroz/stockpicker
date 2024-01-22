@@ -82,6 +82,7 @@ dependencies {
     //OkHTTP
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+    implementation("com.google.code.gson:gson:2.10.1")
     //Navigation
     val navVersion = "2.7.6"
     implementation("androidx.navigation:navigation-compose:$navVersion")
