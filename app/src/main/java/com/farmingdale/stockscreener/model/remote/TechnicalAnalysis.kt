@@ -4,5 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class TechnicalAnalysis(
-    val analysisData: Map<String, AnalysisData>
+    val date: String,
+    val value: String
 )
