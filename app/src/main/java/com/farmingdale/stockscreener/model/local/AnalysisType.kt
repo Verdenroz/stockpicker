@@ -26,4 +26,5 @@ enum class AnalysisType {
     PLUS_DM,
     BOP,
     NATR,
+    GLOBAL_QUOTE
 }
