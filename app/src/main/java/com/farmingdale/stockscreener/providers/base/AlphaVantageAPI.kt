@@ -12,8 +12,8 @@ interface AlphaVantageAPI {
     suspend fun getTechnicalAnalysis(
         function: AnalysisType,
         symbol: String,
-        interval: Interval,
+        interval: String,
         timePeriod: Int,
-        seriesType: SeriesType
+        seriesType: String
     ): TechnicalAnalysis
 }
