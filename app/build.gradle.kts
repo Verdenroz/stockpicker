@@ -1,9 +1,14 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     kotlin("plugin.serialization")
     id("com.google.devtools.ksp")
 }
+
+val properties = Properties()
+properties.load(File(projectDir, "secrets.properties").reader())
 
 android {
     namespace = "com.farmingdale.stockscreener"
@@ -20,6 +25,12 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField(
+            "String",
+            "alphaVantageAPI",
+            properties.getProperty("ALPHA_VANTAGE_API_KEY")
+        )
     }
 
     buildTypes {
@@ -39,6 +50,7 @@ android {
         jvmTarget = "1.8"
     }
     buildFeatures {
+        buildConfig = true
         compose = true
     }
     composeOptions {
@@ -82,7 +94,6 @@ dependencies {
     //OkHTTP
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
-    implementation("com.google.code.gson:gson:2.10.1")
     //Navigation
     val navVersion = "2.7.6"
     implementation("androidx.navigation:navigation-compose:$navVersion")
