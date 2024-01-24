@@ -2,10 +2,11 @@ package com.farmingdale.stockscreener.providers
 
 import com.farmingdale.stockscreener.BuildConfig
 import com.farmingdale.stockscreener.model.local.AnalysisType
-import com.farmingdale.stockscreener.model.remote.AnalysisDataResponse
-import com.farmingdale.stockscreener.model.remote.QuoteData
-import com.farmingdale.stockscreener.model.remote.QuoteDataResponse
-import com.farmingdale.stockscreener.model.remote.TechnicalAnalysis
+import com.farmingdale.stockscreener.model.local.QuoteData
+import com.farmingdale.stockscreener.model.local.TechnicalAnalysis
+import com.farmingdale.stockscreener.model.local.TechnicalAnalysisHistory
+import com.farmingdale.stockscreener.model.remote.responses.RSIDataResponse
+import com.farmingdale.stockscreener.model.remote.responses.QuoteDataResponse
 import com.farmingdale.stockscreener.model.utils.ALPHA_VANTAGE_API_URL
 import com.farmingdale.stockscreener.model.utils.executeAsync
 import com.farmingdale.stockscreener.providers.base.AlphaVantageAPI
@@ -67,13 +68,46 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
         }
     }
 
-    override suspend fun getTechnicalAnalysis(
+    override suspend fun getSMA(
         function: AnalysisType,
         symbol: String,
         interval: String,
         timePeriod: Int,
         seriesType: String
-    ): TechnicalAnalysis {
+    ): TechnicalAnalysisHistory {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getEMA(
+        function: AnalysisType,
+        symbol: String,
+        interval: String,
+        timePeriod: Int,
+        seriesType: String
+    ): TechnicalAnalysisHistory {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getSTOCH(
+        function: AnalysisType,
+        symbol: String,
+        interval: String,
+        fastKPeriod: Int?,
+        slowKPeriod: Int?,
+        slowDPeriod: Int?,
+        slowKMAType: Int?,
+        slowDMAType: Int?
+    ): TechnicalAnalysisHistory {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getRSI(
+        function: AnalysisType,
+        symbol: String,
+        interval: String,
+        timePeriod: Int,
+        seriesType: String
+    ): TechnicalAnalysisHistory {
         val stream = getByteStream(
             ALPHA_VANTAGE_API_URL.newBuilder().apply {
                 addPathSegments("query")
@@ -138,12 +172,21 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
         TODO("Not yet implemented")
     }
 
-        val mostRecentRSIEntry = rsiResponse.technicalAnalysis.entries.first()
-
-        return TechnicalAnalysis(
-            date = mostRecentRSIEntry.key,
-            value = mostRecentRSIEntry.value.analysis
-        )
+    override suspend fun getAD(
+        function: AnalysisType,
+        symbol: String,
+        interval: String
+    ): TechnicalAnalysisHistory {
+        TODO("Not yet implemented")
     }
+
+    override suspend fun getOBV(
+        function: AnalysisType,
+        symbol: String,
+        interval: String
+    ): TechnicalAnalysisHistory {
+        TODO("Not yet implemented")
+    }
+
 
 }
