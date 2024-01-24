@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.model.remote
+package com.farmingdale.stockscreener.model.remote.responses
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
