@@ -86,7 +86,57 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
             }.build()
         )
 
-        val rsiResponse: AnalysisDataResponse = parser.decodeFromStream(AnalysisDataResponse.serializer(), stream)
+        val rsiResponse: RSIDataResponse = parser.decodeFromStream(RSIDataResponse.serializer(), stream)
+
+        val analyses = rsiResponse.technicalAnalysis.map { (date, analysis) ->
+            TechnicalAnalysis(
+                date = date,
+                value = analysis.RSI
+            )
+        }
+
+        return TechnicalAnalysisHistory(analyses)
+    }
+
+    override suspend fun getADX(
+        function: AnalysisType,
+        symbol: String,
+        interval: String,
+        timePeriod: Int
+    ): TechnicalAnalysisHistory {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getCCI(
+        function: AnalysisType,
+        symbol: String,
+        interval: String,
+        timePeriod: Int
+    ): TechnicalAnalysisHistory {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getAROON(
+        function: AnalysisType,
+        symbol: String,
+        interval: String,
+        timePeriod: Int
+    ): TechnicalAnalysisHistory {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getBBANDS(
+        function: AnalysisType,
+        symbol: String,
+        interval: String,
+        timePeriod: Int,
+        seriesType: String,
+        nbDevUp: Int?,
+        nbDevDown: Int?,
+        matype: Int?
+    ): TechnicalAnalysisHistory {
+        TODO("Not yet implemented")
+    }
 
         val mostRecentRSIEntry = rsiResponse.technicalAnalysis.entries.first()
 
