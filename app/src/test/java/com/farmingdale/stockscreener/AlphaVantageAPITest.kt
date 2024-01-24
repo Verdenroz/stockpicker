@@ -34,9 +34,9 @@ class AlphaVantageAPITest {
     }
 
     @Test
-    fun getTechnicalAnalysisTest() {
+    fun getRSITest() {
         val info = runBlocking {
-            api.getTechnicalAnalysis(
+            api.getRSI(
                 function = AnalysisType.RSI,
                 symbol = "IBM",
                 interval = Interval.DAILY.value,
