@@ -1,8 +1,5 @@
-package com.farmingdale.stockscreener.model.remote
+package com.farmingdale.stockscreener.model.local
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class QuoteData(
     val symbol: String,
     val open: String,
