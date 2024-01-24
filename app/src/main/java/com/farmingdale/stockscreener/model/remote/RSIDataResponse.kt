@@ -1,10 +1,10 @@
-package com.farmingdale.stockscreener.model.remote
+package com.farmingdale.stockscreener.model.remote.responses
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class AnalysisDataResponse(
+data class RSIDataResponse(
     @SerialName("Meta Data")
     val metaData: MetaData,
 
@@ -22,21 +22,12 @@ data class AnalysisDataResponse(
         @SerialName("3: Last Refreshed")
         val lastRefreshed: String,
 
-        @SerialName("4: Interval")
-        val interval: String,
-
-        @SerialName("5: Time Period")
-        val timePeriod: Int,
-
-        @SerialName("6: Series Type")
-        val seriesType: String,
-
         @SerialName("7: Time Zone")
         val timeZone: String
     )
 
     @Serializable
     data class Analysis(
-        val analysis: String
+        val RSI: String
     )
 }
