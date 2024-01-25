@@ -34,9 +34,54 @@ class AlphaVantageAPITest {
     }
 
     @Test
-    fun getTechnicalAnalysisTest() {
+    fun getSMATest() {
         val info = runBlocking {
-            api.getTechnicalAnalysis(
+            api.getSMA(
+                function = AnalysisType.SMA,
+                symbol = "IBM",
+                interval = Interval.DAILY.value,
+                timePeriod = 60,
+                seriesType = SeriesType.CLOSE.value
+            )
+        }
+        println(info)
+    }
+
+    @Test
+    fun getEMATest() {
+        val info = runBlocking {
+            api.getEMA(
+                function = AnalysisType.EMA,
+                symbol = "IBM",
+                interval = Interval.DAILY.value,
+                timePeriod = 60,
+                seriesType = SeriesType.CLOSE.value
+            )
+        }
+        println(info)
+    }
+
+    @Test
+    fun getSTOCHTest() {
+        val info = runBlocking {
+            api.getSTOCH(
+                function = AnalysisType.STOCH,
+                symbol = "IBM",
+                interval = Interval.DAILY.value,
+                fastKPeriod = 5,
+                slowKPeriod = 3,
+                slowDPeriod = 3,
+                slowKMAType = 0,
+                slowDMAType = 0
+            )
+        }
+        println(info)
+    }
+
+    @Test
+    fun getRSITest() {
+        val info = runBlocking {
+            api.getRSI(
                 function = AnalysisType.RSI,
                 symbol = "IBM",
                 interval = Interval.DAILY.value,
@@ -46,4 +91,85 @@ class AlphaVantageAPITest {
         }
         println(info)
     }
+
+    @Test
+    fun getADXTest() {
+        val info = runBlocking {
+            api.getADX(
+                function = AnalysisType.ADX,
+                symbol = "IBM",
+                interval = Interval.DAILY.value,
+                timePeriod = 60
+            )
+        }
+        println(info)
+    }
+
+    @Test
+    fun getCCITest() {
+        val info = runBlocking {
+            api.getCCI(
+                function = AnalysisType.CCI,
+                symbol = "IBM",
+                interval = Interval.DAILY.value,
+                timePeriod = 60
+            )
+        }
+        println(info)
+    }
+
+    @Test
+    fun getAROON() {
+        val info = runBlocking {
+            api.getAROON(
+                function = AnalysisType.AROON,
+                symbol = "IBM",
+                interval = Interval.DAILY.value,
+                timePeriod = 60
+            )
+        }
+        println(info)
+    }
+
+    @Test
+    fun getBBANDSTest() {
+        val info = runBlocking {
+            api.getBBANDS(
+                function = AnalysisType.BBANDS,
+                symbol = "IBM",
+                interval = Interval.DAILY.value,
+                timePeriod = 60,
+                seriesType = SeriesType.CLOSE.value,
+                nbDevUp = 3,
+                nbDevDown = 3,
+                matype = 0
+            )
+        }
+        println(info)
+    }
+
+    @Test
+    fun getADTest() {
+        val info = runBlocking {
+            api.getAD(
+                function = AnalysisType.AD,
+                symbol = "IBM",
+                interval = Interval.DAILY.value
+            )
+        }
+        println(info)
+    }
+
+    @Test
+    fun getOBVTest() {
+        val info = runBlocking {
+            api.getOBV(
+                function = AnalysisType.OBV,
+                symbol = "IBM",
+                interval = Interval.DAILY.value
+            )
+        }
+        println(info)
+    }
+
 }

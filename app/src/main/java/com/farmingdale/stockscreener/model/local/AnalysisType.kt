@@ -1,30 +1,15 @@
 package com.farmingdale.stockscreener.model.local
 
 enum class AnalysisType {
-    RSI,
-    SRSI,
+    GLOBAL_QUOTE,
     SMA,
     EMA,
-    MACD,
     STOCH,
+    RSI,
     ADX,
     CCI,
     AROON,
     BBANDS,
     AD,
     OBV,
-    MOM,
-    WILLR,
-    ROC,
-    MFI,
-    TRIX,
-    ULTOSC,
-    DX,
-    MINUS_DI,
-    PLUS_DI,
-    MINUS_DM,
-    PLUS_DM,
-    BOP,
-    NATR,
-    GLOBAL_QUOTE
 }
