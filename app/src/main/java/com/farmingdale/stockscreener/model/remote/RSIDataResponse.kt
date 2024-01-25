@@ -21,9 +21,6 @@ data class RSIDataResponse(
 
         @SerialName("3: Last Refreshed")
         val lastRefreshed: String,
-
-        @SerialName("7: Time Zone")
-        val timeZone: String
     )
 
     @Serializable
