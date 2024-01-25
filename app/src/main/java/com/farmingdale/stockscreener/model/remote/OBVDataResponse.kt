@@ -8,7 +8,7 @@ data class OBVDataResponse(
     @SerialName("Meta Data")
     val metaData: MetaData,
 
-    @SerialName("OBV")
+    @SerialName("Technical Analysis: OBV")
     val technicalAnalysis: Map<String, Analysis>
 ) {
     @Serializable
