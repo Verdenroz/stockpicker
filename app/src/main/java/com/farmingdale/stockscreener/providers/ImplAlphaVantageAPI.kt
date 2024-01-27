@@ -1,28 +1,30 @@
 package com.farmingdale.stockscreener.providers
 
 import com.farmingdale.stockscreener.BuildConfig
+import com.farmingdale.stockscreener.model.local.AD
 import com.farmingdale.stockscreener.model.local.ADX
 import com.farmingdale.stockscreener.model.local.AROON
 import com.farmingdale.stockscreener.model.local.AnalysisType
 import com.farmingdale.stockscreener.model.local.BBANDS
 import com.farmingdale.stockscreener.model.local.CCI
 import com.farmingdale.stockscreener.model.local.EMA
+import com.farmingdale.stockscreener.model.local.OBV
 import com.farmingdale.stockscreener.model.local.QuoteData
 import com.farmingdale.stockscreener.model.local.RSI
 import com.farmingdale.stockscreener.model.local.SMA
 import com.farmingdale.stockscreener.model.local.STOCH
 import com.farmingdale.stockscreener.model.local.TechnicalAnalysisHistory
-import com.farmingdale.stockscreener.model.remote.responses.ADDataResponse
-import com.farmingdale.stockscreener.model.remote.responses.ADXDataResponse
-import com.farmingdale.stockscreener.model.remote.responses.AROONDataResponse
-import com.farmingdale.stockscreener.model.remote.responses.BBANDSDataResponse
-import com.farmingdale.stockscreener.model.remote.responses.CCIDataResponse
-import com.farmingdale.stockscreener.model.remote.responses.EMADataResponse
-import com.farmingdale.stockscreener.model.remote.responses.OBVDataResponse
-import com.farmingdale.stockscreener.model.remote.responses.QuoteDataResponse
-import com.farmingdale.stockscreener.model.remote.responses.RSIDataResponse
-import com.farmingdale.stockscreener.model.remote.responses.SMADataResponse
-import com.farmingdale.stockscreener.model.remote.responses.STOCHDataResponse
+import com.farmingdale.stockscreener.model.remote.ADDataResponse
+import com.farmingdale.stockscreener.model.remote.ADXDataResponse
+import com.farmingdale.stockscreener.model.remote.AROONDataResponse
+import com.farmingdale.stockscreener.model.remote.BBANDSDataResponse
+import com.farmingdale.stockscreener.model.remote.CCIDataResponse
+import com.farmingdale.stockscreener.model.remote.EMADataResponse
+import com.farmingdale.stockscreener.model.remote.OBVDataResponse
+import com.farmingdale.stockscreener.model.remote.QuoteDataResponse
+import com.farmingdale.stockscreener.model.remote.RSIDataResponse
+import com.farmingdale.stockscreener.model.remote.SMADataResponse
+import com.farmingdale.stockscreener.model.remote.STOCHDataResponse
 import com.farmingdale.stockscreener.model.utils.ALPHA_VANTAGE_API_URL
 import com.farmingdale.stockscreener.model.utils.executeAsync
 import com.farmingdale.stockscreener.providers.base.AlphaVantageAPI
@@ -87,7 +89,6 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
     }
 
     override suspend fun getSMA(
-        function: AnalysisType,
         symbol: String,
         interval: String,
         timePeriod: Int,
@@ -96,7 +97,7 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
         val stream = getByteStream(
             ALPHA_VANTAGE_API_URL.newBuilder().apply {
                 addPathSegments("query")
-                addQueryParameter("function", function.name)
+                addQueryParameter("function", AnalysisType.SMA.name)
                 addQueryParameter("symbol", symbol)
                 addQueryParameter("interval", interval)
                 addQueryParameter("time_period", timePeriod.toString())
@@ -118,7 +119,6 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
     }
 
     override suspend fun getEMA(
-        function: AnalysisType,
         symbol: String,
         interval: String,
         timePeriod: Int,
@@ -127,7 +127,7 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
         val stream = getByteStream(
             ALPHA_VANTAGE_API_URL.newBuilder().apply {
                 addPathSegments("query")
-                addQueryParameter("function", function.name)
+                addQueryParameter("function", AnalysisType.EMA.name)
                 addQueryParameter("symbol", symbol)
                 addQueryParameter("interval", interval)
                 addQueryParameter("time_period", timePeriod.toString())
@@ -149,7 +149,6 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
     }
 
     override suspend fun getSTOCH(
-        function: AnalysisType,
         symbol: String,
         interval: String,
         fastKPeriod: Int?,
@@ -160,7 +159,7 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
     ): TechnicalAnalysisHistory {
         val stream = getByteStream(
             ALPHA_VANTAGE_API_URL.newBuilder().apply {
-                addQueryParameter("function", function.name)
+                addQueryParameter("function", AnalysisType.STOCH.name)
                 addQueryParameter("symbol", symbol)
                 addQueryParameter("interval", interval)
                 fastKPeriod?.let { addQueryParameter("fastkperiod", it.toString()) }
@@ -187,7 +186,6 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
     }
 
     override suspend fun getRSI(
-        function: AnalysisType,
         symbol: String,
         interval: String,
         timePeriod: Int,
@@ -196,7 +194,7 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
         val stream = getByteStream(
             ALPHA_VANTAGE_API_URL.newBuilder().apply {
                 addPathSegments("query")
-                addQueryParameter("function", function.name)
+                addQueryParameter("function", AnalysisType.RSI.name)
                 addQueryParameter("symbol", symbol)
                 addQueryParameter("interval", interval)
                 addQueryParameter("time_period", timePeriod.toString())
@@ -218,7 +216,6 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
     }
 
     override suspend fun getADX(
-        function: AnalysisType,
         symbol: String,
         interval: String,
         timePeriod: Int
@@ -226,7 +223,7 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
         val stream = getByteStream(
             ALPHA_VANTAGE_API_URL.newBuilder().apply {
                 addPathSegments("query")
-                addQueryParameter("function", function.name)
+                addQueryParameter("function", AnalysisType.ADX.name)
                 addQueryParameter("symbol", symbol)
                 addQueryParameter("interval", interval)
                 addQueryParameter("time_period", timePeriod.toString())
@@ -247,14 +244,13 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
     }
 
     override suspend fun getCCI(
-        function: AnalysisType,
         symbol: String,
         interval: String,
         timePeriod: Int
     ): TechnicalAnalysisHistory {
         val stream = getByteStream(
             ALPHA_VANTAGE_API_URL.newBuilder().apply {
-                addQueryParameter("function", function.name)
+                addQueryParameter("function", AnalysisType.CCI.name)
                 addQueryParameter("symbol", symbol)
                 addQueryParameter("interval", interval)
                 addQueryParameter("time_period", timePeriod.toString())
@@ -275,14 +271,13 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
     }
 
     override suspend fun getAROON(
-        function: AnalysisType,
         symbol: String,
         interval: String,
         timePeriod: Int
     ): TechnicalAnalysisHistory {
         val stream = getByteStream(
             ALPHA_VANTAGE_API_URL.newBuilder().apply {
-                addQueryParameter("function", function.name)
+                addQueryParameter("function", AnalysisType.AROON.name)
                 addQueryParameter("symbol", symbol)
                 addQueryParameter("interval", interval)
                 addQueryParameter("time_period", timePeriod.toString())
@@ -305,7 +300,6 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
     }
 
     override suspend fun getBBANDS(
-        function: AnalysisType,
         symbol: String,
         interval: String,
         timePeriod: Int,
@@ -317,7 +311,7 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
         val stream = getByteStream(
             ALPHA_VANTAGE_API_URL.newBuilder().apply {
                 addPathSegments("query")
-                addQueryParameter("function", function.name)
+                addQueryParameter("function", AnalysisType.BBANDS.name)
                 addQueryParameter("symbol", symbol)
                 addQueryParameter("interval", interval)
                 addQueryParameter("time_period", timePeriod.toString())
@@ -343,13 +337,12 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
     }
 
     override suspend fun getAD(
-        function: AnalysisType,
         symbol: String,
         interval: String
     ): TechnicalAnalysisHistory {
         val stream = getByteStream(
             ALPHA_VANTAGE_API_URL.newBuilder().apply {
-                addQueryParameter("function", function.name)
+                addQueryParameter("function", AnalysisType.AD.name)
                 addQueryParameter("symbol", symbol)
                 addQueryParameter("interval", interval)
                 addQueryParameter("apikey", BuildConfig.alphaVantageAPI)
@@ -359,7 +352,7 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
         val adResponse: ADDataResponse = parser.decodeFromStream(ADDataResponse.serializer(), stream)
 
         val analyses = adResponse.technicalAnalysis.map { (date, analysis) ->
-            CCI(
+            AD(
                 date = date,
                 value =  analysis.AD
             )
@@ -369,14 +362,13 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
     }
 
     override suspend fun getOBV(
-        function: AnalysisType,
         symbol: String,
         interval: String
     ): TechnicalAnalysisHistory {
         val stream = getByteStream(
             ALPHA_VANTAGE_API_URL.newBuilder().apply {
                 addPathSegments("query")
-                addQueryParameter("function", function.name)
+                addQueryParameter("function", AnalysisType.OBV.name)
                 addQueryParameter("symbol", symbol)
                 addQueryParameter("interval", interval)
                 addQueryParameter("apikey", BuildConfig.alphaVantageAPI)
@@ -385,7 +377,7 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
         val obvResponse: OBVDataResponse = parser.decodeFromStream(OBVDataResponse.serializer(), stream)
 
         val analyses = obvResponse.technicalAnalysis.map { (date, analysis) ->
-            CCI(
+            OBV(
                 date = date,
                 value =  analysis.OBV
             )

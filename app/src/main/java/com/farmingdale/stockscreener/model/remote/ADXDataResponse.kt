@@ -1,8 +1,11 @@
-package com.farmingdale.stockscreener.model.remote.responses
+package com.farmingdale.stockscreener.model.remote
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * Response from AlphaVantage API for Average Directional Index (ADX) technical analysis
+ */
 @Serializable
 data class ADXDataResponse(
     @SerialName("Meta Data")

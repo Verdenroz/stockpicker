@@ -1,5 +1,8 @@
 package com.farmingdale.stockscreener.model.local
 
+/**
+ * The available intervals for technical analysis
+ */
 enum class Interval(val value: String) {
     ONE_MINUTE("1min"),
     FIVE_MINUTE("5min"),

@@ -8,6 +8,9 @@ import okhttp3.Response
 import java.io.IOException
 import kotlin.coroutines.resumeWithException
 
+/**
+ * Extension function to execute a [Call] asynchronously
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 suspend fun Call.executeAsync(): Response = suspendCancellableCoroutine { continuation ->
     continuation.invokeOnCancellation {
