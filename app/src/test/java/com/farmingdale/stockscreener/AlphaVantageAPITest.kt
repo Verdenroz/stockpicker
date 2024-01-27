@@ -1,6 +1,5 @@
 package com.farmingdale.stockscreener
 
-import com.farmingdale.stockscreener.model.local.AnalysisType
 import com.farmingdale.stockscreener.model.local.Interval
 import com.farmingdale.stockscreener.model.local.SeriesType
 import com.farmingdale.stockscreener.providers.ImplAlphaVantageAPI
@@ -37,7 +36,6 @@ class AlphaVantageAPITest {
     fun getSMATest() {
         val info = runBlocking {
             api.getSMA(
-                function = AnalysisType.SMA,
                 symbol = "IBM",
                 interval = Interval.DAILY.value,
                 timePeriod = 60,
@@ -51,7 +49,6 @@ class AlphaVantageAPITest {
     fun getEMATest() {
         val info = runBlocking {
             api.getEMA(
-                function = AnalysisType.EMA,
                 symbol = "IBM",
                 interval = Interval.DAILY.value,
                 timePeriod = 60,
@@ -65,7 +62,6 @@ class AlphaVantageAPITest {
     fun getSTOCHTest() {
         val info = runBlocking {
             api.getSTOCH(
-                function = AnalysisType.STOCH,
                 symbol = "IBM",
                 interval = Interval.DAILY.value,
                 fastKPeriod = 5,
@@ -82,7 +78,6 @@ class AlphaVantageAPITest {
     fun getRSITest() {
         val info = runBlocking {
             api.getRSI(
-                function = AnalysisType.RSI,
                 symbol = "IBM",
                 interval = Interval.DAILY.value,
                 timePeriod = 60,
@@ -96,7 +91,6 @@ class AlphaVantageAPITest {
     fun getADXTest() {
         val info = runBlocking {
             api.getADX(
-                function = AnalysisType.ADX,
                 symbol = "IBM",
                 interval = Interval.DAILY.value,
                 timePeriod = 60
@@ -109,7 +103,6 @@ class AlphaVantageAPITest {
     fun getCCITest() {
         val info = runBlocking {
             api.getCCI(
-                function = AnalysisType.CCI,
                 symbol = "IBM",
                 interval = Interval.DAILY.value,
                 timePeriod = 60
@@ -122,7 +115,6 @@ class AlphaVantageAPITest {
     fun getAROON() {
         val info = runBlocking {
             api.getAROON(
-                function = AnalysisType.AROON,
                 symbol = "IBM",
                 interval = Interval.DAILY.value,
                 timePeriod = 60
@@ -135,7 +127,6 @@ class AlphaVantageAPITest {
     fun getBBANDSTest() {
         val info = runBlocking {
             api.getBBANDS(
-                function = AnalysisType.BBANDS,
                 symbol = "IBM",
                 interval = Interval.DAILY.value,
                 timePeriod = 60,
@@ -152,7 +143,6 @@ class AlphaVantageAPITest {
     fun getADTest() {
         val info = runBlocking {
             api.getAD(
-                function = AnalysisType.AD,
                 symbol = "IBM",
                 interval = Interval.DAILY.value
             )
@@ -164,7 +154,6 @@ class AlphaVantageAPITest {
     fun getOBVTest() {
         val info = runBlocking {
             api.getOBV(
-                function = AnalysisType.OBV,
                 symbol = "IBM",
                 interval = Interval.DAILY.value
             )
