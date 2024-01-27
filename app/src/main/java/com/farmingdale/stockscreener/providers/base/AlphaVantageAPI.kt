@@ -1,8 +1,6 @@
 package com.farmingdale.stockscreener.providers.base
 
-import com.farmingdale.stockscreener.model.local.AnalysisType
 import com.farmingdale.stockscreener.model.local.QuoteData
-import com.farmingdale.stockscreener.model.local.TechnicalAnalysis
 import com.farmingdale.stockscreener.model.local.TechnicalAnalysisHistory
 
 /**
@@ -26,7 +24,6 @@ interface AlphaVantageAPI {
      * @return a list of SMA values with dates
      */
     suspend fun getSMA(
-        function: AnalysisType,
         symbol: String,
         interval: String,
         timePeriod: Int,
@@ -42,7 +39,6 @@ interface AlphaVantageAPI {
      * @return a list of EMA values with dates
      */
     suspend fun getEMA(
-        function: AnalysisType,
         symbol: String,
         interval: String,
         timePeriod: Int,
@@ -61,7 +57,6 @@ interface AlphaVantageAPI {
      * @return a list of STOCH values with dates
      */
     suspend fun getSTOCH(
-        function: AnalysisType,
         symbol: String,
         interval: String,
         fastKPeriod: Int?,
@@ -80,7 +75,6 @@ interface AlphaVantageAPI {
      * @return a list of RSI values with dates
      */
     suspend fun getRSI(
-        function: AnalysisType,
         symbol: String,
         interval: String,
         timePeriod: Int,
@@ -95,7 +89,6 @@ interface AlphaVantageAPI {
      * @return a list of ADX values with dates
      */
     suspend fun getADX(
-        function: AnalysisType,
         symbol: String,
         interval: String,
         timePeriod: Int
@@ -109,7 +102,6 @@ interface AlphaVantageAPI {
      * @return a list of CCI values with dates
      */
     suspend fun getCCI(
-        function: AnalysisType,
         symbol: String,
         interval: String,
         timePeriod: Int
@@ -123,7 +115,6 @@ interface AlphaVantageAPI {
      * @return a list of Aroon values (AroonUp, ArronDown) with dates
      */
     suspend fun getAROON(
-        function: AnalysisType,
         symbol: String,
         interval: String,
         timePeriod: Int
@@ -141,7 +132,6 @@ interface AlphaVantageAPI {
      * @return a list of Bollinger Bands values (realUpperBand, realMiddleBand, realLowerBand) with dates
      */
     suspend fun getBBANDS(
-        function: AnalysisType,
         symbol: String,
         interval: String,
         timePeriod: Int,
@@ -158,7 +148,6 @@ interface AlphaVantageAPI {
      * @return a list of AD values with dates
      */
     suspend fun getAD(
-        function: AnalysisType,
         symbol: String,
         interval: String
     ): TechnicalAnalysisHistory
@@ -170,7 +159,6 @@ interface AlphaVantageAPI {
      * @return a list of OBV values with dates
      */
     suspend fun getOBV(
-        function: AnalysisType,
         symbol: String,
         interval: String
     ): TechnicalAnalysisHistory
