@@ -1,8 +1,11 @@
-package com.farmingdale.stockscreener.model.remote.responses
+package com.farmingdale.stockscreener.model.remote
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * Response from AlphaVantage API for AROON technical analysis
+ */
 @Serializable
 data class AROONDataResponse(
     @SerialName("Meta Data")
