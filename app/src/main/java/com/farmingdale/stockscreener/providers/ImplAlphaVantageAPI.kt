@@ -13,6 +13,8 @@ import com.farmingdale.stockscreener.model.local.QuoteData
 import com.farmingdale.stockscreener.model.local.RSI
 import com.farmingdale.stockscreener.model.local.SMA
 import com.farmingdale.stockscreener.model.local.STOCH
+import com.farmingdale.stockscreener.model.local.SearchData
+import com.farmingdale.stockscreener.model.local.SearchMatch
 import com.farmingdale.stockscreener.model.local.TechnicalAnalysisHistory
 import com.farmingdale.stockscreener.model.remote.ADDataResponse
 import com.farmingdale.stockscreener.model.remote.ADXDataResponse
@@ -25,6 +27,7 @@ import com.farmingdale.stockscreener.model.remote.QuoteDataResponse
 import com.farmingdale.stockscreener.model.remote.RSIDataResponse
 import com.farmingdale.stockscreener.model.remote.SMADataResponse
 import com.farmingdale.stockscreener.model.remote.STOCHDataResponse
+import com.farmingdale.stockscreener.model.remote.SearchDataResponse
 import com.farmingdale.stockscreener.model.utils.ALPHA_VANTAGE_API_URL
 import com.farmingdale.stockscreener.model.utils.executeAsync
 import com.farmingdale.stockscreener.providers.base.AlphaVantageAPI
@@ -54,6 +57,40 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
         val response = call.executeAsync()
         return response.body!!.byteStream()
     }
+
+    override suspend fun searchSymbol(keywords: String): SearchData {
+        val stream = getByteStream(
+            ALPHA_VANTAGE_API_URL.newBuilder().apply {
+                addPathSegments("query")
+                addQueryParameter("function", "SYMBOL_SEARCH")
+                addQueryParameter("keywords", keywords)
+                addQueryParameter("apikey", BuildConfig.alphaVantageAPI)
+            }.build()
+        )
+        val searchDataResponse: SearchDataResponse
+
+        try {
+            searchDataResponse = parser.decodeFromStream(SearchDataResponse.serializer(), stream)
+        } catch (e: SerializationException) {
+            throw RuntimeException("Failed to parse JSON response", e)
+        }
+
+        val matches = searchDataResponse.bestMatches.map { match ->
+            SearchMatch(
+                symbol = match.symbol,
+                name = match.name,
+                type = match.type,
+                region = match.region,
+                marketOpen = match.marketOpen,
+                marketClose = match.marketClose,
+                timezone = match.timezone,
+                currency = match.currency,
+                matchScore = match.matchScore
+            )
+        }
+        return SearchData(matches)
+    }
+
     override suspend fun getQuote(symbol: String): QuoteData {
         val stream = getByteStream(
             ALPHA_VANTAGE_API_URL.newBuilder().apply {

@@ -1,6 +1,7 @@
 package com.farmingdale.stockscreener.providers.base
 
 import com.farmingdale.stockscreener.model.local.QuoteData
+import com.farmingdale.stockscreener.model.local.SearchData
 import com.farmingdale.stockscreener.model.local.TechnicalAnalysisHistory
 
 /**
@@ -8,10 +9,17 @@ import com.farmingdale.stockscreener.model.local.TechnicalAnalysisHistory
  * @see <a href="https://www.alphavantage.co/documentation/">AlphaVantage API Documentation</a>
  */
 interface AlphaVantageAPI {
+    /**
+     * Find matching symbols based on keywords
+     * @param keywords the words user types in
+     * @return [SearchData] containing a list of matches
+     */
+    suspend fun searchSymbol(keywords: String): SearchData
 
     /**
      * Get the latest price and volume information for a security of your choice.
      * @param symbol the symbol of the security
+     * @return [QuoteData] containing the latest price and volume information
      */
     suspend fun getQuote(symbol: String): QuoteData
 
