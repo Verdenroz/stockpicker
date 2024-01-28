@@ -25,6 +25,14 @@ class AlphaVantageAPITest {
     }
 
     @Test
+    fun searchSymbolTest() {
+        val info = runBlocking {
+            api.searchSymbol("IBM")
+        }
+        println(info)
+    }
+
+    @Test
     fun getQuoteTest() {
         val info = runBlocking {
             api.getQuote("IBM")
