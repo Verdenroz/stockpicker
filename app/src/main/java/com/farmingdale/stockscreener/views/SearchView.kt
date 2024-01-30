@@ -1,70 +1,134 @@
 package com.farmingdale.stockscreener.views
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.farmingdale.stockscreener.R
+import com.farmingdale.stockscreener.model.local.SearchData
+import com.farmingdale.stockscreener.model.local.SearchMatch
+import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
+import com.farmingdale.stockscreener.ui.theme.background
+import com.farmingdale.stockscreener.ui.theme.borderColor
+import com.farmingdale.stockscreener.viewmodels.ImplSearchViewModel
+import com.farmingdale.stockscreener.viewmodels.base.SearchViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.time.delay
+
+@Composable
+fun SearchView(){
+    val searchViewModel: SearchViewModel = viewModel<ImplSearchViewModel>()
+    val results by searchViewModel.searchResults.collectAsState()
+    val query by searchViewModel.query.collectAsState()
+
+    LaunchedEffect(key1 = query){
+        delay(500)
+        searchViewModel.search(query)
+    }
+    StockScreenerTheme {
+        SearchContent(
+            searchResults = results,
+            updateQuery = searchViewModel::search
+        )
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchView(
-    onQueryChange: (String) -> Unit,
-    onSearch: (String) -> Unit,
-    onActiveChange: (Boolean) -> Unit,
+fun SearchContent(
+    searchResults: SearchData?,
+    updateQuery: (String) -> Unit,
 ){
-    var text by rememberSaveable { mutableStateOf("") }
+    var query by rememberSaveable { mutableStateOf("") }
     var active by rememberSaveable { mutableStateOf(false) }
-
-    Box(Modifier.fillMaxSize().semantics { isTraversalGroup = true }) {
-        DockedSearchBar(
+    Scaffold(
+        topBar = {
+            DockedSearchBar(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                colors = SearchBarDefaults.colors(
+                    containerColor = Color.White,
+                    dividerColor = Color.Transparent,
+                    inputFieldColors = TextFieldDefaults.textFieldColors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent,
+                        errorIndicatorColor = Color.Transparent,
+                    )
+                ),
+                query = query,
+                onQueryChange = {
+                    query = it
+                    updateQuery(query)
+                },
+                onSearch = {
+                    active = false
+                },
+                active = active,
+                onActiveChange = { active = it },
+                placeholder = { Text("Search") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = stringResource(id = R.string.search_description)) },
+            ) {
+                searchResults?.matches?.forEach { match ->
+                    ListItem(
+                        modifier = Modifier
+                            .clickable {
+                                active = false
+                            }
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        headlineContent = { Text(match.name) },
+                        leadingContent = { Text(match.symbol) },
+                        trailingContent = { Icon(Icons.Default.AddCircle, contentDescription = stringResource(id = R.string.add_description)) }
+                    )
+                }
+            }
+        }
+    ) { padding ->
+        Box(
             modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 8.dp)
-                .semantics { traversalIndex = -1f },
-            query = text,
-            onQueryChange = { text = it },
-            onSearch = { active = false },
-            active = active,
-            onActiveChange = { active = it },
-            placeholder = { Text("Hinted search text") },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-            trailingIcon = { Icon(Icons.Default.MoreVert, contentDescription = null) },
+                .fillMaxSize()
+                .background(background)
+                .padding(padding)
         ) {
-            repeat(4) { idx ->
-                val resultText = "Suggestion $idx"
-                ListItem(
-                    headlineContent = { Text(resultText) },
-                    supportingContent = { Text("Additional info") },
-                    leadingContent = { Icon(Icons.Filled.Star, contentDescription = null) },
-                    modifier = Modifier
-                        .clickable {
-                            text = resultText
-                            active = false
-                        }
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp)
+            if (searchResults == null) {
+                Text(
+                    text = "Search for a stock",
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
         }
@@ -73,11 +137,34 @@ fun SearchView(
 
 @Preview
 @Composable
-fun PreviewSearchView(){
-    SearchView(
-        onQueryChange = {},
-        onSearch = {},
-        onActiveChange = {}
+fun PreviewSearchContent(){
+    SearchContent(
+        searchResults = null,
+        updateQuery = {}
+    )
+}
+
+@Preview
+@Composable
+fun PreviewSearchList(){
+    val match = SearchMatch(
+        symbol = "AAPL",
+        name = "Apple Inc.",
+        type = "Equity",
+        region = "USA",
+        marketOpen = "09:30",
+        marketClose = "16:00",
+        timezone = "UTC-04",
+        currency = "USD",
+        matchScore = "1.0000"
+    )
+    ListItem(
+        headlineContent = { Text(match.name) },
+        leadingContent = { Text(match.symbol) },
+        trailingContent = { Icon(Icons.Default.AddCircle, contentDescription = null) },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp)
     )
 }
 
