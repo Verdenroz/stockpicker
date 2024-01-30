@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.model.utils
+package com.farmingdale.stockscreener.utils
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
