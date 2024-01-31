@@ -67,11 +67,13 @@ interface AlphaVantageAPI {
     suspend fun getSTOCH(
         symbol: String,
         interval: String,
-        fastKPeriod: Int?,
-        slowKPeriod: Int?,
-        slowDPeriod: Int?,
-        slowKMAType: Int?,
-        slowDMAType: Int?
+        timePeriod: Int,
+        seriesType: String,
+        fastKPeriod: Int? = null,
+        slowKPeriod: Int? = null,
+        slowDPeriod: Int? = null,
+        slowKMAType: Int? = null,
+        slowDMAType: Int? = null
     ): TechnicalAnalysisHistory
 
     /**
