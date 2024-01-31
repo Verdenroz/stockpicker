@@ -52,6 +52,9 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
     private suspend fun getByteStream(url: HttpUrl): InputStream {
         val request = Request.Builder()
             .url(url)
+            .get()
+            .addHeader("X-RapidAPI-Key", BuildConfig.alphaVantageAPI)
+            .addHeader("X-RapidAPI-Host", "alpha-vantage.p.rapidapi.com")
             .build()
         val call = client.newCall(request)
         val response = call.executeAsync()
@@ -97,7 +100,6 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
                 addPathSegments("query")
                 addQueryParameter("function", "GLOBAL_QUOTE")
                 addQueryParameter("symbol", symbol)
-                addQueryParameter("apikey", BuildConfig.alphaVantageAPI)
             }.build()
         )
 
@@ -139,7 +141,6 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
                 addQueryParameter("interval", interval)
                 addQueryParameter("time_period", timePeriod.toString())
                 addQueryParameter("series_type", seriesType)
-                addQueryParameter("apikey", BuildConfig.alphaVantageAPI)
             }.build()
         )
 
@@ -169,7 +170,6 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
                 addQueryParameter("interval", interval)
                 addQueryParameter("time_period", timePeriod.toString())
                 addQueryParameter("series_type", seriesType)
-                addQueryParameter("apikey", BuildConfig.alphaVantageAPI)
             }.build()
         )
 
@@ -188,6 +188,8 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
     override suspend fun getSTOCH(
         symbol: String,
         interval: String,
+        timePeriod: Int,
+        seriesType: String,
         fastKPeriod: Int?,
         slowKPeriod: Int?,
         slowDPeriod: Int?,
@@ -196,15 +198,17 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
     ): TechnicalAnalysisHistory {
         val stream = getByteStream(
             ALPHA_VANTAGE_API_URL.newBuilder().apply {
+                addPathSegments("query")
                 addQueryParameter("function", AnalysisType.STOCH.name)
                 addQueryParameter("symbol", symbol)
                 addQueryParameter("interval", interval)
+                addQueryParameter("time_period", timePeriod.toString())
+                addQueryParameter("series_type", seriesType)
                 fastKPeriod?.let { addQueryParameter("fastkperiod", it.toString()) }
                 slowKPeriod?.let { addQueryParameter("slowkperiod", it.toString()) }
                 slowDPeriod?.let { addQueryParameter("slowdperiod", it.toString()) }
                 slowKMAType?.let { addQueryParameter("slowkmatype", it.toString()) }
                 slowDMAType?.let { addQueryParameter("slowdmatype", it.toString()) }
-                addQueryParameter("apikey", BuildConfig.alphaVantageAPI)
             }.build()
         )
 
@@ -236,7 +240,6 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
                 addQueryParameter("interval", interval)
                 addQueryParameter("time_period", timePeriod.toString())
                 addQueryParameter("series_type", seriesType)
-                addQueryParameter("apikey", BuildConfig.alphaVantageAPI)
             }.build()
         )
 
@@ -264,7 +267,6 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
                 addQueryParameter("symbol", symbol)
                 addQueryParameter("interval", interval)
                 addQueryParameter("time_period", timePeriod.toString())
-                addQueryParameter("apikey", BuildConfig.alphaVantageAPI)
             }.build()
         )
 
@@ -287,11 +289,11 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
     ): TechnicalAnalysisHistory {
         val stream = getByteStream(
             ALPHA_VANTAGE_API_URL.newBuilder().apply {
+                addPathSegments("query")
                 addQueryParameter("function", AnalysisType.CCI.name)
                 addQueryParameter("symbol", symbol)
                 addQueryParameter("interval", interval)
                 addQueryParameter("time_period", timePeriod.toString())
-                addQueryParameter("apikey", BuildConfig.alphaVantageAPI)
             }.build()
         )
 
@@ -314,11 +316,11 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
     ): TechnicalAnalysisHistory {
         val stream = getByteStream(
             ALPHA_VANTAGE_API_URL.newBuilder().apply {
+                addPathSegments("query")
                 addQueryParameter("function", AnalysisType.AROON.name)
                 addQueryParameter("symbol", symbol)
                 addQueryParameter("interval", interval)
                 addQueryParameter("time_period", timePeriod.toString())
-                addQueryParameter("apikey", BuildConfig.alphaVantageAPI)
             }.build()
         )
 
@@ -355,7 +357,6 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
                 addQueryParameter("series_type", seriesType)
                 nbDevUp?.let { addQueryParameter("nbdevup", it.toString()) }
                 nbDevDown?.let { addQueryParameter("nbdevdn", it.toString()) }
-                addQueryParameter("apikey", BuildConfig.alphaVantageAPI)
             }.build()
         )
         val bbandsResponse: BBANDSDataResponse = parser.decodeFromStream(BBANDSDataResponse.serializer(), stream)
@@ -379,10 +380,10 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
     ): TechnicalAnalysisHistory {
         val stream = getByteStream(
             ALPHA_VANTAGE_API_URL.newBuilder().apply {
+                addPathSegments("query")
                 addQueryParameter("function", AnalysisType.AD.name)
                 addQueryParameter("symbol", symbol)
                 addQueryParameter("interval", interval)
-                addQueryParameter("apikey", BuildConfig.alphaVantageAPI)
             }.build()
         )
 
@@ -408,7 +409,6 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
                 addQueryParameter("function", AnalysisType.OBV.name)
                 addQueryParameter("symbol", symbol)
                 addQueryParameter("interval", interval)
-                addQueryParameter("apikey", BuildConfig.alphaVantageAPI)
             }.build()
         )
         val obvResponse: OBVDataResponse = parser.decodeFromStream(OBVDataResponse.serializer(), stream)

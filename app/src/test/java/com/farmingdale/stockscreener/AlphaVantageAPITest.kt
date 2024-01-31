@@ -72,11 +72,8 @@ class AlphaVantageAPITest {
             api.getSTOCH(
                 symbol = "IBM",
                 interval = Interval.DAILY.value,
-                fastKPeriod = 5,
-                slowKPeriod = 3,
-                slowDPeriod = 3,
-                slowKMAType = 0,
-                slowDMAType = 0
+                timePeriod = 60,
+                seriesType = SeriesType.CLOSE.value,
             )
         }
         println(info)
