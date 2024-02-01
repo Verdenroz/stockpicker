@@ -1,6 +1,5 @@
 package com.farmingdale.stockscreener.viewmodels
 
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.farmingdale.stockscreener.model.local.SearchData
 import com.farmingdale.stockscreener.providers.ImplAlphaVantageAPI
@@ -11,7 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 
 class ImplSearchViewModel: SearchViewModel(){
@@ -32,7 +30,6 @@ class ImplSearchViewModel: SearchViewModel(){
         if(query.isNotBlank()){
             viewModelScope.launch {
                 repo.querySymbols(query)
-                    .debounce(3000)
                     .collectLatest { searchData ->
                     _searchResults.value = searchData
                 }
