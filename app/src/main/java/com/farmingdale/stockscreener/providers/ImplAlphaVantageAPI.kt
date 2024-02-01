@@ -28,8 +28,8 @@ import com.farmingdale.stockscreener.model.remote.RSIDataResponse
 import com.farmingdale.stockscreener.model.remote.SMADataResponse
 import com.farmingdale.stockscreener.model.remote.STOCHDataResponse
 import com.farmingdale.stockscreener.model.remote.SearchDataResponse
-import com.farmingdale.stockscreener.model.utils.ALPHA_VANTAGE_API_URL
-import com.farmingdale.stockscreener.model.utils.executeAsync
+import com.farmingdale.stockscreener.utils.ALPHA_VANTAGE_API_URL
+import com.farmingdale.stockscreener.utils.executeAsync
 import com.farmingdale.stockscreener.providers.base.AlphaVantageAPI
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
@@ -67,7 +67,6 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
                 addPathSegments("query")
                 addQueryParameter("function", "SYMBOL_SEARCH")
                 addQueryParameter("keywords", keywords)
-                addQueryParameter("apikey", BuildConfig.alphaVantageAPI)
             }.build()
         )
         val searchDataResponse: SearchDataResponse
