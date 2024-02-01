@@ -67,7 +67,6 @@ class ImplAlphaVantageAPI(private val client: OkHttpClient): AlphaVantageAPI {
                 addPathSegments("query")
                 addQueryParameter("function", "SYMBOL_SEARCH")
                 addQueryParameter("keywords", keywords)
-                addQueryParameter("apikey", BuildConfig.alphaVantageAPI)
             }.build()
         )
         val searchDataResponse: SearchDataResponse
