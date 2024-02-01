@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.utils
+package com.farmingdale.stockscreener.model.utils
 
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
