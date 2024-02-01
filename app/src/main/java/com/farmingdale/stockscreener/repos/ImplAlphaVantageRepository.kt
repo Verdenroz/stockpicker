@@ -14,8 +14,13 @@ class ImplAlphaVantageRepository(private val api: ImplAlphaVantageAPI): AlphaVan
     }
 
     override fun querySymbols(query: String): Flow<SearchData> = flow {
-        val result = api.searchSymbol(query)
-        emit(result)
+        try{
+            val result = api.searchSymbol(query)
+            emit(result)
+        } catch (e: Exception){
+            e.printStackTrace()
+        }
+
     }
 
     override fun getTechnicalAnalysis(symbol: String): Flow<TechnicalAnalysisHistory> {
