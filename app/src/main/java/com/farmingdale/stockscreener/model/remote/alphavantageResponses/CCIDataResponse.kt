@@ -1,17 +1,17 @@
-package com.farmingdale.stockscreener.model.remote
+package com.farmingdale.stockscreener.model.remote.alphavantageResponses
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Response from AlphaVantage API for Relative Strength Index (RSI) technical analysis
+ * Response from AlphaVantage API for Commodity Channel Index (CCI) technical analysis
  */
 @Serializable
-data class RSIDataResponse(
+data class CCIDataResponse(
     @SerialName("Meta Data")
     val metaData: MetaData,
 
-    @SerialName("Technical Analysis: RSI")
+    @SerialName("Technical Analysis: CCI")
     val technicalAnalysis: Map<String, Analysis>
 ) {
     @Serializable
@@ -28,6 +28,6 @@ data class RSIDataResponse(
 
     @Serializable
     data class Analysis(
-        val RSI: String
+        val CCI: String
     )
 }

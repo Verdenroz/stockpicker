@@ -1,17 +1,17 @@
-package com.farmingdale.stockscreener.model.remote
+package com.farmingdale.stockscreener.model.remote.alphavantageResponses
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Response from AlphaVantage API for AROON technical analysis
+ * Response from AlphaVantage API for Exponential Moving Average (EMA) technical analysis
  */
 @Serializable
-data class AROONDataResponse(
+data class EMADataResponse(
     @SerialName("Meta Data")
     val metaData: MetaData,
 
-    @SerialName("Technical Analysis: AROON")
+    @SerialName("Technical Analysis: EMA")
     val technicalAnalysis: Map<String, Analysis>
 ) {
     @Serializable
@@ -28,10 +28,6 @@ data class AROONDataResponse(
 
     @Serializable
     data class Analysis(
-        @SerialName("Aroon Down")
-        val aroonDown: String,
-
-        @SerialName("Aroon Up")
-        val aroonUp: String
+        val EMA: String
     )
 }
