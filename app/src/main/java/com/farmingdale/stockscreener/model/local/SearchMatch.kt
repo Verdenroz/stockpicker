@@ -36,6 +36,6 @@ data class GeneralSearchMatch(
     val symbol: String,
     val name: String,
     val currency: String?,
-    val stockExchange: String,
-    val exchangeShortName: String
+    val stockExchange: String?,
+    val exchangeShortName: String?
 )

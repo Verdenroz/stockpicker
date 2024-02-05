@@ -55,7 +55,7 @@ class ImplFinancialModelPrepAPI(private val client: OkHttpClient): FinancialMode
             throw RuntimeException("Failed to parse JSON response", e)
         }
         return GeneralSearchData(
-            searchMatches.map { response ->
+            searchMatches.take(5).map { response ->
                 GeneralSearchMatch(
                     symbol = response.symbol,
                     name = response.name,
