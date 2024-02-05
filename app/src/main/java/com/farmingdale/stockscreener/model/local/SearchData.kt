@@ -11,7 +11,7 @@ data class SearchData(
 
 /**
  * Local data class for search results from FinancialModelPrep
- * @param matches a list of search matches sorted by relevance
+ * @param matches a list of [GeneralSearchMatch] sorted by relevance
  */
 data class GeneralSearchData(
     val matches: List<GeneralSearchMatch>
