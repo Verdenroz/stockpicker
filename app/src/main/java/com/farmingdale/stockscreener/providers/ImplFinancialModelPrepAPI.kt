@@ -6,6 +6,7 @@ import com.farmingdale.stockscreener.model.local.GeneralSearchData
 import com.farmingdale.stockscreener.model.local.GeneralSearchMatch
 import com.farmingdale.stockscreener.model.local.SymbolData
 import com.farmingdale.stockscreener.model.local.SymbolList
+import com.farmingdale.stockscreener.model.local.WatchList
 import com.farmingdale.stockscreener.model.remote.financialmodelprepResponses.FullQuoteResponse
 import com.farmingdale.stockscreener.model.remote.financialmodelprepResponses.GeneralSearchResponse
 import com.farmingdale.stockscreener.model.remote.financialmodelprepResponses.SymbolDataResponse
@@ -140,5 +141,51 @@ class ImplFinancialModelPrepAPI(private val client: OkHttpClient): FinancialMode
             )
         }.first()
 
+    }
+
+    override suspend fun getBulkQuote(vararg symbols: String): WatchList {
+        val stream = getByteStream(
+            FINANCIAL_MODEL_PREP_API_URL.newBuilder().apply {
+                addPathSegments("quote")
+                addPathSegments(symbols.joinToString(","))
+                addQueryParameter("apikey", BuildConfig.financialModelPrepAPI)
+            }.build()
+        )
+        val fullQuoteResponse: List<FullQuoteResponse>
+
+        try{
+            fullQuoteResponse = parser.decodeFromStream(ListSerializer(FullQuoteResponse.serializer()), stream)
+        } catch (e: SerializationException) {
+            throw RuntimeException("Failed to parse JSON response", e)
+        }
+
+        return WatchList(
+            fullQuoteResponse.map { response ->
+                FullQuoteData(
+                    symbol = response.symbol,
+                    name = response.name,
+                    price = response.price,
+                    changesPercentage = response.changesPercentage,
+                    change = response.change,
+                    dayLow = response.dayLow,
+                    dayHigh = response.dayHigh,
+                    yearHigh = response.yearHigh,
+                    yearLow = response.yearLow,
+                    marketCap = response.marketCap,
+                    priceAvg50 = response.priceAvg50,
+                    priceAvg200 = response.priceAvg200,
+                    exchange = response.exchange,
+                    volume = response.volume,
+                    avgVolume = response.avgVolume,
+                    open = response.open,
+                    previousClose = response.previousClose,
+                    eps = response.eps,
+                    pe = response.pe,
+                    earningsAnnouncement = response.earningsAnnouncement,
+                    sharesOutstanding = response.sharesOutstanding,
+                    timestamp = response.timestamp
+                )
+            }
+        )
     }
 }

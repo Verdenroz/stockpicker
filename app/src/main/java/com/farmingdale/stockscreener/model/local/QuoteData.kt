@@ -76,3 +76,9 @@ data class FullQuoteData(
     val sharesOutstanding: Long,
     val timestamp: Long
 )
+
+/**
+ * Local data class for a list of watchlisted stock data given by FinancialModelPrep
+ * @param quotes a list [FullQuoteData] for each stock in the watchlist
+ */
+data class WatchList(val quotes: List<FullQuoteData>)

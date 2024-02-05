@@ -3,6 +3,7 @@ package com.farmingdale.stockscreener.providers.base
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.GeneralSearchData
 import com.farmingdale.stockscreener.model.local.SymbolList
+import com.farmingdale.stockscreener.model.local.WatchList
 
 /**
  * Base interface for the FinancialModelPrepAPI
@@ -29,4 +30,13 @@ interface FinancialModelPrepAPI {
      * @return [FullQuoteData] containing all available information such as price, volume, market cap, etc.
      */
     suspend fun getFullQuote(symbol: String): FullQuoteData
+
+    /**
+     * Get full quote data for a list of stocks
+     * @param symbols a variable number of strings to identify the requested quote
+     * @return [WatchList]
+     */
+    suspend fun getBulkQuote(vararg symbols: String): WatchList
+
+
 }
