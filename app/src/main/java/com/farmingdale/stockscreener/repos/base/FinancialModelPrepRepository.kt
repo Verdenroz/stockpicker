@@ -8,7 +8,9 @@ import kotlinx.coroutines.flow.Flow
 abstract class FinancialModelPrepRepository {
     abstract suspend fun generalSearch(query: String): Flow<GeneralSearchData>
 
-    abstract suspend fun getSymbolList(): Flow<SymbolList>
-
     abstract suspend fun getFullQuote(symbol: String): Flow<FullQuoteData>
+
+    abstract suspend fun updateSymbolList(symbols: SymbolList)
+
+    companion object
 }
