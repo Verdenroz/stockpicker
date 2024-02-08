@@ -14,7 +14,7 @@ interface FinancialModelPrepAPI {
     /**
      * Search for a stock by name or symbol
      * @param query the search query
-     * @return a list of search results sorted by relevance
+     * @return a list of 5 [GeneralSearchData] sorted by relevance
      */
     suspend fun generalSearch(query: String): GeneralSearchData
 
@@ -36,7 +36,7 @@ interface FinancialModelPrepAPI {
      * @param symbols a variable number of strings to identify the requested quote
      * @return [WatchList]
      */
-    suspend fun getBulkQuote(vararg symbols: String): WatchList
+    suspend fun getBulkQuote(symbols: List<String>): WatchList
 
 
 }

@@ -49,7 +49,7 @@ class FinancialModelPrepAPITest {
     @Test
     fun getBulkQuoteTest(){
         val info = runBlocking {
-            api.getBulkQuote("AAPL", "MSFT", "GOOGL")
+            api.getBulkQuote(listOf("AAPL", "MSFT"))
         }
         println(info)
     }
