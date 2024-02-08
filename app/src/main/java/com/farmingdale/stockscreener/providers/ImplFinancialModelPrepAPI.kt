@@ -45,6 +45,7 @@ class ImplFinancialModelPrepAPI(private val client: OkHttpClient): FinancialMode
             FINANCIAL_MODEL_PREP_API_URL.newBuilder().apply {
                 addPathSegments("search")
                 addQueryParameter("query", query)
+                addQueryParameter("limit", "7")
                 addQueryParameter("apikey", BuildConfig.financialModelPrepAPI)
             }.build()
         )
@@ -55,17 +56,32 @@ class ImplFinancialModelPrepAPI(private val client: OkHttpClient): FinancialMode
         } catch (e: SerializationException) {
             throw RuntimeException("Failed to parse JSON response", e)
         }
-        return GeneralSearchData(
-            searchMatches.take(5).map { response ->
-                GeneralSearchMatch(
-                    symbol = response.symbol,
-                    name = response.name,
-                    currency = response.currency,
-                    stockExchange = response.stockExchange,
-                    exchangeShortName = response.exchangeShortName
-                )
+
+        // Convert responses to GeneralSearchMatch objects
+        val matches = searchMatches.map { response ->
+            GeneralSearchMatch(
+                symbol = response.symbol,
+                name = response.name,
+                currency = response.currency,
+                stockExchange = response.stockExchange,
+                exchangeShortName = response.exchangeShortName
+            )
+        }
+
+        // Score each match based on criteria
+        val scoredMatches = matches.map { match ->
+            val score = when {
+                match.symbol.equals(query, ignoreCase = true) -> 3
+                match.name.contains(query, ignoreCase = true) -> 2
+                else -> 1
             }
-        )
+            Pair(match, score)
+        }
+
+        // Sort matches by score in descending order
+        val sortedMatches = scoredMatches.sortedByDescending { it.second }.map { it.first }
+
+        return GeneralSearchData(sortedMatches)
     }
 
     override suspend fun getSymbolList(): SymbolList {
@@ -143,7 +159,7 @@ class ImplFinancialModelPrepAPI(private val client: OkHttpClient): FinancialMode
 
     }
 
-    override suspend fun getBulkQuote(vararg symbols: String): WatchList {
+    override suspend fun getBulkQuote(symbols: List<String>): WatchList {
         val stream = getByteStream(
             FINANCIAL_MODEL_PREP_API_URL.newBuilder().apply {
                 addPathSegments("quote")
