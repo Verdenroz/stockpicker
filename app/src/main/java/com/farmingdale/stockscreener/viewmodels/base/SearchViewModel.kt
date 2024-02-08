@@ -1,11 +1,11 @@
 package com.farmingdale.stockscreener.viewmodels.base
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import com.farmingdale.stockscreener.model.local.GeneralSearchData
-import com.farmingdale.stockscreener.model.local.SearchData
 import kotlinx.coroutines.flow.StateFlow
 
-abstract class SearchViewModel: ViewModel() {
+abstract class SearchViewModel(application: Application) : AndroidViewModel(application) {
 
     abstract val query: StateFlow<String>
 
