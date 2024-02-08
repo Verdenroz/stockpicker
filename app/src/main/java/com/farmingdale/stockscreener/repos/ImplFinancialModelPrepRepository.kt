@@ -1,43 +1,44 @@
 package com.farmingdale.stockscreener.repos
 
+import android.content.Context
+import com.farmingdale.stockscreener.model.database.AppDatabase
+import com.farmingdale.stockscreener.model.database.DBQuoteData
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.GeneralSearchData
+import com.farmingdale.stockscreener.model.local.WatchList
 import com.farmingdale.stockscreener.providers.ImplFinancialModelPrepAPI
 import com.farmingdale.stockscreener.providers.okHttpClient
 import com.farmingdale.stockscreener.repos.base.FinancialModelPrepRepository
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
 
 
-class ImplFinancialModelPrepRepository: FinancialModelPrepRepository() {
+class ImplFinancialModelPrepRepository(application: Context) : FinancialModelPrepRepository() {
+    private val api = ImplFinancialModelPrepAPI(okHttpClient)
+    private val db = AppDatabase.get(application).quoteDao()
 
-    private val api  = ImplFinancialModelPrepAPI(okHttpClient)
-    private val db = FirebaseFirestore.getInstance()
-
-    override suspend fun generalSearch(query: String): Flow<GeneralSearchData> = flow{
-        withContext(Dispatchers.IO){
-            try{
-                val result = api.generalSearch(query)
-                emit(result)
-            } catch (e: Exception){
-                e.printStackTrace()
-            }
+    override suspend fun generalSearch(query: String): Flow<GeneralSearchData> = flow {
+        try{
+            emit(api.generalSearch(query))
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
-    override suspend fun getFullQuote(symbol: String): Flow<FullQuoteData> = flow{
-        withContext(Dispatchers.IO){
-            try{
-                val result = api.getFullQuote(symbol)
-                emit(result)
-            } catch (e: Exception){
-                e.printStackTrace()
-            }
+    override suspend fun getFullQuote(symbol: String): Flow<FullQuoteData> = flow {
+        try{
+            emit(api.getFullQuote(symbol))
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
+    }.flowOn(Dispatchers.IO)
 
     override suspend fun getWatchList(): Flow<WatchList> {
         return db.getAllFullQuoteDataFlow().map { it.toWatchList()
@@ -45,30 +46,68 @@ class ImplFinancialModelPrepRepository: FinancialModelPrepRepository() {
     }
 
     override suspend fun addToWatchList(symbol: String) {
-        withContext(Dispatchers.IO){
+        withContext(Dispatchers.IO) {
             val quote = api.getFullQuote(symbol)
+            db.insert(quote.toDB())
         }
     }
 
     override suspend fun deleteFromWatchList(symbol: String) {
-        val quote = api.getFullQuote(symbol)
-    }
-
-    override suspend fun updateWatchList() {
-        withContext(Dispatchers.IO){
-            val watchList = db.collection("watchlist").get().await()
+        withContext(Dispatchers.IO) {
+            db.delete(symbol)
         }
     }
 
-    companion object{
+    override suspend fun updateWatchList() {
+        val symbols = db.getAllFullQuoteDataFlow()
+            .flowOn(Dispatchers.IO)
+            .flatMapConcat { it.asFlow() }
+            .map { it.symbol }
+            .toList()
+
+        val updatedQuotes = api.getBulkQuote(symbols)
+        db.updateAll(updatedQuotes.quotes.map { it.toDB() })
+    }
+
+    private fun FullQuoteData.toDB() = DBQuoteData(
+        symbol = symbol,
+        name = name,
+        price = price,
+        changesPercentage = changesPercentage,
+        change = change,
+        dayLow = dayLow,
+        dayHigh = dayHigh,
+        yearHigh = yearHigh,
+        yearLow = yearLow,
+        marketCap = marketCap,
+        priceAvg50 = priceAvg50,
+        priceAvg200 = priceAvg200,
+        volume = volume,
+        avgVolume = avgVolume,
+        exchange = exchange,
+        open = open,
+        previousClose = previousClose,
+        eps = eps,
+        pe = pe,
+        earningsAnnouncement = earningsAnnouncement,
+        sharesOutstanding = sharesOutstanding,
+        timestamp = timestamp
+    )
+
+    private fun List<FullQuoteData>.toWatchList() = WatchList(this)
+
+    companion object {
         private var repo: ImplFinancialModelPrepRepository? = null
+
         /**
          * Get the implementation of [ImplFinancialModelPrepRepository]
          */
         @Synchronized
-        fun FinancialModelPrepRepository.Companion.get(): FinancialModelPrepRepository {
+        fun FinancialModelPrepRepository.Companion.get(
+            context: Context
+        ): FinancialModelPrepRepository {
             if (repo == null) {
-                repo = ImplFinancialModelPrepRepository()
+                repo = ImplFinancialModelPrepRepository(context)
             }
 
             return repo!!
