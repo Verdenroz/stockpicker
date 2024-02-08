@@ -1,5 +1,6 @@
 package com.farmingdale.stockscreener.viewmodels
 
+import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.farmingdale.stockscreener.model.local.GeneralSearchData
 import com.farmingdale.stockscreener.repos.ImplFinancialModelPrepRepository.Companion.get
@@ -20,6 +21,7 @@ class ImplSearchViewModel: SearchViewModel(){
 
     private val _searchResults = MutableStateFlow<GeneralSearchData?>(null)
     override val searchResults: StateFlow<GeneralSearchData?> = _searchResults.asStateFlow()
+    private val searchCache =  mutableMapOf<String, GeneralSearchData?>()
 
     override fun updateQuery(query: String) {
         _query.value = query
@@ -28,9 +30,15 @@ class ImplSearchViewModel: SearchViewModel(){
     override fun search(query: String) {
         if(query.isNotBlank()){
             viewModelScope.launch(Dispatchers.IO) {
-                financialModelRepo.generalSearch(query)
-                    .collectLatest { searchData ->
-                    _searchResults.value = searchData
+                val cachedResults = searchCache[query]
+                if (cachedResults != null) {
+                    _searchResults.value = cachedResults
+                } else {
+                    financialModelRepo.generalSearch(query)
+                        .collectLatest { searchData ->
+                            _searchResults.value = searchData
+                            searchCache[query] = searchData
+                        }
                 }
             }
         }
