@@ -39,6 +39,9 @@ class ImplFinancialModelPrepRepository: FinancialModelPrepRepository() {
             }
         }
 
+    override suspend fun getWatchList(): Flow<WatchList> {
+        return db.getAllFullQuoteDataFlow().map { it.toWatchList()
+        }.flowOn(Dispatchers.IO)
     }
 
     override suspend fun addToWatchList(symbol: String) {
