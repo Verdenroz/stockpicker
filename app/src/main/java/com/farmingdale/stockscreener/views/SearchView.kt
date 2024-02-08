@@ -49,7 +49,7 @@ fun SearchView(){
     val query by searchViewModel.query.collectAsState()
 
     LaunchedEffect(key1 = query){
-        delay(250)
+        delay(500)
         searchViewModel.search(query)
     }
     StockScreenerTheme {
