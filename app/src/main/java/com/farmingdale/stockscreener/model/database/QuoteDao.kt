@@ -8,6 +8,10 @@ import androidx.room.Update
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * Data Access Object for the quotes table.
+ * Will be used to interact with local WatchList
+ */
 @Dao
 interface QuoteDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)

@@ -2,17 +2,17 @@ package com.farmingdale.stockscreener.model.local
 
 /**
  * The technical indicators that can be used to analyze a stock
- * @param GLOBAL_QUOTE  the current price, volume, etc of stock
- * @param SMA  simple moving average
- * @param EMA  exponential moving average
- * @param STOCH  stochastic oscillator
- * @param RSI relative strength index
- * @param ADX  average directional movement index
- * @param CCI  commodity channel index
- * @param AROON  aroon
- * @param BBANDS  bollinger bands
- * @param AD  chaikin a/d line
- * @param OBV on balance volume
+ * @property GLOBAL_QUOTE  the current price, volume, etc of stock
+ * @property SMA  simple moving average
+ * @property EMA  exponential moving average
+ * @property STOCH  stochastic oscillator
+ * @property RSI relative strength index
+ * @property ADX  average directional movement index
+ * @property CCI  commodity channel index
+ * @property AROON  aroon
+ * @property BBANDS  bollinger bands
+ * @property AD  chaikin a/d line
+ * @property OBV on balance volume
  */
 enum class AnalysisType {
     GLOBAL_QUOTE,

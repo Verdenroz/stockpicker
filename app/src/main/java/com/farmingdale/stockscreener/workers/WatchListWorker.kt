@@ -15,6 +15,9 @@ class WatchListWorker(context: Context, params: WorkerParameters) : CoroutineWor
     }
 
     companion object {
+        /**
+         * Updates the watchlist every 30 seconds
+         */
         suspend fun updateWatchList(context: Context) {
             val repo = FinancialModelPrepRepository.get(context)
 

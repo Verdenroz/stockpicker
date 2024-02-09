@@ -58,6 +58,12 @@ class ImplFinancialModelPrepRepository(application: Context) : FinancialModelPre
         }
     }
 
+    override suspend fun clearWatchList() {
+        withContext(Dispatchers.IO) {
+            db.deleteAll()
+        }
+    }
+
     override suspend fun updateWatchList() {
         val symbols = db.getAllFullQuoteDataFlow()
             .flowOn(Dispatchers.IO)

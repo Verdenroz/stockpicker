@@ -1,6 +1,13 @@
 package com.farmingdale.stockscreener.model.local
 
-enum class NorthAmericanExchanges {
+/**
+ * Supported exchanges in FinancialModelPrep
+ */
+sealed interface Exchange
+/**
+ * Supported exchanges in FinancialModelPrep for NA
+ */
+enum class NorthAmericanExchanges: Exchange {
     NYSE,
     NASDAQ,
     AMEX,
@@ -14,12 +21,18 @@ enum class NorthAmericanExchanges {
     MEX,
 }
 
-enum class SouthAmericanExchanges {
+/**
+ * Supported exchanges in FinancialModelPrep for SA
+ */
+enum class SouthAmericanExchanges: Exchange {
     SAO,
     SGO,
 }
 
-enum class EuropeanExchanges {
+/**
+ * Supported exchanges in FinancialModelPrep for EU
+ */
+enum class EuropeanExchanges: Exchange {
     EURONEXT,
     XETRA,
     MCX,
@@ -39,7 +52,10 @@ enum class EuropeanExchanges {
     PRA,
     BRU
 }
-enum class AsianExchanges {
+/**
+ * Supported exchanges in FinancialModelPrep for Asia and Middle East
+ */
+enum class AsianExchanges: Exchange {
     NSE,
     BSE,
     JKT,
@@ -59,6 +75,9 @@ enum class AsianExchanges {
     PNK,
 }
 
-enum class AustralianExchanges {
+/**
+ * Supported exchanges in FinancialModelPrep for AU
+ */
+enum class AustralianExchanges: Exchange {
     ASX,
 }
