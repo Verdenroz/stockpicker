@@ -1,17 +1,17 @@
-package com.farmingdale.stockscreener.model.remote
+package com.farmingdale.stockscreener.model.remote.alphavantageResponses
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Response from AlphaVantage API for On Balance Volume (OBV) technical analysis
+ * Response from AlphaVantage API for Average Directional Index (ADX) technical analysis
  */
 @Serializable
-data class OBVDataResponse(
+data class ADXDataResponse(
     @SerialName("Meta Data")
     val metaData: MetaData,
 
-    @SerialName("Technical Analysis: OBV")
+    @SerialName("Technical Analysis: ADX")
     val technicalAnalysis: Map<String, Analysis>
 ) {
     @Serializable
@@ -28,6 +28,6 @@ data class OBVDataResponse(
 
     @Serializable
     data class Analysis(
-        val OBV: String
+        val ADX: String
     )
 }

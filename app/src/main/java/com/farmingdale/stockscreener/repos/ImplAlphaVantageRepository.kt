@@ -9,10 +9,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class ImplAlphaVantageRepository(private val api: ImplAlphaVantageAPI): AlphaVantageRepository(){
+    @Deprecated("Use getFullQuote instead from ImplFinancialModelPrepRepository")
     override fun getQuote(symbol: String): Flow<QuoteData> {
         TODO("Not yet implemented")
     }
 
+    @Deprecated("Use generalSearch instead from ImplFinancialModelPrepRepository")
     override fun querySymbols(query: String): Flow<SearchData> = flow {
         try{
             val result = api.searchSymbol(query)

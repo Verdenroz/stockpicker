@@ -14,6 +14,7 @@ interface AlphaVantageAPI {
      * @param keywords the words user types in
      * @return [SearchData] containing a list of matches
      */
+    @Deprecated("Use generalSearch instead from FinancialModelPrepAPI")
     suspend fun searchSymbol(keywords: String): SearchData
 
     /**
@@ -21,6 +22,7 @@ interface AlphaVantageAPI {
      * @param symbol the symbol of the security
      * @return [QuoteData] containing the latest price and volume information
      */
+    @Deprecated("Use getFullQuote instead from FinancialModelPrepAPI")
     suspend fun getQuote(symbol: String): QuoteData
 
     /**

@@ -1,34 +1,9 @@
-package com.farmingdale.stockscreener.model.local
+package com.farmingdale.stockscreener.model.remote.financialmodelprepResponses
+
+import kotlinx.serialization.Serializable
 
 /**
- * Local data class for Global Quotes used by Alpha Vantage
- * @param symbol the stock symbol
- * @param open the open price of the day
- * @param high the high price of the day
- * @param low the low price of the day
- * @param price the current price
- * @param volume the current volume
- * @param latestTradingDay the latest trading day
- * @param previousClose the previous close price
- * @param change the change in price
- * @param changePercent the change in percent
- */
-@Deprecated("Use FullQuoteData instead")
-data class QuoteData(
-    val symbol: String,
-    val open: String,
-    val high: String,
-    val low: String,
-    val price: String,
-    val volume: Int,
-    val latestTradingDay: String,
-    val previousClose: String,
-    val change: String,
-    val changePercent: String
-)
-
-/**
- * Local data class for individual stock data given by FinancialModelPrep
+ * This class is used to parse the response from the FinancialModelPrep API when requesting a full quote for a stock.
  * @param symbol the stock symbol
  * @param name the stock name
  * @param price the current price
@@ -52,7 +27,8 @@ data class QuoteData(
  * @param sharesOutstanding the number of shares outstanding
  * @param timestamp the timestamp of the data
  */
-data class FullQuoteData(
+@Serializable
+data class FullQuoteResponse(
     val symbol: String,
     val name: String,
     val price: Double,
@@ -76,9 +52,3 @@ data class FullQuoteData(
     val sharesOutstanding: Long,
     val timestamp: Long
 )
-
-/**
- * Local data class for a list of watchlisted stock data given by FinancialModelPrep
- * @param quotes a list [FullQuoteData] for each stock in the watchlist
- */
-data class WatchList(val quotes: List<FullQuoteData>)

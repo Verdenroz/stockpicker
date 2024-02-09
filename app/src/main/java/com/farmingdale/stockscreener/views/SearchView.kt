@@ -32,6 +32,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.farmingdale.stockscreener.R
+import com.farmingdale.stockscreener.model.local.GeneralSearchData
+import com.farmingdale.stockscreener.model.local.GeneralSearchMatch
 import com.farmingdale.stockscreener.model.local.SearchData
 import com.farmingdale.stockscreener.model.local.SearchMatch
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
@@ -47,7 +49,7 @@ fun SearchView(){
     val query by searchViewModel.query.collectAsState()
 
     LaunchedEffect(key1 = query){
-        delay(1000)
+        delay(500)
         searchViewModel.search(query)
     }
     StockScreenerTheme {
@@ -61,7 +63,7 @@ fun SearchView(){
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchContent(
-    searchResults: SearchData?,
+    searchResults: GeneralSearchData?,
     updateQuery: (String) -> Unit,
 ){
     var query by rememberSaveable { mutableStateOf("") }
@@ -139,16 +141,12 @@ fun PreviewSearchContent(){
 @Preview
 @Composable
 fun PreviewSearchList(){
-    val match = SearchMatch(
+    val match = GeneralSearchMatch(
         symbol = "AAPL",
         name = "Apple Inc.",
-        type = "Equity",
-        region = "USA",
-        marketOpen = "09:30",
-        marketClose = "16:00",
-        timezone = "UTC-04",
         currency = "USD",
-        matchScore = "1.0000"
+        stockExchange = "NASDAQ",
+        exchangeShortName = "NASDAQ"
     )
     ListItem(
         headlineContent = { Text(match.name) },

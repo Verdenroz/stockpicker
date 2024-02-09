@@ -5,6 +5,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     kotlin("plugin.serialization")
     id("com.google.devtools.ksp")
+    id("com.google.gms.google-services")
 }
 
 val properties = Properties()
@@ -30,6 +31,12 @@ android {
             "String",
             "alphaVantageAPI",
             properties.getProperty("ALPHA_VANTAGE_API_KEY")
+        )
+
+        buildConfigField(
+            "String",
+            "financialModelPrepAPI",
+            properties.getProperty("FINANCIAL_MODEL_PREP_KEY")
         )
     }
 
@@ -73,6 +80,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
@@ -97,5 +105,10 @@ dependencies {
     //Navigation
     val navVersion = "2.7.6"
     implementation("androidx.navigation:navigation-compose:$navVersion")
+    //Firebase
+    implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-storage")
+
 
 }
