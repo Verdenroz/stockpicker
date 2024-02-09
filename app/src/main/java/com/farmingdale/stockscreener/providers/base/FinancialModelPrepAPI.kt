@@ -1,5 +1,6 @@
 package com.farmingdale.stockscreener.providers.base
 
+import com.farmingdale.stockscreener.model.local.Exchange
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.GeneralSearchData
 import com.farmingdale.stockscreener.model.local.SymbolList
@@ -16,7 +17,7 @@ interface FinancialModelPrepAPI {
      * @param query the search query
      * @return a list of 5 [GeneralSearchData] sorted by relevance
      */
-    suspend fun generalSearch(query: String): GeneralSearchData
+    suspend fun generalSearch(query: String, exchange: Exchange? = null): GeneralSearchData
 
     /**
      * Find symbols for traded and non-traded stocks

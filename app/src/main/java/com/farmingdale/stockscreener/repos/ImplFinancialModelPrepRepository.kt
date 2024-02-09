@@ -3,6 +3,7 @@ package com.farmingdale.stockscreener.repos
 import android.content.Context
 import com.farmingdale.stockscreener.model.database.AppDatabase
 import com.farmingdale.stockscreener.model.database.DBQuoteData
+import com.farmingdale.stockscreener.model.local.Exchange
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.GeneralSearchData
 import com.farmingdale.stockscreener.model.local.WatchList
@@ -24,9 +25,9 @@ class ImplFinancialModelPrepRepository(application: Context) : FinancialModelPre
     private val api = ImplFinancialModelPrepAPI(okHttpClient)
     private val db = AppDatabase.get(application).quoteDao()
 
-    override suspend fun generalSearch(query: String): Flow<GeneralSearchData> = flow {
+    override suspend fun generalSearch(query: String, exchange: Exchange?): Flow<GeneralSearchData> = flow {
         try{
-            emit(api.generalSearch(query))
+            emit(api.generalSearch(query, exchange))
         } catch (e: Exception) {
             e.printStackTrace()
         }

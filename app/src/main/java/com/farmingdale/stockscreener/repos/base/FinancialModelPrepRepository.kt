@@ -7,7 +7,10 @@ import com.farmingdale.stockscreener.model.local.WatchList
 import kotlinx.coroutines.flow.Flow
 
 abstract class FinancialModelPrepRepository {
-    abstract suspend fun generalSearch(query: String): Flow<GeneralSearchData>
+    /**
+     * Get search results for a given query
+     */
+    abstract suspend fun generalSearch(query: String, exchange: Exchange? = null): Flow<GeneralSearchData>
 
     /**
      * Get full quote data for a given symbol

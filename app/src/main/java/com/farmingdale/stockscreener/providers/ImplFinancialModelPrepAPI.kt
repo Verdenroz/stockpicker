@@ -1,9 +1,15 @@
 package com.farmingdale.stockscreener.providers
 
 import com.farmingdale.stockscreener.BuildConfig
+import com.farmingdale.stockscreener.model.local.AsianExchanges
+import com.farmingdale.stockscreener.model.local.AustralianExchanges
+import com.farmingdale.stockscreener.model.local.EuropeanExchanges
+import com.farmingdale.stockscreener.model.local.Exchange
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.GeneralSearchData
 import com.farmingdale.stockscreener.model.local.GeneralSearchMatch
+import com.farmingdale.stockscreener.model.local.NorthAmericanExchanges
+import com.farmingdale.stockscreener.model.local.SouthAmericanExchanges
 import com.farmingdale.stockscreener.model.local.SymbolData
 import com.farmingdale.stockscreener.model.local.SymbolList
 import com.farmingdale.stockscreener.model.local.WatchList
@@ -40,12 +46,21 @@ class ImplFinancialModelPrepAPI(private val client: OkHttpClient): FinancialMode
         return response.body!!.byteStream()
     }
 
-    override suspend fun generalSearch(query: String): GeneralSearchData {
+    override suspend fun generalSearch(query: String, exchange: Exchange?): GeneralSearchData {
+        val exchangeList = when (exchange) {
+            is NorthAmericanExchanges -> NorthAmericanExchanges.entries.joinToString(",")
+            is SouthAmericanExchanges -> SouthAmericanExchanges.entries.joinToString(",")
+            is EuropeanExchanges -> EuropeanExchanges.entries.joinToString(",")
+            is AsianExchanges -> AsianExchanges.entries.joinToString(",")
+            is AustralianExchanges -> AustralianExchanges.entries.joinToString(",")
+            else -> null
+        }
         val stream = getByteStream(
             FINANCIAL_MODEL_PREP_API_URL.newBuilder().apply {
                 addPathSegments("search")
                 addQueryParameter("query", query)
                 addQueryParameter("limit", "7")
+                exchange?.let { addQueryParameter("exchange", exchangeList!!)}
                 addQueryParameter("apikey", BuildConfig.financialModelPrepAPI)
             }.build()
         )
@@ -79,7 +94,7 @@ class ImplFinancialModelPrepAPI(private val client: OkHttpClient): FinancialMode
         }
 
         // Sort matches by score in descending order
-        val sortedMatches = scoredMatches.sortedByDescending { it.second }.map { it.first }
+        val sortedMatches = scoredMatches.take(5).sortedByDescending { it.second }.map { it.first }
 
         return GeneralSearchData(sortedMatches)
     }
