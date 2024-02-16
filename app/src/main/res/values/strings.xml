@@ -3,4 +3,5 @@
     <string name="search_placeholder">Search</string>
     <string name="search_description">Search Bar</string>
     <string name="add_description">Add to watchlist</string>
+    <string name="delete">Delete from Watchlist</string>
 </resources>
