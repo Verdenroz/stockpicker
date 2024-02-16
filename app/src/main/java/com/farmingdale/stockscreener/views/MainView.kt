@@ -70,7 +70,6 @@ fun MainView() {
             watchList = watchList,
             updateQuery = mainViewModel::updateQuery,
             addToWatchList = mainViewModel::addToWatchList,
-            deleteFromWatchList = mainViewModel::deleteFromWatchList,
         )
     }
 }
@@ -81,7 +80,6 @@ fun SearchContent(
     watchList: WatchList?,
     updateQuery: (String) -> Unit,
     addToWatchList: (String) -> Unit,
-    deleteFromWatchList: (String) -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -101,39 +99,7 @@ fun SearchContent(
                 .background(background)
                 .padding(padding)
         ) {
-            LazyColumn(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxSize(),
-                content = {
-                    item {
-                        Text(
-                            text = stringResource(id = R.string.welcome),
-                            modifier = Modifier.padding(16.dp),
-                            style = MaterialTheme.typography.displayMedium
-                        )
-                    }
-                    watchList?.quotes?.forEach { quote ->
-                        item {
-                            ListItem(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 4.dp),
-                                headlineContent = { Text(quote.name) },
-                                leadingContent = { Text(quote.symbol) },
-                                trailingContent = {
-                                    IconButton(onClick = { deleteFromWatchList(quote.symbol) }) {
-                                        Icon(
-                                            Icons.Default.Clear,
-                                            contentDescription = stringResource(id = R.string.delete)
-                                        )
-                                    }
-                                }
-                            )
-                        }
-                    }
-                }
-            )
+
         }
     }
 }
@@ -146,7 +112,6 @@ fun PreviewSearchContent() {
         watchList = null,
         updateQuery = {},
         addToWatchList = {},
-        deleteFromWatchList = {},
     )
 }
 
