@@ -4,4 +4,10 @@
     <string name="search_description">Search Bar</string>
     <string name="add_description">Add to watchlist</string>
     <string name="delete">Delete from Watchlist</string>
+    <string name="welcome">Welcome</string>
+    <string name="home">Home</string>
+    <string name="watchlist">WatchList</string>
+    <string name="settings">Settings</string>
+    <string name="alerts">Alerts</string>
+    <string name="simulate">Simulate</string>
 </resources>
