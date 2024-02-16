@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class ImplSearchViewModel(application: Application) : SearchViewModel(application){
+class ImplMainViewModel(application: Application) : MainViewModel(application){
     private val financialModelRepo = FinancialModelPrepRepository.get(application)
 
     private val _query = MutableStateFlow("")

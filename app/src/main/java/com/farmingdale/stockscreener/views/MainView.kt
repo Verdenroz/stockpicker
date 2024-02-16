@@ -38,15 +38,16 @@ import com.farmingdale.stockscreener.model.local.SearchData
 import com.farmingdale.stockscreener.model.local.SearchMatch
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
 import com.farmingdale.stockscreener.ui.theme.background
-import com.farmingdale.stockscreener.viewmodels.ImplSearchViewModel
-import com.farmingdale.stockscreener.viewmodels.base.SearchViewModel
+import com.farmingdale.stockscreener.viewmodels.ImplMainViewModel
+import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
 import kotlinx.coroutines.delay
 
 @Composable
-fun SearchView(){
-    val searchViewModel: SearchViewModel = viewModel<ImplSearchViewModel>()
-    val results by searchViewModel.searchResults.collectAsState()
-    val query by searchViewModel.query.collectAsState()
+fun MainView(){
+    val mainViewModel: MainViewModel = viewModel<ImplMainViewModel>()
+    val results by mainViewModel.searchResults.collectAsState()
+    val query by mainViewModel.query.collectAsState()
+    val watchList by mainViewModel.watchList.collectAsState()
 
     LaunchedEffect(key1 = query){
         delay(500)
