@@ -12,6 +12,7 @@ import com.farmingdale.stockscreener.model.local.NorthAmericanExchanges
 import com.farmingdale.stockscreener.model.local.SouthAmericanExchanges
 import com.farmingdale.stockscreener.model.local.SymbolData
 import com.farmingdale.stockscreener.model.local.SymbolList
+import com.farmingdale.stockscreener.model.local.UnitedStatesExchanges
 import com.farmingdale.stockscreener.model.local.WatchList
 import com.farmingdale.stockscreener.model.remote.financialmodelprepResponses.FullQuoteResponse
 import com.farmingdale.stockscreener.model.remote.financialmodelprepResponses.GeneralSearchResponse
@@ -49,6 +50,7 @@ class ImplFinancialModelPrepAPI(private val client: OkHttpClient): FinancialMode
     override suspend fun generalSearch(query: String, exchange: Exchange?): GeneralSearchData {
         val exchangeList = when (exchange) {
             is NorthAmericanExchanges -> NorthAmericanExchanges.entries.joinToString(",")
+            is UnitedStatesExchanges -> UnitedStatesExchanges.entries.joinToString(",")
             is SouthAmericanExchanges -> SouthAmericanExchanges.entries.joinToString(",")
             is EuropeanExchanges -> EuropeanExchanges.entries.joinToString(",")
             is AsianExchanges -> AsianExchanges.entries.joinToString(",")
@@ -85,10 +87,13 @@ class ImplFinancialModelPrepAPI(private val client: OkHttpClient): FinancialMode
 
         // Score each match based on criteria
         val scoredMatches = matches.map { match ->
-            val score = when {
+            var score = when {
                 match.symbol.equals(query, ignoreCase = true) -> 3
                 match.name.contains(query, ignoreCase = true) -> 2
                 else -> 1
+            }
+            if (UnitedStatesExchanges.values().any { it.name == match.stockExchange }) {
+                score += 1
             }
             Pair(match, score)
         }

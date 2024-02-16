@@ -3,6 +3,7 @@ package com.farmingdale.stockscreener.viewmodels
 import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.farmingdale.stockscreener.model.local.GeneralSearchData
+import com.farmingdale.stockscreener.model.local.UnitedStatesExchanges
 import com.farmingdale.stockscreener.model.local.WatchList
 import com.farmingdale.stockscreener.repos.ImplFinancialModelPrepRepository.Companion.get
 import com.farmingdale.stockscreener.repos.base.FinancialModelPrepRepository
@@ -39,7 +40,7 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
                 if (cachedResults != null) {
                     _searchResults.value = cachedResults
                 } else {
-                    financialModelRepo.generalSearch(query)
+                    financialModelRepo.generalSearch(query = query, exchange = UnitedStatesExchanges.NASDAQ)
                         .collectLatest { searchData ->
                             _searchResults.value = searchData
                             searchCache[query] = searchData
