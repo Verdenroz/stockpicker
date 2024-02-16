@@ -71,8 +71,8 @@ data class FullQuoteData(
     val open: Double,
     val previousClose: Double,
     val eps: Double,
-    val pe: Double,
-    val earningsAnnouncement: String,
+    val pe: Double?,
+    val earningsAnnouncement: String?,
     val sharesOutstanding: Long,
     val timestamp: Long
 )
