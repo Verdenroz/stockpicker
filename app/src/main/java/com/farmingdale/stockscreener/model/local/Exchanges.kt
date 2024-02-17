@@ -4,21 +4,24 @@ package com.farmingdale.stockscreener.model.local
  * Supported exchanges in FinancialModelPrep
  */
 sealed interface Exchange
+
+enum class  UnitedStatesExchanges: Exchange{
+    NYSE,
+    NASDAQ,
+    AMEX,
+    CBOE,
+    ASE,
+}
+
 /**
  * Supported exchanges in FinancialModelPrep for NA
  */
 enum class NorthAmericanExchanges: Exchange {
-    NYSE,
-    NASDAQ,
-    AMEX,
     OTC,
-    CBOE,
-    ASE,
     TSX,
-    TSXV,
     CNQ,
     NEO,
-    MEX,
+    MEX;
 }
 
 /**
