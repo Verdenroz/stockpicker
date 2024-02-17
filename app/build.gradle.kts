@@ -38,6 +38,12 @@ android {
             "financialModelPrepAPI",
             properties.getProperty("FINANCIAL_MODEL_PREP_KEY")
         )
+
+        buildConfigField(
+            "String",
+            "newsAPIKey",
+            properties.getProperty("NEWS_API_KEY")
+        )
     }
 
     buildTypes {
