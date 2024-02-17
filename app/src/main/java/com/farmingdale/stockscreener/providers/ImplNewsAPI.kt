@@ -7,6 +7,7 @@ import com.farmingdale.stockscreener.model.local.news.News
 import com.farmingdale.stockscreener.providers.base.NewsAPI
 import com.farmingdale.stockscreener.utils.NEWS_API_URL
 import com.farmingdale.stockscreener.utils.executeAsync
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import okhttp3.HttpUrl
@@ -35,6 +36,7 @@ class ImplNewsAPI(private val client: OkHttpClient): NewsAPI {
         val response = call.executeAsync()
         return response.body!!.byteStream()
     }
+    @OptIn(ExperimentalSerializationApi::class)
     override suspend fun getHeadlines(category: Category?, query: String?): News {
         val stream = getByteStream(
             NEWS_API_URL.newBuilder().apply{
