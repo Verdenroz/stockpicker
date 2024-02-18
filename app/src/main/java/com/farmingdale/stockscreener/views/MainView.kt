@@ -1,6 +1,8 @@
 package com.farmingdale.stockscreener.views
 
+import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -11,17 +13,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -41,17 +45,22 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.GeneralSearchData
 import com.farmingdale.stockscreener.model.local.WatchList
+import com.farmingdale.stockscreener.model.local.news.Article
+import com.farmingdale.stockscreener.model.local.news.News
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
-import com.farmingdale.stockscreener.ui.theme.background
 import com.farmingdale.stockscreener.viewmodels.ImplMainViewModel
 import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
 import kotlinx.coroutines.delay
@@ -62,15 +71,28 @@ fun MainView() {
     val results by mainViewModel.searchResults.collectAsState()
     val query by mainViewModel.query.collectAsState()
     val watchList by mainViewModel.watchList.collectAsState()
+    val news by mainViewModel.news.collectAsState()
+    val preferredCategory by mainViewModel.preferredCategory.collectAsState()
+    val preferredQuery by mainViewModel.preferredQuery.collectAsState()
 
     LaunchedEffect(key1 = query) {
         delay(500)
         mainViewModel.search(query)
     }
+
+    LaunchedEffect(key1 = Unit) {
+        while (true) {
+            Log.d("MainView", "Fetching news")
+            mainViewModel.getHeadlines(preferredCategory, preferredQuery)
+            delay(15 * 60 * 1000L) // delay for 15 minutes
+        }
+    }
+
     StockScreenerTheme {
         SearchContent(
             searchResults = results,
             watchList = watchList,
+            news = news,
             updateQuery = mainViewModel::updateQuery,
             addToWatchList = mainViewModel::addToWatchList,
         )
@@ -81,6 +103,7 @@ fun MainView() {
 fun SearchContent(
     searchResults: GeneralSearchData?,
     watchList: WatchList?,
+    news: News?,
     updateQuery: (String) -> Unit,
     addToWatchList: (String) -> Unit,
 ) {
@@ -102,8 +125,38 @@ fun SearchContent(
                 .padding(padding),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
-        ){
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Column {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = stringResource(id = R.string.news))
+                        IconButton(onClick = { /*TODO*/ }) {
+                            Icon(Icons.Default.Settings, contentDescription = stringResource(id = R.string.news_settings))
+                        }
+                    }
 
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        content = {
+                            news?.articles?.forEach { article ->
+                                item {
+                                    ContentCard(article)
+                                }
+                            }
+                        }
+                    )
+                }
+            }
         }
     }
 }
@@ -114,6 +167,7 @@ fun PreviewSearchContent() {
     SearchContent(
         searchResults = null,
         watchList = null,
+        news = null,
         updateQuery = {},
         addToWatchList = {},
     )
@@ -131,7 +185,8 @@ fun SearchBar(
     DockedSearchBar(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
+            .border(1.dp, Color.LightGray, RoundedCornerShape(100)),
         colors = SearchBarDefaults.colors(
             containerColor = Color.White,
             dividerColor = Color.Transparent,
@@ -204,18 +259,59 @@ fun SearchBar(
 //}
 
 @Composable
-fun ContentCard(){
-    Card(
-        modifier = Modifier.size(100.dp)
+fun ContentCard(
+    article: Article?
+) {
+    val gradient = Brush.verticalGradient(
+        colors = listOf(Color.White, Color.LightGray)
+    )
+
+    Box(
+        modifier = Modifier
+            .background(gradient)
+            .size(300.dp, 150.dp)
+            .shadow(1.dp),
     ) {
-        Text(text = "Card")
+        Card(
+            modifier = Modifier.fillMaxSize(),
+            shape = RoundedCornerShape(10),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.Transparent
+            ),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize(),
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = article?.title ?: "Title",
+                    style = MaterialTheme.typography.labelSmall,
+                    maxLines = 5,
+                    softWrap = true,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .fillMaxWidth(.4f)
+                        .padding(8.dp)
+                )
+                AsyncImage(
+                    model = article!!.urlToImage,
+                    contentDescription = stringResource(id = R.string.news_image),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(8.dp)
+                )
+            }
+        }
+
     }
 }
 
 @Preview
 @Composable
-fun PreviewContentCard(){
-    ContentCard()
+fun PreviewContentCard() {
+    ContentCard(null)
 }
 
 @Composable
