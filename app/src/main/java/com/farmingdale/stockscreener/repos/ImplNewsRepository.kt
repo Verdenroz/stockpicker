@@ -52,11 +52,11 @@ class ImplNewsRepository(application: Context): NewsRepository() {
          */
         @Synchronized
         fun NewsRepository.Companion.get(context: Context): NewsRepository {
-            if (ImplNewsRepository.repo == null) {
-                ImplNewsRepository.repo = ImplNewsRepository(context)
+            if (repo == null) {
+                repo = ImplNewsRepository(context)
             }
 
-            return ImplNewsRepository.repo!!
+            return repo!!
         }
     }
 }
