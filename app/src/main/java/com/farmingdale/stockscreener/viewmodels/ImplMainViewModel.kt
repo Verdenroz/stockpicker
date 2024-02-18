@@ -7,7 +7,6 @@ import com.farmingdale.stockscreener.model.local.UnitedStatesExchanges
 import com.farmingdale.stockscreener.model.local.WatchList
 import com.farmingdale.stockscreener.model.local.news.Category
 import com.farmingdale.stockscreener.model.local.news.News
-import com.farmingdale.stockscreener.repos.ImplFinancialModelPrepRepository
 import com.farmingdale.stockscreener.repos.ImplFinancialModelPrepRepository.Companion.get
 import com.farmingdale.stockscreener.repos.ImplNewsRepository.Companion.get
 import com.farmingdale.stockscreener.repos.base.FinancialModelPrepRepository
@@ -107,11 +106,11 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
         viewModelScope.launch(Dispatchers.IO) {
             val cachedResults = newsCache[Pair(category, query)]
             if (cachedResults != null) {
-                _news.value = cachedResults
+                _news.value = News(cachedResults.articles.shuffled())
             } else {
                 newsRepo.getHeadlines(category, query)
                     .collectLatest { headLines ->
-                        _news.value = headLines
+                        _news.value = News(headLines.articles.shuffled())
                         newsCache[Pair(category, query)] = headLines
                     }
             }
