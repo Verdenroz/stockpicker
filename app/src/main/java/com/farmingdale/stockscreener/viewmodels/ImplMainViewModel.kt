@@ -5,8 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.farmingdale.stockscreener.model.local.GeneralSearchData
 import com.farmingdale.stockscreener.model.local.UnitedStatesExchanges
 import com.farmingdale.stockscreener.model.local.WatchList
+import com.farmingdale.stockscreener.model.local.news.Category
+import com.farmingdale.stockscreener.model.local.news.News
 import com.farmingdale.stockscreener.repos.ImplFinancialModelPrepRepository.Companion.get
+import com.farmingdale.stockscreener.repos.ImplNewsRepository.Companion.get
 import com.farmingdale.stockscreener.repos.base.FinancialModelPrepRepository
+import com.farmingdale.stockscreener.repos.base.NewsRepository
 import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,6 +21,7 @@ import kotlinx.coroutines.launch
 
 class ImplMainViewModel(application: Application) : MainViewModel(application){
     private val financialModelRepo = FinancialModelPrepRepository.get(application)
+    private val newsRepo = NewsRepository.get(application)
 
     private val _query = MutableStateFlow("")
     override val query: StateFlow<String> = _query.asStateFlow()
@@ -27,7 +32,17 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
     private val _watchList = MutableStateFlow<WatchList?>(null)
     override val watchList: StateFlow<WatchList?> = _watchList.asStateFlow()
 
+    private val _news: MutableStateFlow<News?> = MutableStateFlow(null)
+    override val news: StateFlow<News?> = _news.asStateFlow()
+
+    private val _preferredCategory: MutableStateFlow<Category?> = MutableStateFlow(newsRepo.getPreferredCategory())
+    override val preferredCategory: StateFlow<Category?> = _preferredCategory.asStateFlow()
+
+    private val _preferredQuery: MutableStateFlow<String?> = MutableStateFlow(newsRepo.getPreferredQuery())
+    override val preferredQuery: StateFlow<String?> = _preferredQuery.asStateFlow()
+
     private val searchCache =  mutableMapOf<String, GeneralSearchData?>()
+    private val newsCache = mutableMapOf<Pair<Category?, String?>, News?>()
 
     override fun updateQuery(query: String) {
         _query.value = query
@@ -74,6 +89,31 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
     override fun clearWatchList() {
         viewModelScope.launch(Dispatchers.IO) {
             financialModelRepo.clearWatchList()
+        }
+    }
+
+    override fun setPreferredCategory(category: Category) {
+        newsRepo.setPreferredCategory(category)
+        _preferredCategory.value = category
+    }
+
+    override fun setPreferredQuery(query: String) {
+        newsRepo.setPreferredQuery(query)
+        _preferredQuery.value = query
+    }
+
+    override fun getHeadlines(category: Category?, query: String?) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val cachedResults = newsCache[Pair(category, query)]
+            if (cachedResults != null) {
+                _news.value = News(cachedResults.articles.shuffled())
+            } else {
+                newsRepo.getHeadlines(category, query)
+                    .collectLatest { headLines ->
+                        _news.value = News(headLines.articles.shuffled())
+                        newsCache[Pair(category, query)] = headLines
+                    }
+            }
         }
     }
 }

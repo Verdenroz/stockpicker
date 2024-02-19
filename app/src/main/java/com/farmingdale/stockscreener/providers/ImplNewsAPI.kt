@@ -63,7 +63,7 @@ class ImplNewsAPI(private val client: OkHttpClient): NewsAPI {
                 publishedAt = article.publishedAt,
                 content = article.content
             )
-        }
+        }.shuffled()
         return News(articles)
     }
 }
