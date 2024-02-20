@@ -22,6 +22,8 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
 
     abstract val news: StateFlow<News?>
 
+    abstract val refreshState: StateFlow<Boolean>
+
     abstract fun updateQuery(query: String)
 
     abstract fun search(query: String)
@@ -39,6 +41,8 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
     abstract fun setPreferredQuery(query: String)
 
     abstract fun getHeadlines(category: Category?, query: String?)
+
+    abstract fun refresh()
 
 
 }

@@ -41,8 +41,15 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
     private val _preferredQuery: MutableStateFlow<String?> = MutableStateFlow(newsRepo.getPreferredQuery())
     override val preferredQuery: StateFlow<String?> = _preferredQuery.asStateFlow()
 
+    private val _refreshState = MutableStateFlow(false)
+    override val refreshState: StateFlow<Boolean> = _refreshState.asStateFlow()
+
     private val searchCache =  mutableMapOf<String, GeneralSearchData?>()
     private val newsCache = mutableMapOf<Pair<Category?, String?>, News?>()
+
+    init {
+        refresh()
+    }
 
     override fun updateQuery(query: String) {
         _query.value = query
@@ -114,6 +121,16 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
                         newsCache[Pair(category, query)] = headLines
                     }
             }
+        }
+    }
+
+    override fun refresh() {
+        viewModelScope.launch {
+            async(Dispatchers.IO){
+                getHeadlines(preferredCategory.value, preferredQuery.value)
+                updateWatchList()
+            }.await()
+            _refreshState.emit(false)
         }
     }
 }
