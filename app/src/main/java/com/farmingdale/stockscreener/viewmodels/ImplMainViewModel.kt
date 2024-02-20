@@ -13,6 +13,7 @@ import com.farmingdale.stockscreener.repos.base.FinancialModelPrepRepository
 import com.farmingdale.stockscreener.repos.base.NewsRepository
 import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -57,16 +58,19 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
 
     override fun search(query: String) {
         if(query.isNotBlank()){
-            viewModelScope.launch(Dispatchers.IO) {
+            viewModelScope.launch {
                 val cachedResults = searchCache[query]
                 if (cachedResults != null) {
                     _searchResults.value = cachedResults
                 } else {
-                    financialModelRepo.generalSearch(query = query, exchange = UnitedStatesExchanges.NASDAQ)
-                        .collectLatest { searchData ->
-                            _searchResults.value = searchData
-                            searchCache[query] = searchData
-                        }
+                    val searchData = async(Dispatchers.IO) {
+                        financialModelRepo.generalSearch(query = query, exchange = UnitedStatesExchanges.NASDAQ)
+                    }.await()
+
+                    searchData.collectLatest { searchData ->
+                        _searchResults.value = searchData
+                        searchCache[query] = searchData
+                    }
                 }
             }
         }
@@ -110,16 +114,19 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
     }
 
     override fun getHeadlines(category: Category?, query: String?) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             val cachedResults = newsCache[Pair(category, query)]
             if (cachedResults != null) {
                 _news.value = News(cachedResults.articles.shuffled())
             } else {
-                newsRepo.getHeadlines(category, query)
-                    .collectLatest { headLines ->
-                        _news.value = News(headLines.articles.shuffled())
-                        newsCache[Pair(category, query)] = headLines
-                    }
+                val headlines = async(Dispatchers.IO) {
+                    newsRepo.getHeadlines(category, query)
+                }.await()
+
+                headlines.collectLatest { headLines ->
+                    _news.value = News(headLines.articles.shuffled())
+                    newsCache[Pair(category, query)] = headLines
+                }
             }
         }
     }
