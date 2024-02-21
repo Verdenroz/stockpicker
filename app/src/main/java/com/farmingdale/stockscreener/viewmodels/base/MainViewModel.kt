@@ -22,7 +22,7 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
 
     abstract val news: StateFlow<News?>
 
-    abstract val refreshState: StateFlow<Boolean>
+    abstract val isRefreshing: StateFlow<Boolean>
 
     abstract val isLoading: StateFlow<Boolean>
     abstract fun updateQuery(query: String)

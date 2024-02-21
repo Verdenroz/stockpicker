@@ -43,8 +43,8 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
     private val _preferredQuery: MutableStateFlow<String?> = MutableStateFlow(newsRepo.getPreferredQuery())
     override val preferredQuery: StateFlow<String?> = _preferredQuery.asStateFlow()
 
-    private val _refreshState = MutableStateFlow(false)
-    override val refreshState: StateFlow<Boolean> = _refreshState.asStateFlow()
+    private val _isRefreshing = MutableStateFlow(false)
+    override val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     override val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -144,7 +144,7 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
                 delay(2000)
                 _isLoading.emit(false)
             }.await()
-            _refreshState.emit(false)
+            _isRefreshing.emit(false)
         }
     }
 }

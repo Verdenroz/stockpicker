@@ -34,7 +34,7 @@ fun MainView() {
     val query by mainViewModel.query.collectAsState()
     val watchList by mainViewModel.watchList.collectAsState()
     val news by mainViewModel.news.collectAsState()
-    val refreshState by mainViewModel.refreshState.collectAsState()
+    val isRefreshing by mainViewModel.isRefreshing.collectAsState()
     val isLoading by mainViewModel.isLoading.collectAsState()
     val preferredCategory by mainViewModel.preferredCategory.collectAsState()
     val preferredQuery by mainViewModel.preferredQuery.collectAsState()
@@ -51,8 +51,8 @@ fun MainView() {
             news = news,
             preferredCategory = preferredCategory,
             preferredQuery = preferredQuery,
-            refreshState = refreshState,
             isLoading = isLoading,
+            isRefreshing = isRefreshing,
             updateQuery = mainViewModel::updateQuery,
             addToWatchList = mainViewModel::addToWatchList,
             setPreferredCategory = mainViewModel::setPreferredCategory,
@@ -70,15 +70,15 @@ fun MainContent(
     news: News?,
     preferredCategory: Category?,
     preferredQuery: String?,
-    refreshState: Boolean,
     isLoading: Boolean,
+    isRefreshing: Boolean,
     updateQuery: (String) -> Unit,
     addToWatchList: (String) -> Unit,
     setPreferredCategory: (Category) -> Unit,
     setPreferredQuery: (String) -> Unit,
-    refresh: () -> Unit
+    refresh: () -> Unit,
 ) {
-    val pullRefreshState = rememberPullRefreshState(refreshing = refreshState, onRefresh = refresh)
+    val pullRefreshState = rememberPullRefreshState(refreshing = isRefreshing, onRefresh = refresh)
     Scaffold(
         topBar = {
             SearchBar(
@@ -108,7 +108,7 @@ fun MainContent(
                 refresh = refresh
             )
             PullRefreshIndicator(
-                refreshing = refreshState,
+                refreshing = isRefreshing,
                 state = pullRefreshState,
                 modifier = Modifier.align(Alignment.TopCenter)
             )
@@ -125,12 +125,12 @@ fun PreviewMainContent() {
         news = null,
         preferredCategory = null,
         preferredQuery = null,
-        refreshState = false,
         isLoading = false,
+        isRefreshing = false,
         updateQuery = {},
         addToWatchList = {},
         setPreferredCategory = {},
         setPreferredQuery = {},
-        refresh = {}
+        refresh = {},
     )
 }
