@@ -14,6 +14,7 @@ import com.farmingdale.stockscreener.repos.base.NewsRepository
 import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -44,6 +45,9 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
 
     private val _refreshState = MutableStateFlow(false)
     override val refreshState: StateFlow<Boolean> = _refreshState.asStateFlow()
+
+    private val _isLoading = MutableStateFlow(false)
+    override val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val searchCache =  mutableMapOf<String, GeneralSearchData?>()
     private val newsCache = mutableMapOf<Pair<Category?, String?>, News?>()
@@ -133,9 +137,12 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
 
     override fun refresh() {
         viewModelScope.launch {
+            _isLoading.emit(true)
             async(Dispatchers.IO){
                 getHeadlines(preferredCategory.value, preferredQuery.value)
                 updateWatchList()
+                delay(2000)
+                _isLoading.emit(false)
             }.await()
             _refreshState.emit(false)
         }

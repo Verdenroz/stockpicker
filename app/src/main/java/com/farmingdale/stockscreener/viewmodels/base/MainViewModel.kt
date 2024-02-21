@@ -24,6 +24,7 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
 
     abstract val refreshState: StateFlow<Boolean>
 
+    abstract val isLoading: StateFlow<Boolean>
     abstract fun updateQuery(query: String)
 
     abstract fun search(query: String)
