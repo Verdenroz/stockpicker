@@ -1,6 +1,8 @@
 package com.farmingdale.stockscreener.views
 
+import android.content.Intent
 import android.graphics.drawable.BitmapDrawable
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -207,7 +209,13 @@ fun ContentCard(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Card(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable {
+                    val articleUrl = article.url
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(articleUrl))
+                    context.startActivity(intent)
+                },
             shape = RoundedCornerShape(10),
             colors = CardDefaults.cardColors(
                 containerColor = Color.Transparent
@@ -239,7 +247,11 @@ fun ContentCard(
                     }
 
                     else -> {
-                        Image(bitmap = image!!, contentDescription = null)
+                        Image(
+                            bitmap = image!!,
+                            contentDescription = null,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
                     }
                 }
             }
