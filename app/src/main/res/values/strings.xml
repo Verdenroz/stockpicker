@@ -13,4 +13,10 @@
     <string name="news_image">Image of news article</string>
     <string name="news_settings">News settings</string>
     <string name="news">News</string>
+    <string name="news_category">Categories</string>
+    <string name="news_query">Custom Filter</string>
+    <string name="cancel">CANCEL</string>
+    <string name="save">SAVE</string>
+    <string name="query_placeholder">Keywords</string>
+    <string name="notFound">No Articles Found.\n Please change keywords.</string>
 </resources>
