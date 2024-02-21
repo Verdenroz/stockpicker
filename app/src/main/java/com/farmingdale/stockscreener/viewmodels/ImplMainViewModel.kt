@@ -141,7 +141,6 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
             async(Dispatchers.IO){
                 getHeadlines(preferredCategory.value, preferredQuery.value)
                 updateWatchList()
-                delay(2000)
                 _isLoading.emit(false)
             }.await()
             _isRefreshing.emit(false)
