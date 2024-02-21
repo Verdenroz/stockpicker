@@ -92,7 +92,7 @@ fun NewsFeed(
                 )
             }
         }
-        if (isLoading){
+        if (isLoading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
         } else if (news?.articles.isNullOrEmpty()) {
             Box(
@@ -112,8 +112,11 @@ fun NewsFeed(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
-                    ){
-                        Icon(Icons.Default.Warning, contentDescription = stringResource(id = R.string.notFound))
+                    ) {
+                        Icon(
+                            Icons.Default.Warning,
+                            contentDescription = stringResource(id = R.string.notFound)
+                        )
                         Text(
                             text = stringResource(id = R.string.notFound),
                             modifier = Modifier.padding(16.dp),
@@ -195,11 +198,13 @@ fun ContentCard(
         error = image == null
     }
 
-    Box(
+    Row(
         modifier = Modifier
             .background(gradient)
             .size(300.dp, 150.dp)
             .shadow(1.dp),
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Card(
             modifier = Modifier.fillMaxSize(),

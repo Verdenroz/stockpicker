@@ -3,10 +3,12 @@ package com.farmingdale.stockscreener.views
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -49,17 +51,20 @@ fun BottomIcon(
     icon: ImageVector,
     nav: () -> Unit
 ) {
-    Box(
-        contentAlignment = Alignment.Center
+    Column(
+        modifier = Modifier
+            .wrapContentSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         IconButton(
-            onClick = { /*TODO*/ },
+            onClick = { nav() },
+            modifier = Modifier
+                .size(48.dp)
         ) {
             Icon(icon, contentDescription = text)
         }
         Text(
             text = text,
-            modifier = Modifier.padding(top = 40.dp)
         )
     }
 }
