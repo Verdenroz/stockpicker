@@ -78,9 +78,9 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
                         financialModelRepo.generalSearch(query = query, exchange = UnitedStatesExchanges.NASDAQ)
                     }.await()
 
-                    searchData.collectLatest { searchData ->
-                        _searchResults.value = searchData
-                        searchCache[query] = searchData
+                    searchData.collectLatest { results ->
+                        _searchResults.value = results
+                        searchCache[query] = results
                     }
                 }
             }
