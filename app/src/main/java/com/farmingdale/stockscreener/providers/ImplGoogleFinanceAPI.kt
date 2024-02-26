@@ -1,7 +1,7 @@
 package com.farmingdale.stockscreener.providers
 
 import com.farmingdale.stockscreener.BuildConfig
-import com.farmingdale.stockscreener.model.local.googlefinance.StockIndex
+import com.farmingdale.stockscreener.model.local.googlefinance.MarketIndex
 import com.farmingdale.stockscreener.model.remote.googlefinanceResponses.StockIndexWrapper
 import com.farmingdale.stockscreener.providers.base.GoogleFinanceAPI
 import com.farmingdale.stockscreener.utils.GOOGLE_API_URL
@@ -37,7 +37,7 @@ class ImplGoogleFinanceAPI(private val client: OkHttpClient): GoogleFinanceAPI {
         return response.body!!.byteStream()
     }
     @OptIn(ExperimentalSerializationApi::class)
-    override suspend fun getIndices(): List<StockIndex> {
+    override suspend fun getIndices(): List<MarketIndex> {
         val stream = getByteStream(
             GOOGLE_API_URL.newBuilder().apply{
                 addPathSegments("US")
@@ -52,7 +52,7 @@ class ImplGoogleFinanceAPI(private val client: OkHttpClient): GoogleFinanceAPI {
             throw RuntimeException("Failed to parse JSON response", e)
         }
         return indexResponse.map {
-            StockIndex(
+            MarketIndex(
                 name = it.stockIndex.name,
                 score = it.stockIndex.score,
                 change = it.stockIndex.change,

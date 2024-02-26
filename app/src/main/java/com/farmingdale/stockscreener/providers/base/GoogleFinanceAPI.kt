@@ -1,13 +1,13 @@
 package com.farmingdale.stockscreener.providers.base
 
-import com.farmingdale.stockscreener.model.local.googlefinance.StockIndex
+import com.farmingdale.stockscreener.model.local.googlefinance.MarketIndex
 
 /**
  * Interface for Google Finance API
  */
 interface GoogleFinanceAPI {
     /**
-     * Get current market indices in the US as a list of [StockIndex]
+     * Get current market indices in the US as a list of [MarketIndex]
      */
-    suspend fun getIndices(): List<StockIndex>
+    suspend fun getIndices(): List<MarketIndex>
 }

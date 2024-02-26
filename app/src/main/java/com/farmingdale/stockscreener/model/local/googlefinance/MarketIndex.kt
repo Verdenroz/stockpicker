@@ -7,7 +7,7 @@ package com.farmingdale.stockscreener.model.local.googlefinance
  * @param change Change in value the index
  * @param percentChange Percent change in value of the index
  */
-data class StockIndex(
+data class MarketIndex(
     val name: String,
     val score: Double,
     val change: Double,
