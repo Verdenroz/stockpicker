@@ -5,16 +5,18 @@ import androidx.lifecycle.viewModelScope
 import com.farmingdale.stockscreener.model.local.GeneralSearchData
 import com.farmingdale.stockscreener.model.local.UnitedStatesExchanges
 import com.farmingdale.stockscreener.model.local.WatchList
+import com.farmingdale.stockscreener.model.local.googlefinance.MarketIndex
 import com.farmingdale.stockscreener.model.local.news.Category
 import com.farmingdale.stockscreener.model.local.news.News
 import com.farmingdale.stockscreener.repos.ImplFinancialModelPrepRepository.Companion.get
+import com.farmingdale.stockscreener.repos.ImplGoogleFinanceRepository.Companion.get
 import com.farmingdale.stockscreener.repos.ImplNewsRepository.Companion.get
 import com.farmingdale.stockscreener.repos.base.FinancialModelPrepRepository
+import com.farmingdale.stockscreener.repos.base.GoogleFinanceRepository
 import com.farmingdale.stockscreener.repos.base.NewsRepository
 import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +26,7 @@ import kotlinx.coroutines.launch
 class ImplMainViewModel(application: Application) : MainViewModel(application){
     private val financialModelRepo = FinancialModelPrepRepository.get(application)
     private val newsRepo = NewsRepository.get(application)
+    private val googleFinanceRepo = GoogleFinanceRepository.get()
 
     private val _query = MutableStateFlow("")
     override val query: StateFlow<String> = _query.asStateFlow()
@@ -36,6 +39,9 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
 
     private val _news: MutableStateFlow<News?> = MutableStateFlow(null)
     override val news: StateFlow<News?> = _news.asStateFlow()
+
+    private val _indices: MutableStateFlow<List<MarketIndex>?> = MutableStateFlow(null)
+    override val indices: StateFlow<List<MarketIndex>?> = _indices.asStateFlow()
 
     private val _preferredCategory: MutableStateFlow<Category?> = MutableStateFlow(newsRepo.getPreferredCategory())
     override val preferredCategory: StateFlow<Category?> = _preferredCategory.asStateFlow()
@@ -51,6 +57,7 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
 
     private val searchCache =  mutableMapOf<String, GeneralSearchData?>()
     private val newsCache = mutableMapOf<Pair<Category?, String?>, News?>()
+    private val indicesCache: MutableStateFlow<List<MarketIndex>?> = MutableStateFlow(null)
 
     init {
         refresh()
@@ -135,11 +142,25 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
         }
     }
 
+    override fun getIndices() {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (indicesCache.value != null) {
+                _indices.value = indicesCache.value
+            } else {
+                googleFinanceRepo.getIndices().collectLatest { indices ->
+                    _indices.value = indices
+                    indicesCache.value = indices
+                }
+            }
+        }
+    }
+
     override fun refresh() {
         viewModelScope.launch {
             _isLoading.emit(true)
             async(Dispatchers.IO){
                 getHeadlines(preferredCategory.value, preferredQuery.value)
+                getIndices()
                 updateWatchList()
                 _isLoading.emit(false)
             }.await()
