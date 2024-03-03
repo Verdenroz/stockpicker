@@ -16,23 +16,13 @@ class ImplNewsRepository(application: Context): NewsRepository() {
     private val api = ImplNewsAPI(okHttpClient)
     private val sharedPreferences: SharedPreferences = application.getSharedPreferences("NEWS_PREFERENCES", Context.MODE_PRIVATE)
 
-    override suspend fun getHeadlines(category: Category?, query: String?): Flow<News> = flow{
+    override suspend fun getHeadlines(category: Category?): Flow<News> = flow{
         try{
-            emit(api.getHeadlines(category, query))
+            emit(api.getHeadlines(category))
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }.flowOn(Dispatchers.IO)
-
-    override fun setPreferredQuery(query: String) {
-        val editor = sharedPreferences.edit()
-        editor.putString("preferredQuery", query)
-        editor.apply()
-    }
-
-    override fun getPreferredQuery(): String? {
-        return sharedPreferences.getString("preferredQuery", null)
-    }
 
     override fun setPreferredCategory(category: Category) {
         val editor = sharedPreferences.edit()

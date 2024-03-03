@@ -67,15 +67,13 @@ fun NewsFeed(
     isLoading: Boolean,
     preferredCategory: Category?,
     onCategorySelected: (Category) -> Unit,
-    preferredQuery: String?,
-    onQuerySelected: (String) -> Unit,
     refresh: () -> Unit,
 ) {
     var isNewsSettingsOpen by rememberSaveable { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
             .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -151,8 +149,6 @@ fun NewsFeed(
                         )
                     },
                     onCategorySelected = onCategorySelected,
-                    preferredQuery = rememberSaveable { mutableStateOf(preferredQuery ?: "") },
-                    onQuerySelected = onQuerySelected,
                     refresh = refresh
                 )
             }
@@ -169,8 +165,6 @@ fun PreviewNewsFeed() {
         isLoading = false,
         preferredCategory = Category.GENERAL,
         onCategorySelected = {},
-        preferredQuery = null,
-        onQuerySelected = {},
         refresh = {}
     )
 }
@@ -265,8 +259,6 @@ fun NewsSettingsDialog(
     categories: List<Category>,
     preferredCategory: MutableState<Category>,
     onCategorySelected: (Category) -> Unit,
-    preferredQuery: MutableState<String>,
-    onQuerySelected: (String) -> Unit,
     refresh: () -> Unit
 ) {
     Dialog(onDismissRequest = onDismissRequest) {
@@ -332,22 +324,6 @@ fun NewsSettingsDialog(
                     }
                 }
 
-                Row(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = stringResource(id = R.string.news_query))
-                    OutlinedTextField(
-                        value = preferredQuery.value,
-                        onValueChange = {
-                            preferredQuery.value = it
-                        },
-                        placeholder = { Text(text = stringResource(id = R.string.query_placeholder)) },
-                    )
-                }
                 HorizontalDivider(modifier = Modifier.padding(4.dp))
                 Row(
                     modifier = Modifier
@@ -359,7 +335,6 @@ fun NewsSettingsDialog(
                         Text(text = stringResource(id = R.string.cancel))
                     }
                     TextButton(onClick = {
-                        onQuerySelected(preferredQuery.value)
                         onCategorySelected(preferredCategory.value)
                         refresh()
                         onDismissRequest()

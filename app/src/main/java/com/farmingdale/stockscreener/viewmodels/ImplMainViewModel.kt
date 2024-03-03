@@ -46,9 +46,6 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
     private val _preferredCategory: MutableStateFlow<Category?> = MutableStateFlow(newsRepo.getPreferredCategory())
     override val preferredCategory: StateFlow<Category?> = _preferredCategory.asStateFlow()
 
-    private val _preferredQuery: MutableStateFlow<String?> = MutableStateFlow(newsRepo.getPreferredQuery())
-    override val preferredQuery: StateFlow<String?> = _preferredQuery.asStateFlow()
-
     private val _isRefreshing = MutableStateFlow(false)
     override val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
@@ -56,7 +53,7 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
     override val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val searchCache =  mutableMapOf<String, GeneralSearchData?>()
-    private val newsCache = mutableMapOf<Pair<Category?, String?>, News?>()
+    private val newsCache = mutableMapOf<Category?, News?>()
     private val indicesCache: MutableStateFlow<List<MarketIndex>?> = MutableStateFlow(null)
 
     init {
@@ -119,24 +116,19 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
         _preferredCategory.value = category
     }
 
-    override fun setPreferredQuery(query: String) {
-        newsRepo.setPreferredQuery(query)
-        _preferredQuery.value = query
-    }
-
-    override fun getHeadlines(category: Category?, query: String?) {
+    override fun getHeadlines(category: Category?) {
         viewModelScope.launch {
-            val cachedResults = newsCache[Pair(category, query)]
+            val cachedResults = newsCache[category]
             if (cachedResults != null) {
                 _news.value = News(cachedResults.articles.shuffled())
             } else {
                 val headlines = async(Dispatchers.IO) {
-                    newsRepo.getHeadlines(category, query)
+                    newsRepo.getHeadlines(category)
                 }.await()
 
                 headlines.collectLatest { headLines ->
                     _news.value = News(headLines.articles.shuffled())
-                    newsCache[Pair(category, query)] = headLines
+                    newsCache[category] = headLines
                 }
             }
         }
@@ -159,7 +151,7 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
         viewModelScope.launch {
             _isLoading.emit(true)
             async(Dispatchers.IO){
-                getHeadlines(preferredCategory.value, preferredQuery.value)
+                getHeadlines(preferredCategory.value)
                 getIndices()
                 updateWatchList()
                 _isLoading.emit(false)

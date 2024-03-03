@@ -19,8 +19,6 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
 
     abstract val preferredCategory: StateFlow<Category?>
 
-    abstract val preferredQuery: StateFlow<String?>
-
     abstract val news: StateFlow<News?>
 
     abstract val indices: StateFlow<List<MarketIndex>?>
@@ -43,9 +41,7 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
 
     abstract fun setPreferredCategory(category: Category)
 
-    abstract fun setPreferredQuery(query: String)
-
-    abstract fun getHeadlines(category: Category?, query: String?)
+    abstract fun getHeadlines(category: Category?)
 
     abstract fun getIndices()
 

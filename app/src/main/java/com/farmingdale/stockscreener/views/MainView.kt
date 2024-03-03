@@ -37,7 +37,6 @@ fun MainView() {
     val isRefreshing by mainViewModel.isRefreshing.collectAsState()
     val isLoading by mainViewModel.isLoading.collectAsState()
     val preferredCategory by mainViewModel.preferredCategory.collectAsState()
-    val preferredQuery by mainViewModel.preferredQuery.collectAsState()
 
     LaunchedEffect(key1 = query) {
         delay(500)
@@ -50,13 +49,11 @@ fun MainView() {
             watchList = watchList,
             news = news,
             preferredCategory = preferredCategory,
-            preferredQuery = preferredQuery,
             isLoading = isLoading,
             isRefreshing = isRefreshing,
             updateQuery = mainViewModel::updateQuery,
             addToWatchList = mainViewModel::addToWatchList,
             setPreferredCategory = mainViewModel::setPreferredCategory,
-            setPreferredQuery = mainViewModel::setPreferredQuery,
             refresh = mainViewModel::refresh
         )
     }
@@ -69,13 +66,11 @@ fun MainContent(
     watchList: WatchList?,
     news: News?,
     preferredCategory: Category?,
-    preferredQuery: String?,
     isLoading: Boolean,
     isRefreshing: Boolean,
     updateQuery: (String) -> Unit,
     addToWatchList: (String) -> Unit,
     setPreferredCategory: (Category) -> Unit,
-    setPreferredQuery: (String) -> Unit,
     refresh: () -> Unit,
 ) {
     val pullRefreshState = rememberPullRefreshState(refreshing = isRefreshing, onRefresh = refresh)
@@ -124,13 +119,11 @@ fun PreviewMainContent() {
         watchList = null,
         news = null,
         preferredCategory = null,
-        preferredQuery = null,
         isLoading = false,
         isRefreshing = false,
         updateQuery = {},
         addToWatchList = {},
         setPreferredCategory = {},
-        setPreferredQuery = {},
         refresh = {},
     )
 }
