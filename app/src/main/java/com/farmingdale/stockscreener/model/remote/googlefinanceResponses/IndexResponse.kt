@@ -13,7 +13,7 @@ import kotlinx.serialization.Serializable
 data class StockIndex(
     val name: String,
     val score: Double,
-    val change: Double,
+    val change: String,
     val percentChange: String
 )
 
