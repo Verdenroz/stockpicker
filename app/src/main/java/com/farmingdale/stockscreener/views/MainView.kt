@@ -1,6 +1,7 @@
 package com.farmingdale.stockscreener.views
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -20,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.farmingdale.stockscreener.model.local.GeneralSearchData
 import com.farmingdale.stockscreener.model.local.WatchList
+import com.farmingdale.stockscreener.model.local.googlefinance.MarketIndex
 import com.farmingdale.stockscreener.model.local.news.Category
 import com.farmingdale.stockscreener.model.local.news.News
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
@@ -34,6 +36,7 @@ fun MainView() {
     val query by mainViewModel.query.collectAsState()
     val watchList by mainViewModel.watchList.collectAsState()
     val news by mainViewModel.news.collectAsState()
+    val indices by mainViewModel.indices.collectAsState()
     val isRefreshing by mainViewModel.isRefreshing.collectAsState()
     val isLoading by mainViewModel.isLoading.collectAsState()
     val preferredCategory by mainViewModel.preferredCategory.collectAsState()
@@ -48,6 +51,7 @@ fun MainView() {
             searchResults = results,
             watchList = watchList,
             news = news,
+            indices = indices,
             preferredCategory = preferredCategory,
             isLoading = isLoading,
             isRefreshing = isRefreshing,
@@ -65,6 +69,7 @@ fun MainContent(
     searchResults: GeneralSearchData?,
     watchList: WatchList?,
     news: News?,
+    indices: List<MarketIndex>?,
     preferredCategory: Category?,
     isLoading: Boolean,
     isRefreshing: Boolean,
@@ -93,15 +98,23 @@ fun MainContent(
                 .pullRefresh(pullRefreshState)
                 .verticalScroll(rememberScrollState()),
         ) {
-            NewsFeed(
-                news = news,
-                isLoading = isLoading,
-                preferredCategory = preferredCategory,
-                onCategorySelected = setPreferredCategory,
-                preferredQuery = preferredQuery,
-                onQuerySelected = setPreferredQuery,
-                refresh = refresh
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                NewsFeed(
+                    news = news,
+                    isLoading = isLoading,
+                    preferredCategory = preferredCategory,
+                    onCategorySelected = setPreferredCategory,
+                    refresh = refresh
+                )
+                MarketIndices(
+                    indices = indices,
+                    isLoading = isLoading,
+                    refresh = refresh
+                )
+            }
             PullRefreshIndicator(
                 refreshing = isRefreshing,
                 state = pullRefreshState,
@@ -118,6 +131,7 @@ fun PreviewMainContent() {
         searchResults = null,
         watchList = null,
         news = null,
+        indices = null,
         preferredCategory = null,
         isLoading = false,
         isRefreshing = false,

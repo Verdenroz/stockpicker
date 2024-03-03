@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Stock Screener</string>
     <string name="search_placeholder">Search</string>
     <string name="search_description">Search Bar</string>
@@ -15,8 +15,10 @@
     <string name="news">News</string>
     <string name="news_category">Categories</string>
     <string name="news_query">Custom Filter</string>
-    <string name="cancel">CANCEL</string>
+    <string name="cancel" tools:ignore="ButtonCase">CANCEL</string>
     <string name="save">SAVE</string>
     <string name="query_placeholder">Keywords</string>
     <string name="notFound">No Articles Found.\n Please change keywords.</string>
+    <string name="market_performance">Market Performance</string>
+    <string name="notLoaded">Data could not be loaded. Please refresh.</string>
 </resources>
