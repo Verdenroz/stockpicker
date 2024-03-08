@@ -28,7 +28,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -115,10 +114,10 @@ fun NewsFeed(
                     ) {
                         Icon(
                             Icons.Default.Warning,
-                            contentDescription = stringResource(id = R.string.notFound)
+                            contentDescription = stringResource(id = R.string.notLoaded)
                         )
                         Text(
-                            text = stringResource(id = R.string.notFound),
+                            text = stringResource(id = R.string.notLoaded),
                             modifier = Modifier.padding(16.dp),
                             style = MaterialTheme.typography.bodyLarge,
                             textAlign = TextAlign.Center

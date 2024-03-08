@@ -24,7 +24,7 @@ class NewsAPITest {
     @Test
     fun testGetHeadlines() {
         val info = runBlocking {
-            api.getHeadlines(null, null)
+            api.getHeadlines(null)
         }
         println(info)
     }

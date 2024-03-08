@@ -18,7 +18,6 @@
     <string name="cancel" tools:ignore="ButtonCase">CANCEL</string>
     <string name="save">SAVE</string>
     <string name="query_placeholder">Keywords</string>
-    <string name="notFound">No Articles Found.\n Please change keywords.</string>
     <string name="market_performance">Market Performance</string>
     <string name="notLoaded">Data could not be loaded. Please refresh.</string>
 </resources>
