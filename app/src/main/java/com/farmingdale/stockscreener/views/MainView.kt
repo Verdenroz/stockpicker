@@ -102,16 +102,16 @@ fun MainContent(
                 modifier = Modifier
                     .fillMaxSize()
             ) {
+                MarketIndices(
+                    indices = indices,
+                    isLoading = isLoading,
+                    refresh = refresh
+                )
                 NewsFeed(
                     news = news,
                     isLoading = isLoading,
                     preferredCategory = preferredCategory,
                     onCategorySelected = setPreferredCategory,
-                    refresh = refresh
-                )
-                MarketIndices(
-                    indices = indices,
-                    isLoading = isLoading,
                     refresh = refresh
                 )
             }

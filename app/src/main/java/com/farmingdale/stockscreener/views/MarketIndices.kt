@@ -80,7 +80,7 @@ fun MarketIndices(
                     ) {
                         Icon(
                             Icons.Default.Warning,
-                            contentDescription = stringResource(id = R.string.notFound)
+                            contentDescription = stringResource(id = R.string.notLoaded)
                         )
                         Text(
                             text = stringResource(id = R.string.notLoaded),
