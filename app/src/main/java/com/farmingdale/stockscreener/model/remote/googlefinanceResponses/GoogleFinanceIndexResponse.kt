@@ -10,17 +10,9 @@ import kotlinx.serialization.Serializable
  * @param percentChange Percent change in value of the index
  */
 @Serializable
-data class StockIndex(
+data class GoogleFinanceIndexResponse(
     val name: String,
-    val score: Double,
+    val score: String,
     val change: String,
     val percentChange: String
-)
-
-/**
- * Wrapper for [StockIndex]
- */
-@Serializable
-data class StockIndexWrapper(
-    val stockIndex: StockIndex
 )

@@ -4,9 +4,9 @@ import com.farmingdale.stockscreener.model.local.UnitedStatesExchanges
 import com.farmingdale.stockscreener.model.local.googlefinance.GoogleFinanceNews
 import com.farmingdale.stockscreener.model.local.googlefinance.GoogleFinanceStock
 import com.farmingdale.stockscreener.model.local.googlefinance.MarketIndex
+import com.farmingdale.stockscreener.model.remote.googlefinanceResponses.GoogleFinanceIndexResponse
 import com.farmingdale.stockscreener.model.remote.googlefinanceResponses.GoogleFinanceNewsResponse
 import com.farmingdale.stockscreener.model.remote.googlefinanceResponses.GoogleFinanceStockResponse
-import com.farmingdale.stockscreener.model.remote.googlefinanceResponses.StockIndexWrapper
 import com.farmingdale.stockscreener.providers.base.GoogleFinanceAPI
 import com.farmingdale.stockscreener.utils.GOOGLE_API_URL
 import com.farmingdale.stockscreener.utils.executeAsync
@@ -22,7 +22,7 @@ import java.io.InputStream
 import java.net.URL
 
 @OptIn(ExperimentalSerializationApi::class)
-class ImplGoogleFinanceAPI(private val client: OkHttpClient): GoogleFinanceAPI {
+class ImplGoogleFinanceAPI(private val client: OkHttpClient) : GoogleFinanceAPI {
     companion object {
         private val parser: Json by lazy {
             Json {
@@ -30,6 +30,7 @@ class ImplGoogleFinanceAPI(private val client: OkHttpClient): GoogleFinanceAPI {
             }
         }
     }
+
     private suspend fun getByteStream(url: HttpUrl): InputStream {
         val request = Request.Builder()
             .url(url)
@@ -39,46 +40,51 @@ class ImplGoogleFinanceAPI(private val client: OkHttpClient): GoogleFinanceAPI {
         val response = call.executeAsync()
         return response.body!!.byteStream()
     }
-    @OptIn(ExperimentalSerializationApi::class)
+
     override suspend fun getIndices(): List<MarketIndex> {
         val stream = getByteStream(
-            GOOGLE_API_URL.newBuilder().apply{
-                addPathSegments("US")
+            GOOGLE_API_URL.newBuilder().apply {
                 addPathSegment("indices")
+                addQueryParameter("region", "americas")
+                addQueryParameter("country", "US")
             }.build()
         )
-        val indexResponse: List<StockIndexWrapper>
-        try{
-            indexResponse = parser.decodeFromStream(ListSerializer(StockIndexWrapper.serializer()), stream)
-        }
-        catch (e: SerializationException){
+        val indexResponse: List<GoogleFinanceIndexResponse>
+        try {
+            indexResponse = parser.decodeFromStream(
+                ListSerializer(GoogleFinanceIndexResponse.serializer()),
+                stream
+            )
+        } catch (e: SerializationException) {
             throw RuntimeException("Failed to parse JSON response", e)
         }
         return indexResponse.map {
             MarketIndex(
-                name = it.stockIndex.name,
-                score = it.stockIndex.score,
-                change = it.stockIndex.change,
-                percentChange = it.stockIndex.percentChange
+                name = it.name,
+                score = it.score,
+                change = it.change,
+                percentChange = it.percentChange
             )
         }
     }
 
-    override suspend fun getActiveStocks(): List<GoogleFinanceStock>  {
+    override suspend fun getActiveStocks(): List<GoogleFinanceStock> {
         val stream = getByteStream(
-            GOOGLE_API_URL.newBuilder().apply{
+            GOOGLE_API_URL.newBuilder().apply {
                 addPathSegment("active")
             }.build()
         )
         val activeStocks: List<GoogleFinanceStockResponse>
-        try{
-            activeStocks = parser.decodeFromStream(ListSerializer(GoogleFinanceStockResponse.serializer()), stream)
-        }
-        catch (e: SerializationException){
+        try {
+            activeStocks = parser.decodeFromStream(
+                ListSerializer(GoogleFinanceStockResponse.serializer()),
+                stream
+            )
+        } catch (e: SerializationException) {
             throw RuntimeException("Failed to parse JSON response", e)
         }
 
-        return activeStocks.map{
+        return activeStocks.map {
             GoogleFinanceStock(
                 symbol = it.symbol,
                 name = it.name,
@@ -91,15 +97,17 @@ class ImplGoogleFinanceAPI(private val client: OkHttpClient): GoogleFinanceAPI {
 
     override suspend fun getGainers(): List<GoogleFinanceStock> {
         val stream = getByteStream(
-            GOOGLE_API_URL.newBuilder().apply{
+            GOOGLE_API_URL.newBuilder().apply {
                 addPathSegment("gainers")
             }.build()
         )
         val gainers: List<GoogleFinanceStockResponse>
-        try{
-            gainers = parser.decodeFromStream(ListSerializer(GoogleFinanceStockResponse.serializer()), stream)
-        }
-        catch (e: SerializationException){
+        try {
+            gainers = parser.decodeFromStream(
+                ListSerializer(GoogleFinanceStockResponse.serializer()),
+                stream
+            )
+        } catch (e: SerializationException) {
             throw RuntimeException("Failed to parse JSON response", e)
         }
         return gainers.map {
@@ -115,15 +123,17 @@ class ImplGoogleFinanceAPI(private val client: OkHttpClient): GoogleFinanceAPI {
 
     override suspend fun getLosers(): List<GoogleFinanceStock> {
         val stream = getByteStream(
-            GOOGLE_API_URL.newBuilder().apply{
+            GOOGLE_API_URL.newBuilder().apply {
                 addPathSegment("losers")
             }.build()
         )
         val losers: List<GoogleFinanceStockResponse>
-        try{
-            losers = parser.decodeFromStream(ListSerializer(GoogleFinanceStockResponse.serializer()), stream)
-        }
-        catch (e: SerializationException){
+        try {
+            losers = parser.decodeFromStream(
+                ListSerializer(GoogleFinanceStockResponse.serializer()),
+                stream
+            )
+        } catch (e: SerializationException) {
             throw RuntimeException("Failed to parse JSON response", e)
         }
         return losers.map {
@@ -142,17 +152,19 @@ class ImplGoogleFinanceAPI(private val client: OkHttpClient): GoogleFinanceAPI {
         exchange: UnitedStatesExchanges
     ): List<GoogleFinanceNews> {
         val stream = getByteStream(
-            GOOGLE_API_URL.newBuilder().apply{
+            GOOGLE_API_URL.newBuilder().apply {
                 addPathSegments("news")
                 addQueryParameter("symbol", symbol)
                 addQueryParameter("exchange", exchange.name)
             }.build()
         )
         val news: List<GoogleFinanceNewsResponse>
-        try{
-            news = parser.decodeFromStream(ListSerializer(GoogleFinanceNewsResponse.serializer()), stream)
-        }
-        catch (e: SerializationException){
+        try {
+            news = parser.decodeFromStream(
+                ListSerializer(GoogleFinanceNewsResponse.serializer()),
+                stream
+            )
+        } catch (e: SerializationException) {
             throw RuntimeException("Failed to parse JSON response", e)
         }
         return news.map {
