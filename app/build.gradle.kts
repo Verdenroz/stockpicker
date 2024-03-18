@@ -44,6 +44,12 @@ android {
             "newsAPIKey",
             properties.getProperty("NEWS_API_KEY")
         )
+
+        buildConfigField(
+            "String",
+            "googleFinanceAPIKey",
+            properties.getProperty("GOOGLE_FINANCE_API_KEY")
+        )
     }
 
     buildTypes {
