@@ -1,5 +1,6 @@
 package com.farmingdale.stockscreener.providers
 
+import com.farmingdale.stockscreener.BuildConfig
 import com.farmingdale.stockscreener.model.local.UnitedStatesExchanges
 import com.farmingdale.stockscreener.model.local.googlefinance.GoogleFinanceNews
 import com.farmingdale.stockscreener.model.local.googlefinance.GoogleFinanceStock
@@ -35,6 +36,7 @@ class ImplGoogleFinanceAPI(private val client: OkHttpClient) : GoogleFinanceAPI 
         val request = Request.Builder()
             .url(url)
             .get()
+            .addHeader("X-API-Key", BuildConfig.googleFinanceAPIKey)
             .build()
         val call = client.newCall(request)
         val response = call.executeAsync()
