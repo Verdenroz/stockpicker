@@ -9,7 +9,7 @@ package com.farmingdale.stockscreener.model.local.googlefinance
  */
 data class MarketIndex(
     val name: String,
-    val score: Double,
+    val score: String,
     val change: String,
     val percentChange: String
 )

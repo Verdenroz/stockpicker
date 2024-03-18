@@ -139,7 +139,7 @@ fun MarketIndexCard(index: MarketIndex) {
                 color = Color(0xff147efb)
             )
             Text(
-                text = index.score.toString(),
+                text = index.score,
                 style = MaterialTheme.typography.headlineMedium
             )
             Row(
@@ -170,7 +170,7 @@ fun PreviewMarketIndexCard(){
         MarketIndexCard(
             MarketIndex(
                 name = "Dow Jones",
-                score = 100.0,
+                score = "100.0",
                 change = "+100.0",
                 percentChange = "+100%"
             ),
@@ -178,7 +178,7 @@ fun PreviewMarketIndexCard(){
         MarketIndexCard(
             MarketIndex(
                 name = "Dow Jones",
-                score = 100.0,
+                score = "100.0",
                 change = "-100.0",
                 percentChange = "-100%"
             )
