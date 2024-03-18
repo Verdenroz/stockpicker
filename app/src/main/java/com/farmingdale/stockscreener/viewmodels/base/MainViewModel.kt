@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import com.farmingdale.stockscreener.model.local.GeneralSearchData
 import com.farmingdale.stockscreener.model.local.WatchList
+import com.farmingdale.stockscreener.model.local.googlefinance.GoogleFinanceStock
 import com.farmingdale.stockscreener.model.local.googlefinance.MarketIndex
 import com.farmingdale.stockscreener.model.local.news.Category
 import com.farmingdale.stockscreener.model.local.news.News
@@ -22,6 +23,12 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
     abstract val news: StateFlow<News?>
 
     abstract val indices: StateFlow<List<MarketIndex>?>
+
+    abstract val actives: StateFlow<List<GoogleFinanceStock>?>
+
+    abstract val losers: StateFlow<List<GoogleFinanceStock>?>
+
+    abstract val gainers: StateFlow<List<GoogleFinanceStock>?>
 
     abstract val isRefreshing: StateFlow<Boolean>
 
@@ -44,6 +51,12 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
     abstract fun getHeadlines(category: Category?)
 
     abstract fun getIndices()
+
+    abstract fun getActives()
+
+    abstract fun getLosers()
+
+    abstract fun getGainers()
 
     abstract fun refresh()
 

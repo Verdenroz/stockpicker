@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.farmingdale.stockscreener.model.local.GeneralSearchData
 import com.farmingdale.stockscreener.model.local.UnitedStatesExchanges
 import com.farmingdale.stockscreener.model.local.WatchList
+import com.farmingdale.stockscreener.model.local.googlefinance.GoogleFinanceStock
 import com.farmingdale.stockscreener.model.local.googlefinance.MarketIndex
 import com.farmingdale.stockscreener.model.local.news.Category
 import com.farmingdale.stockscreener.model.local.news.News
@@ -23,7 +24,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class ImplMainViewModel(application: Application) : MainViewModel(application){
+class ImplMainViewModel(application: Application) : MainViewModel(application) {
     private val financialModelRepo = FinancialModelPrepRepository.get(application)
     private val newsRepo = NewsRepository.get(application)
     private val googleFinanceRepo = GoogleFinanceRepository.get()
@@ -43,7 +44,17 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
     private val _indices: MutableStateFlow<List<MarketIndex>?> = MutableStateFlow(null)
     override val indices: StateFlow<List<MarketIndex>?> = _indices.asStateFlow()
 
-    private val _preferredCategory: MutableStateFlow<Category?> = MutableStateFlow(newsRepo.getPreferredCategory())
+    private val _actives: MutableStateFlow<List<GoogleFinanceStock>?> = MutableStateFlow(null)
+    override val actives: StateFlow<List<GoogleFinanceStock>?> = _actives.asStateFlow()
+
+    private val _losers: MutableStateFlow<List<GoogleFinanceStock>?> = MutableStateFlow(null)
+    override val losers: StateFlow<List<GoogleFinanceStock>?> = _losers.asStateFlow()
+
+    private val _gainers: MutableStateFlow<List<GoogleFinanceStock>?> = MutableStateFlow(null)
+    override val gainers: StateFlow<List<GoogleFinanceStock>?> = _gainers.asStateFlow()
+
+    private val _preferredCategory: MutableStateFlow<Category?> =
+        MutableStateFlow(newsRepo.getPreferredCategory())
     override val preferredCategory: StateFlow<Category?> = _preferredCategory.asStateFlow()
 
     private val _isRefreshing = MutableStateFlow(false)
@@ -52,9 +63,8 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
     private val _isLoading = MutableStateFlow(false)
     override val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    private val searchCache =  mutableMapOf<String, GeneralSearchData?>()
+    private val searchCache = mutableMapOf<String, GeneralSearchData?>()
     private val newsCache = mutableMapOf<Category?, News?>()
-    private val indicesCache: MutableStateFlow<List<MarketIndex>?> = MutableStateFlow(null)
 
     init {
         refresh()
@@ -65,14 +75,17 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
     }
 
     override fun search(query: String) {
-        if(query.isNotBlank()){
+        if (query.isNotBlank()) {
             viewModelScope.launch {
                 val cachedResults = searchCache[query]
                 if (cachedResults != null) {
                     _searchResults.value = cachedResults
                 } else {
                     val searchData = async(Dispatchers.IO) {
-                        financialModelRepo.generalSearch(query = query, exchange = UnitedStatesExchanges.NASDAQ)
+                        financialModelRepo.generalSearch(
+                            query = query,
+                            exchange = UnitedStatesExchanges.NASDAQ
+                        )
                     }.await()
 
                     searchData.collectLatest { results ->
@@ -122,9 +135,7 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
             if (cachedResults != null) {
                 _news.value = News(cachedResults.articles.shuffled())
             } else {
-                val headlines = async(Dispatchers.IO) {
-                    newsRepo.getHeadlines(category)
-                }.await()
+                val headlines = newsRepo.getHeadlines(category)
 
                 headlines.collectLatest { headLines ->
                     _news.value = News(headLines.articles.shuffled())
@@ -135,14 +146,37 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
     }
 
     override fun getIndices() {
-        viewModelScope.launch(Dispatchers.IO) {
-            if (indicesCache.value != null) {
-                _indices.value = indicesCache.value
-            } else {
-                googleFinanceRepo.getIndices().collectLatest { indices ->
-                    _indices.value = indices
-                    indicesCache.value = indices
-                }
+        viewModelScope.launch {
+            val indices = googleFinanceRepo.getIndices()
+            indices.collectLatest {
+                _indices.value = it
+            }
+        }
+    }
+
+    override fun getActives() {
+        viewModelScope.launch {
+            val actives = googleFinanceRepo.getActives()
+            actives.collectLatest {
+                _actives.value = it
+            }
+        }
+    }
+
+    override fun getLosers() {
+        viewModelScope.launch {
+            val losers = googleFinanceRepo.getLosers()
+            losers.collectLatest {
+                _losers.value = it
+            }
+        }
+    }
+
+    override fun getGainers() {
+        viewModelScope.launch {
+            val gainers = googleFinanceRepo.getGainers()
+            gainers.collectLatest {
+                _gainers.value = it
             }
         }
     }
@@ -150,12 +184,18 @@ class ImplMainViewModel(application: Application) : MainViewModel(application){
     override fun refresh() {
         viewModelScope.launch {
             _isLoading.emit(true)
-            async(Dispatchers.IO){
-                getHeadlines(preferredCategory.value)
-                getIndices()
-                updateWatchList()
-                _isLoading.emit(false)
-            }.await()
+            val headlines = async(Dispatchers.IO) { getHeadlines(preferredCategory.value) }
+            val indices = async(Dispatchers.IO) { getIndices() }
+            val actives = async(Dispatchers.IO) { getActives() }
+            val losers = async(Dispatchers.IO) { getLosers() }
+            val gainers = async(Dispatchers.IO) { getGainers() }
+            headlines.await()
+            indices.await()
+            actives.await()
+            losers.await()
+            gainers.await()
+            updateWatchList()
+            _isLoading.emit(false)
             _isRefreshing.emit(false)
         }
     }
