@@ -20,4 +20,7 @@
     <string name="query_placeholder">Keywords</string>
     <string name="market_performance">Market Performance</string>
     <string name="notLoaded">Data could not be loaded. Please refresh.</string>
+    <string name="mostActive">Most Active</string>
+    <string name="topLosers">Top Losers</string>
+    <string name="topGainers">Top Gainers</string>
 </resources>
