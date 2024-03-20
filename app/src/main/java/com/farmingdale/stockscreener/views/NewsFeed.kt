@@ -48,7 +48,6 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -63,7 +62,6 @@ import com.farmingdale.stockscreener.model.local.news.News
 @Composable
 fun NewsFeed(
     news: News?,
-    isLoading: Boolean,
     preferredCategory: Category?,
     onCategorySelected: (Category) -> Unit,
     refresh: () -> Unit,
@@ -74,7 +72,6 @@ fun NewsFeed(
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Row(
@@ -83,7 +80,10 @@ fun NewsFeed(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = stringResource(id = R.string.news))
+            Text(
+                text = stringResource(id = R.string.news),
+                style = MaterialTheme.typography.titleSmall
+            )
             IconButton(onClick = { isNewsSettingsOpen = true }) {
                 Icon(
                     Icons.Default.Settings,
@@ -91,40 +91,8 @@ fun NewsFeed(
                 )
             }
         }
-        if (isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-        } else if (news?.articles.isNullOrEmpty()) {
-            Box(
-                modifier = Modifier
-                    .size(300.dp, 150.dp)
-            ) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clickable { isNewsSettingsOpen = true },
-                    shape = RoundedCornerShape(10),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFFFE4E1)
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            Icons.Default.Warning,
-                            contentDescription = stringResource(id = R.string.notLoaded)
-                        )
-                        Text(
-                            text = stringResource(id = R.string.notLoaded),
-                            modifier = Modifier.padding(16.dp),
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            }
+        if (news?.articles.isNullOrEmpty()) {
+            ErrorCard(refresh = refresh)
         } else {
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -161,7 +129,6 @@ fun NewsFeed(
 fun PreviewNewsFeed() {
     NewsFeed(
         news = null,
-        isLoading = false,
         preferredCategory = Category.GENERAL,
         onCategorySelected = {},
         refresh = {}

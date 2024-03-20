@@ -1,25 +1,18 @@
 package com.farmingdale.stockscreener.views
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,7 +22,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.farmingdale.stockscreener.R
@@ -38,12 +30,11 @@ import com.farmingdale.stockscreener.model.local.googlefinance.MarketIndex
 @Composable
 fun MarketIndices(
     indices: List<MarketIndex>?,
-    isLoading: Boolean,
     refresh: () -> Unit,
 ) {
     Column(
         modifier = Modifier
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
             .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -54,43 +45,14 @@ fun MarketIndices(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = stringResource(id = R.string.market_performance))
+            Text(
+                text = stringResource(id = R.string.market_performance),
+                style = MaterialTheme.typography.titleSmall
+            )
 
         }
-        if (isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-        } else if (indices.isNullOrEmpty()) {
-            Box(
-                modifier = Modifier
-                    .size(300.dp, 150.dp)
-            ) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clickable { refresh() },
-                    shape = RoundedCornerShape(10),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFFFE4E1)
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            Icons.Default.Warning,
-                            contentDescription = stringResource(id = R.string.notLoaded)
-                        )
-                        Text(
-                            text = stringResource(id = R.string.notLoaded),
-                            modifier = Modifier.padding(16.dp),
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            }
+        if (indices.isNullOrEmpty()) {
+            ErrorCard(refresh = refresh)
         } else {
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -145,7 +107,7 @@ fun MarketIndexCard(index: MarketIndex) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
-            ){
+            ) {
                 Text(
                     text = index.change,
                     style = MaterialTheme.typography.headlineSmall,
@@ -165,7 +127,7 @@ fun MarketIndexCard(index: MarketIndex) {
 
 @Preview
 @Composable
-fun PreviewMarketIndexCard(){
+fun PreviewMarketIndexCard() {
     Row {
         MarketIndexCard(
             MarketIndex(
