@@ -29,8 +29,6 @@ class ImplNewsAPI(private val client: OkHttpClient): NewsAPI {
         val request = Request.Builder()
             .url(url)
             .get()
-            .addHeader("X-RapidAPI-Key", BuildConfig.alphaVantageAPI)
-            .addHeader("X-RapidAPI-Host", "alpha-vantage.p.rapidapi.com")
             .build()
         val call = client.newCall(request)
         val response = call.executeAsync()
