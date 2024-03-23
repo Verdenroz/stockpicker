@@ -23,4 +23,6 @@
     <string name="mostActive">Most Active</string>
     <string name="topLosers">Top Losers</string>
     <string name="topGainers">Top Gainers</string>
+    <string name="portfolio">Your Portfolio</string>
+    <string name="portfolio_empty">Portfolio is empty. Add stocks to your watchlist!</string>
 </resources>
