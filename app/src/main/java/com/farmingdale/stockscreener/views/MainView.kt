@@ -103,53 +103,43 @@ fun MainContent(
             BottomBar()
         }
     ) { padding ->
-        if (isLoading){
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .pullRefresh(pullRefreshState)
+                .verticalScroll(rememberScrollState()),
+        ) {
             Column(
                 modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceEvenly
+                verticalArrangement = Arrangement.SpaceAround,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                CircularProgressIndicator()
-                CircularProgressIndicator()
-                CircularProgressIndicator()
-            }
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .pullRefresh(pullRefreshState)
-                    .verticalScroll(rememberScrollState()),
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.SpaceAround,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
 
-                    MarketIndices(
-                        indices = indices,
-                        refresh = refresh,
-                    )
-                    NewsFeed(
-                        news = news,
-                        preferredCategory = preferredCategory,
-                        onCategorySelected = setPreferredCategory,
-                        refresh = refresh,
-                    )
-                    MarketMovers(
-                        actives = actives,
-                        losers = losers,
-                        gainers = gainers,
-                        refresh = refresh,
-                    )
-                }
-                PullRefreshIndicator(
-                    refreshing = isRefreshing,
-                    state = pullRefreshState,
-                    modifier = Modifier.align(Alignment.TopCenter)
+                MarketIndices(
+                    indices = indices,
+                    isLoading = isLoading,
+                    refresh = refresh,
+                )
+                NewsFeed(
+                    news = news,
+                    preferredCategory = preferredCategory,
+                    onCategorySelected = setPreferredCategory,
+                    isLoading = isLoading,
+                    refresh = refresh,
+                )
+                MarketMovers(
+                    actives = actives,
+                    losers = losers,
+                    gainers = gainers,
+                    refresh = refresh,
                 )
             }
+            PullRefreshIndicator(
+                refreshing = isRefreshing,
+                state = pullRefreshState,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
         }
     }
 }
