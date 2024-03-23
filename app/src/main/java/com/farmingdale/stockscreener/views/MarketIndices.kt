@@ -1,42 +1,50 @@
 package com.farmingdale.stockscreener.views
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.googlefinance.MarketIndex
+import com.farmingdale.stockscreener.ui.theme.indexColor
+import com.farmingdale.stockscreener.ui.theme.negativeTextColor
+import com.farmingdale.stockscreener.ui.theme.positiveTextColor
+import kotlinx.coroutines.launch
 
 @Composable
 fun MarketIndices(
     indices: List<MarketIndex>?,
+    isLoading: Boolean,
     refresh: () -> Unit,
 ) {
     Column(
         modifier = Modifier
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.dp, vertical = 4.dp)
             .fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Row(
@@ -54,75 +62,81 @@ fun MarketIndices(
         if (indices.isNullOrEmpty()) {
             ErrorCard(refresh = refresh)
         } else {
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                content = {
-                    items(indices) { index ->
-                        MarketIndexCard(index = index)
-                    }
+            if (isLoading) {
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator()
                 }
-            )
+            } else {
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    content = {
+                        items(indices) { index ->
+                            MarketIndexCard(index = index)
+                        }
+                    }
+                )
+            }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MarketIndexCard(index: MarketIndex) {
-    val color = index.percentChange.let {
-        if (it.contains('+')) Color.Green else Color.Red
-    }
-    Card(
-        shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = color.copy(alpha = 0.1f)
-        ),
-        modifier = Modifier
-            .size(250.dp, 150.dp)
-            .shadow(1.dp)
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        color.copy(alpha = 0.5f),
-                        color.copy(alpha = 0.1f)
-                    )
-                )
-            )
+    val tooltipState = rememberTooltipState()
+    val scope = rememberCoroutineScope()
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+        tooltip = {
+            PlainTooltip {
+                Text(index.name)
+            }
+        },
+        state = tooltipState
     ) {
-        Column(
+        Card(
             modifier = Modifier
-                .padding(16.dp)
-                .fillMaxHeight(),
-            verticalArrangement = Arrangement.SpaceAround
+                .size(125.dp, 75.dp)
+                .clickable { scope.launch { tooltipState.show() } }
         ) {
-            Text(
-                text = index.name,
-                style = MaterialTheme.typography.headlineMedium,
-                maxLines = 1,
-                color = Color(0xff147efb)
-            )
-            Text(
-                text = index.score,
-                style = MaterialTheme.typography.headlineMedium
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.SpaceAround
             ) {
                 Text(
-                    text = index.change,
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = if (index.change.contains('+')) Color.Green else Color.Red
+                    text = index.name,
+                    style = MaterialTheme.typography.titleSmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = indexColor
                 )
                 Text(
-                    text = index.percentChange,
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = if (index.change.contains('+')) Color.Green else Color.Red
+                    text = index.score,
+                    style = MaterialTheme.typography.titleSmall
                 )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = index.change,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (index.change.contains('+')) positiveTextColor else negativeTextColor
+                    )
+                    Text(
+                        text = index.percentChange,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (index.change.contains('+')) positiveTextColor else negativeTextColor
+                    )
+                }
             }
-
         }
     }
-
 }
 
 @Preview
@@ -146,5 +160,4 @@ fun PreviewMarketIndexCard() {
             )
         )
     }
-
 }

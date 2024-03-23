@@ -64,6 +64,7 @@ fun NewsFeed(
     news: News?,
     preferredCategory: Category?,
     onCategorySelected: (Category) -> Unit,
+    isLoading: Boolean,
     refresh: () -> Unit,
 ) {
     var isNewsSettingsOpen by rememberSaveable { mutableStateOf(false) }
@@ -91,7 +92,16 @@ fun NewsFeed(
                 )
             }
         }
-        if (news?.articles.isNullOrEmpty()) {
+
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .size(300.dp, 150.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else if (news?.articles.isNullOrEmpty()) {
             ErrorCard(refresh = refresh)
         } else {
             LazyRow(
@@ -112,7 +122,7 @@ fun NewsFeed(
                     categories = Category.entries,
                     preferredCategory = rememberSaveable {
                         mutableStateOf(
-                            preferredCategory ?: Category.GENERAL
+                            preferredCategory ?: Category.BUSINESS
                         )
                     },
                     onCategorySelected = onCategorySelected,
@@ -131,6 +141,7 @@ fun PreviewNewsFeed() {
         news = null,
         preferredCategory = Category.GENERAL,
         onCategorySelected = {},
+        isLoading = false,
         refresh = {}
     )
 }
@@ -250,7 +261,7 @@ fun NewsSettingsDialog(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy((-6).dp)
                             ) {
-                                Box(modifier = Modifier.size(48.dp)) { // Adjust the size as needed
+                                Box(modifier = Modifier.size(48.dp)) {
                                     RadioButton(
                                         selected = preferredCategory.value == category,
                                         onClick = { preferredCategory.value = category }
@@ -259,7 +270,7 @@ fun NewsSettingsDialog(
                                 Text(
                                     text = category.displayName,
                                     style = MaterialTheme.typography.labelSmall,
-                                    modifier = Modifier.padding(start = 8.dp) // Reduce the padding as needed
+                                    modifier = Modifier.padding(start = 8.dp)
                                 )
                             }
                         }
@@ -274,7 +285,7 @@ fun NewsSettingsDialog(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy((-6).dp)
                             ) {
-                                Box(modifier = Modifier.size(48.dp)) { // Adjust the size as needed
+                                Box(modifier = Modifier.size(48.dp)) {
                                     RadioButton(
                                         selected = preferredCategory.value == category,
                                         onClick = { preferredCategory.value = category }
@@ -283,7 +294,7 @@ fun NewsSettingsDialog(
                                 Text(
                                     text = category.displayName,
                                     style = MaterialTheme.typography.labelSmall,
-                                    modifier = Modifier.padding(start = 8.dp) // Reduce the padding as needed
+                                    modifier = Modifier.padding(start = 8.dp)
                                 )
                             }
                         }

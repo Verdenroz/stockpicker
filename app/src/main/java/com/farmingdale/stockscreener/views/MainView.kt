@@ -115,7 +115,6 @@ fun MainContent(
                 verticalArrangement = Arrangement.SpaceAround,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 MarketIndices(
                     indices = indices,
                     isLoading = isLoading,
@@ -132,6 +131,7 @@ fun MainContent(
                     actives = actives,
                     losers = losers,
                     gainers = gainers,
+                    isLoading = isLoading,
                     refresh = refresh,
                 )
             }
