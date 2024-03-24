@@ -4,61 +4,43 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import com.farmingdale.stockscreener.model.local.GeneralSearchData
 import com.farmingdale.stockscreener.model.local.WatchList
-import com.farmingdale.stockscreener.model.local.googlefinance.GoogleFinanceStock
-import com.farmingdale.stockscreener.model.local.googlefinance.MarketIndex
-import com.farmingdale.stockscreener.model.local.news.Category
-import com.farmingdale.stockscreener.model.local.news.News
 import kotlinx.coroutines.flow.StateFlow
 
 abstract class MainViewModel(application: Application) : AndroidViewModel(application) {
 
+    /**
+     * The current query string in search bar
+     */
     abstract val query: StateFlow<String>
 
+    /**
+     * The search results for the current query as [GeneralSearchData]
+     */
     abstract val searchResults: StateFlow<GeneralSearchData?>
 
+    /**
+     * The user's watch list
+     */
     abstract val watchList: StateFlow<WatchList?>
 
-    abstract val preferredCategory: StateFlow<Category?>
-
-    abstract val news: StateFlow<News?>
-
-    abstract val indices: StateFlow<List<MarketIndex>?>
-
-    abstract val actives: StateFlow<List<GoogleFinanceStock>?>
-
-    abstract val losers: StateFlow<List<GoogleFinanceStock>?>
-
-    abstract val gainers: StateFlow<List<GoogleFinanceStock>?>
-
-    abstract val isRefreshing: StateFlow<Boolean>
-
-    abstract val isLoading: StateFlow<Boolean>
-
+    /**
+     * Update the current [query] string
+     */
     abstract fun updateQuery(query: String)
 
+    /**
+     * Search for a query and updates [searchResults]
+     */
     abstract fun search(query: String)
 
+    /**
+     * Update the user's [watchList] with fresh or new data
+     */
     abstract fun updateWatchList()
 
+    /**
+     * Add a stock to the user's [watchList]
+     */
     abstract fun addToWatchList(symbol: String)
-
-    abstract fun deleteFromWatchList(symbol: String)
-
-    abstract fun clearWatchList()
-
-    abstract fun setPreferredCategory(category: Category)
-
-    abstract fun getHeadlines(category: Category?)
-
-    abstract fun getIndices()
-
-    abstract fun getActives()
-
-    abstract fun getLosers()
-
-    abstract fun getGainers()
-
-    abstract fun refresh()
-
 
 }
