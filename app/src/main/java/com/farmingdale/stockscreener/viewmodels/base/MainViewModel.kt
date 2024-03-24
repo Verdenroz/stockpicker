@@ -43,4 +43,9 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
      */
     abstract fun addToWatchList(symbol: String)
 
+    /**
+     * Remove a stock from the user's [watchList]
+     */
+    abstract fun deleteFromWatchList(symbol: String)
+
 }

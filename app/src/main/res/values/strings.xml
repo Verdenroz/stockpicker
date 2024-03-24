@@ -25,4 +25,5 @@
     <string name="topGainers">Top Gainers</string>
     <string name="portfolio">Your Portfolio</string>
     <string name="portfolio_empty">Portfolio is empty. Add stocks to your watchlist!</string>
+    <string name="remove_description">Remove from watchlist</string>
 </resources>

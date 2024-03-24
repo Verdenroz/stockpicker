@@ -21,6 +21,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.farmingdale.stockscreener.model.local.GeneralSearchData
+import com.farmingdale.stockscreener.model.local.WatchList
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
 import com.farmingdale.stockscreener.viewmodels.ImplMainViewModel
 import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
@@ -31,6 +32,7 @@ fun MainView() {
     val mainViewModel: MainViewModel = viewModel<ImplMainViewModel>()
     val query by mainViewModel.query.collectAsState()
     val searchResults by mainViewModel.searchResults.collectAsState()
+    val watchList by mainViewModel.watchList.collectAsState()
     LaunchedEffect(key1 = query) {
         delay(500)
         mainViewModel.search(query)
@@ -38,8 +40,10 @@ fun MainView() {
     StockScreenerTheme {
         MainContent(
             searchResults = searchResults,
+            watchList = watchList,
             updateQuery = { query -> mainViewModel.updateQuery(query) },
             addToWatchList = { symbol -> mainViewModel.addToWatchList(symbol) },
+            deleteFromWatchList = { symbol -> mainViewModel.deleteFromWatchList(symbol) },
         )
     }
 }
@@ -47,8 +51,10 @@ fun MainView() {
 @Composable
 fun MainContent(
     searchResults: GeneralSearchData?,
+    watchList: WatchList?,
     updateQuery: (String) -> Unit,
     addToWatchList: (String) -> Unit,
+    deleteFromWatchList: (String) -> Unit,
 ) {
     val navController = rememberNavController()
 
@@ -56,8 +62,10 @@ fun MainContent(
         topBar = {
             SearchBar(
                 searchResults = searchResults,
+                watchList = watchList,
                 updateQuery = updateQuery,
-                addToWatchList = addToWatchList
+                addToWatchList = addToWatchList,
+                deleteFromWatchList = deleteFromWatchList,
             )
         },
         bottomBar = {

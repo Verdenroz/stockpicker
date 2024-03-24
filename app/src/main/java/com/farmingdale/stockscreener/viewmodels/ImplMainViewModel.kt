@@ -77,4 +77,11 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
             updateWatchList()
         }
     }
+
+    override fun deleteFromWatchList(symbol: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            financialModelRepo.deleteFromWatchList(symbol)
+            updateWatchList()
+        }
+    }
 }

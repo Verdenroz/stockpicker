@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,13 +29,16 @@ import androidx.compose.ui.unit.dp
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.GeneralSearchData
 import com.farmingdale.stockscreener.model.local.GeneralSearchMatch
+import com.farmingdale.stockscreener.model.local.WatchList
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchBar(
     searchResults: GeneralSearchData?,
+    watchList: WatchList?,
     updateQuery: (String) -> Unit,
     addToWatchList: (String) -> Unit,
+    deleteFromWatchList: (String) -> Unit,
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var active by rememberSaveable { mutableStateOf(false) }
@@ -66,6 +70,7 @@ fun SearchBar(
         },
     ) {
         searchResults?.matches?.forEach { match ->
+            val isInWatchListState = watchList?.quotes?.any { it.symbol == match.symbol } ?: false
             ListItem(
                 modifier = Modifier
                     .clickable {
@@ -76,11 +81,20 @@ fun SearchBar(
                 headlineContent = { Text(match.name) },
                 leadingContent = { Text(match.symbol) },
                 trailingContent = {
-                    IconButton(onClick = { addToWatchList(match.symbol) }) {
-                        Icon(
-                            Icons.Default.AddCircle,
-                            contentDescription = stringResource(id = R.string.add_description)
-                        )
+                    if (isInWatchListState) {
+                        IconButton(onClick = { deleteFromWatchList(match.symbol) }) {
+                            Icon(
+                                Icons.Default.Clear,
+                                contentDescription = stringResource(id = R.string.remove_description)
+                            )
+                        }
+                    } else {
+                        IconButton(onClick = { addToWatchList(match.symbol) }) {
+                            Icon(
+                                Icons.Default.AddCircle,
+                                contentDescription = stringResource(id = R.string.add_description)
+                            )
+                        }
                     }
                 }
             )
