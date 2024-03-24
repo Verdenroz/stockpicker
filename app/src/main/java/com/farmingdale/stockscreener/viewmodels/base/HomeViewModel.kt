@@ -47,16 +47,6 @@ abstract class HomeViewModel(application: Application): AndroidViewModel(applica
     abstract val losers: StateFlow<List<GoogleFinanceStock>?>
 
     /**
-     * Whether the home screen is refreshing
-     */
-    abstract val isRefreshing: StateFlow<Boolean>
-
-    /**
-     * Whether the home screen is loading
-     */
-    abstract val isLoading: StateFlow<Boolean>
-
-    /**
      * Set the user's preferred news category
      */
     abstract fun setPreferredCategory(category: Category)

@@ -46,8 +46,6 @@ fun HomeView() {
         losers = losers,
         gainers = gainers,
         preferredCategory = preferredCategory,
-        isLoading = isLoading,
-        isRefreshing = isRefreshing,
         setPreferredCategory = homeViewModel::setPreferredCategory,
         refresh = homeViewModel::refresh
     )
@@ -63,8 +61,6 @@ fun HomeContent(
     losers: List<GoogleFinanceStock>?,
     gainers: List<GoogleFinanceStock>?,
     preferredCategory: Category?,
-    isLoading: Boolean,
-    isRefreshing: Boolean,
     setPreferredCategory: (Category) -> Unit,
     refresh: () -> Unit,
 ) {
@@ -132,8 +128,6 @@ fun PreviewHomeContent() {
         losers = null,
         gainers = null,
         preferredCategory = null,
-        isLoading = false,
-        isRefreshing = false,
         setPreferredCategory = {},
         refresh = {},
     )

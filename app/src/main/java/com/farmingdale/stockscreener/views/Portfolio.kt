@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,7 +29,6 @@ import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 @Composable
 fun Portfolio(
     watchList: WatchList?,
-    isLoading: Boolean,
 ) {
     Column(
         modifier = Modifier
@@ -60,24 +58,15 @@ fun Portfolio(
             }
 
         } else {
-            if (isLoading) {
-                Row(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            } else {
-                LazyRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start),
-                    content = {
-                        items(watchList!!.quotes) { quote ->
-                            PortfolioStockCard(quote = quote)
-                        }
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start),
+                content = {
+                    items(watchList!!.quotes) { quote ->
+                        PortfolioStockCard(quote = quote)
                     }
-                )
-            }
+                }
+            )
         }
     }
 }

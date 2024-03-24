@@ -64,7 +64,6 @@ fun NewsFeed(
     news: News?,
     preferredCategory: Category?,
     onCategorySelected: (Category) -> Unit,
-    isLoading: Boolean,
     refresh: () -> Unit,
 ) {
     var isNewsSettingsOpen by rememberSaveable { mutableStateOf(false) }
@@ -92,16 +91,7 @@ fun NewsFeed(
                 )
             }
         }
-
-        if (isLoading) {
-            Box(
-                modifier = Modifier
-                    .size(300.dp, 150.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else if (news?.articles.isNullOrEmpty()) {
+        if (news?.articles.isNullOrEmpty()) {
             ErrorCard(refresh = refresh)
         } else {
             LazyRow(
@@ -141,7 +131,6 @@ fun PreviewNewsFeed() {
         news = null,
         preferredCategory = Category.GENERAL,
         onCategorySelected = {},
-        isLoading = false,
         refresh = {}
     )
 }

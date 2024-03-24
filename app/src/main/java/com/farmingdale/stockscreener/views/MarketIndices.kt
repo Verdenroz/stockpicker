@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
@@ -37,7 +36,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun MarketIndices(
     indices: List<MarketIndex>?,
-    isLoading: Boolean,
     refresh: () -> Unit,
 ) {
     Column(
@@ -62,23 +60,14 @@ fun MarketIndices(
         if (indices.isNullOrEmpty()) {
             ErrorCard(refresh = refresh)
         } else {
-            if (isLoading) {
-                Row(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            } else {
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    content = {
-                        items(indices) { index ->
-                            MarketIndexCard(index = index)
-                        }
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                content = {
+                    items(indices) { index ->
+                        MarketIndexCard(index = index)
                     }
-                )
-            }
+                }
+            )
         }
     }
 }

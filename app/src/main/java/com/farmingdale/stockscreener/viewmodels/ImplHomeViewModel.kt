@@ -16,7 +16,6 @@ import com.farmingdale.stockscreener.repos.base.NewsRepository
 import com.farmingdale.stockscreener.viewmodels.base.HomeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -48,12 +47,6 @@ class ImplHomeViewModel(application: Application): HomeViewModel(application) {
 
     private val _gainers: MutableStateFlow<List<GoogleFinanceStock>?> = MutableStateFlow(null)
     override val gainers: StateFlow<List<GoogleFinanceStock>?> = _gainers.asStateFlow()
-
-    private val _isRefreshing = MutableStateFlow(false)
-    override val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
-
-    private val _isLoading = MutableStateFlow(false)
-    override val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val newsCache = mutableMapOf<Category?, News?>()
 
@@ -128,8 +121,6 @@ class ImplHomeViewModel(application: Application): HomeViewModel(application) {
 
     override fun refresh() {
         viewModelScope.launch {
-            _isLoading.emit(true)
-            delay(250L)
             val headlines = async(Dispatchers.IO) { getHeadlines(preferredCategory.value) }
             val indices = async(Dispatchers.IO) { getIndices() }
             val actives = async(Dispatchers.IO) { getActives() }
@@ -141,9 +132,6 @@ class ImplHomeViewModel(application: Application): HomeViewModel(application) {
             losers.await()
             gainers.await()
             updateWatchList()
-            _isRefreshing.emit(false)
-            delay(250L)
-            _isLoading.emit(false)
         }
     }
 }

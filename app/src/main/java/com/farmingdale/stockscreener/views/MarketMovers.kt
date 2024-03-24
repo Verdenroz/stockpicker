@@ -3,14 +3,12 @@ package com.farmingdale.stockscreener.views
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,7 +17,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -36,8 +33,8 @@ import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.googlefinance.GoogleFinanceStock
 import com.farmingdale.stockscreener.ui.theme.negativeBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
-import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveBackgroundColor
+import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -47,7 +44,6 @@ fun MarketMovers(
     actives: List<GoogleFinanceStock>?,
     losers: List<GoogleFinanceStock>?,
     gainers: List<GoogleFinanceStock>?,
-    isLoading: Boolean,
     refresh: () -> Unit,
 ) {
     val state = rememberPagerState(pageCount = { 3 })
@@ -99,41 +95,31 @@ fun MarketMovers(
                 Icon(Icons.AutoMirrored.Default.KeyboardArrowRight, contentDescription = "Forward")
             }
         }
-        if (isLoading) {
-            Box(
-                modifier = Modifier
-                    .size(300.dp, 150.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else {
-            HorizontalPager(
-                state = state,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-            ) { page ->
-                when (page) {
-                    0 -> {
-                        MarketMoversList(
-                            stocks = actives,
-                            refresh = refresh
-                        )
-                    }
+        HorizontalPager(
+            state = state,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+        ) { page ->
+            when (page) {
+                0 -> {
+                    MarketMoversList(
+                        stocks = actives,
+                        refresh = refresh
+                    )
+                }
 
-                    1 -> {
-                        MarketMoversList(
-                            stocks = gainers,
-                            refresh = refresh
-                        )
-                    }
+                1 -> {
+                    MarketMoversList(
+                        stocks = gainers,
+                        refresh = refresh
+                    )
+                }
 
-                    2 -> {
-                        MarketMoversList(
-                            stocks = losers,
-                            refresh = refresh
-                        )
-                    }
+                2 -> {
+                    MarketMoversList(
+                        stocks = losers,
+                        refresh = refresh
+                    )
                 }
             }
         }
@@ -147,7 +133,6 @@ fun PreviewMarketMovers() {
         actives = null,
         losers = null,
         gainers = null,
-        isLoading = false,
         refresh = {}
     )
 }
