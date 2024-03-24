@@ -46,7 +46,7 @@ data class FullQuoteResponse(
     val avgVolume: Long,
     val open: Double,
     val previousClose: Double,
-    val eps: Double,
+    val eps: Double?,
     val pe: Double?,
     val earningsAnnouncement: String?,
     val sharesOutstanding: Long,
