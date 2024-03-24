@@ -88,7 +88,8 @@ fun MainContent(
     setPreferredCategory: (Category) -> Unit,
     refresh: () -> Unit,
 ) {
-    val pullRefreshState = rememberPullRefreshState(refreshing = isRefreshing, onRefresh = refresh)
+    val navController = rememberNavController()
+
     Scaffold(
         topBar = {
             SearchBar(
@@ -98,71 +99,60 @@ fun MainContent(
             )
         },
         bottomBar = {
-            BottomBar()
+            BottomNavigation {
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentDestination = navBackStackEntry?.destination
+                val items = listOf(
+                    Screen.Home,
+                    Screen.Watchlist,
+                    Screen.Simulate,
+                    Screen.Alerts
+                )
+                items.forEach { screen ->
+                    BottomNavigationItem(
+                        icon = {
+                            Icon(
+                                screen.icon,
+                                contentDescription = stringResource(id = screen.titleResource)
+                            )
+                        },
+                        label = { Text(stringResource(id = screen.titleResource)) },
+                        selected = currentDestination?.route == screen.route,
+                        onClick = {
+                            navController.navigate(screen.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    )
+                }
+            }
         }
     ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .pullRefresh(pullRefreshState)
-                .verticalScroll(rememberScrollState()),
+        NavHost(
+            navController = navController,
+            startDestination = Screen.Home.route,
+            modifier = Modifier.padding(padding)
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.SpaceAround,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                MarketIndices(
-                    indices = indices,
-                    isLoading = isLoading,
-                    refresh = refresh,
-                )
-                Portfolio(
-                    watchList = watchList,
-                    isLoading = isLoading,
-                )
-                NewsFeed(
-                    news = news,
-                    preferredCategory = preferredCategory,
-                    onCategorySelected = setPreferredCategory,
-                    isLoading = isLoading,
-                    refresh = refresh,
-                )
-                MarketMovers(
-                    actives = actives,
-                    losers = losers,
-                    gainers = gainers,
-                    isLoading = isLoading,
-                    refresh = refresh,
-                )
+            composable(Screen.Home.route) {
+                Log.d("MainNavigation", "Home")
+                HomeView()
             }
-            PullRefreshIndicator(
-                refreshing = isRefreshing,
-                state = pullRefreshState,
-                modifier = Modifier.align(Alignment.TopCenter)
-            )
+            composable(Screen.Watchlist.route) {
+                Log.d("MainNavigation", "Watchlist")
+                TODO("WatchList")
+            }
+            composable(Screen.Simulate.route) {
+                Log.d("MainNavigation", "Simulation")
+                TODO("Simulation")
+            }
+            composable(Screen.Alerts.route) {
+                Log.d("MainNavigation", "Alerts")
+                TODO("Alerts")
+            }
         }
     }
-}
-
-@Preview
-@Composable
-fun PreviewMainContent() {
-    MainContent(
-        searchResults = null,
-        watchList = null,
-        news = null,
-        indices = null,
-        actives = null,
-        losers = null,
-        gainers = null,
-        preferredCategory = null,
-        isLoading = false,
-        isRefreshing = false,
-        updateQuery = {},
-        addToWatchList = {},
-        setPreferredCategory = {},
-        refresh = {},
-    )
 }
