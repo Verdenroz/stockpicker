@@ -2,28 +2,30 @@ package com.farmingdale.stockscreener.views
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.farmingdale.stockscreener.model.local.WatchList
 import com.farmingdale.stockscreener.model.local.googlefinance.GoogleFinanceStock
 import com.farmingdale.stockscreener.model.local.googlefinance.MarketIndex
 import com.farmingdale.stockscreener.model.local.news.Category
 import com.farmingdale.stockscreener.model.local.news.News
-import com.farmingdale.stockscreener.viewmodels.base.HomeViewModel
 import com.farmingdale.stockscreener.viewmodels.ImplHomeViewModel
+import com.farmingdale.stockscreener.viewmodels.base.HomeViewModel
+import kotlinx.coroutines.delay
 
 @Composable
 fun HomeView() {
@@ -34,8 +36,6 @@ fun HomeView() {
     val actives by homeViewModel.actives.collectAsState()
     val losers by homeViewModel.losers.collectAsState()
     val gainers by homeViewModel.gainers.collectAsState()
-    val isRefreshing by homeViewModel.isRefreshing.collectAsState()
-    val isLoading by homeViewModel.isLoading.collectAsState()
     val preferredCategory by homeViewModel.preferredCategory.collectAsState()
 
     HomeContent(
@@ -53,7 +53,7 @@ fun HomeView() {
     )
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeContent(
     watchList: WatchList?,
@@ -68,46 +68,55 @@ fun HomeContent(
     setPreferredCategory: (Category) -> Unit,
     refresh: () -> Unit,
 ) {
-    val pullRefreshState = rememberPullRefreshState(refreshing = isRefreshing, onRefresh = refresh)
+    val pullRefreshState = rememberPullToRefreshState()
+    if (pullRefreshState.isRefreshing) {
+        LaunchedEffect(true) {
+            refresh()
+            delay(500L)
+            pullRefreshState.endRefresh()
+        }
+    }
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .pullRefresh(pullRefreshState)
-            .verticalScroll(rememberScrollState()),
+        modifier = Modifier.nestedScroll(pullRefreshState.nestedScrollConnection),
     ) {
-        Column(
+        LazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.SpaceAround,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            MarketIndices(
-                indices = indices,
-                isLoading = isLoading,
-                refresh = refresh,
-            )
-            Portfolio(
-                watchList = watchList,
-                isLoading = isLoading,
-            )
-            NewsFeed(
-                news = news,
-                preferredCategory = preferredCategory,
-                onCategorySelected = setPreferredCategory,
-                isLoading = isLoading,
-                refresh = refresh,
-            )
-            MarketMovers(
-                actives = actives,
-                losers = losers,
-                gainers = gainers,
-                isLoading = isLoading,
-                refresh = refresh,
-            )
+            item {
+                MarketIndices(
+                    indices = indices,
+                    refresh = refresh,
+                )
+            }
+            item {
+                Portfolio(
+                    watchList = watchList,
+                )
+            }
+            item {
+                NewsFeed(
+                    news = news,
+                    preferredCategory = preferredCategory,
+                    onCategorySelected = setPreferredCategory,
+                    refresh = refresh,
+                )
+            }
+            item {
+                MarketMovers(
+                    actives = actives,
+                    losers = losers,
+                    gainers = gainers,
+                    refresh = refresh,
+                )
+            }
         }
-        PullRefreshIndicator(
-            refreshing = isRefreshing,
+        PullToRefreshContainer(
             state = pullRefreshState,
-            modifier = Modifier.align(Alignment.TopCenter)
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .offset(y = (-16).dp)
         )
     }
 }
