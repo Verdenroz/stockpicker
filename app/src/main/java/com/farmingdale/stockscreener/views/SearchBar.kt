@@ -1,10 +1,8 @@
 package com.farmingdale.stockscreener.views
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Clear
@@ -14,6 +12,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,10 +44,9 @@ fun SearchBar(
     DockedSearchBar(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
-            .border(2.dp, Color.LightGray, RoundedCornerShape(10)),
+            .padding(8.dp),
         colors = SearchBarDefaults.colors(
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.surfaceDim,
             dividerColor = Color.Transparent,
         ),
         query = query,
@@ -61,7 +59,7 @@ fun SearchBar(
         },
         active = active,
         onActiveChange = { active = it },
-        placeholder = { Text("Search") },
+        placeholder = { Text(stringResource(id = R.string.search), color = MaterialTheme.colorScheme.onSurface) },
         leadingIcon = {
             Icon(
                 Icons.Default.Search,

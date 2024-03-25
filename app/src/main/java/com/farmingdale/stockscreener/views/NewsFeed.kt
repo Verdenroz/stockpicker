@@ -42,7 +42,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -140,10 +139,6 @@ fun ContentCard(
     article: Article?
 ) {
     val context = LocalContext.current
-    val gradient = Brush.verticalGradient(
-        colors = listOf(Color.White, Color.LightGray)
-    )
-
     var image by remember { mutableStateOf<ImageBitmap?>(null) }
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf(false) }
@@ -162,7 +157,7 @@ fun ContentCard(
 
     Row(
         modifier = Modifier
-            .background(gradient)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
             .size(300.dp, 150.dp)
             .shadow(1.dp),
         horizontalArrangement = Arrangement.SpaceAround,
