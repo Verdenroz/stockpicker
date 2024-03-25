@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.views
+package com.farmingdale.stockscreener.views.main
 
 import android.util.Log
 import androidx.compose.foundation.layout.padding
@@ -25,6 +25,8 @@ import com.farmingdale.stockscreener.model.local.WatchList
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
 import com.farmingdale.stockscreener.viewmodels.ImplMainViewModel
 import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
+import com.farmingdale.stockscreener.views.home.HomeView
+import com.farmingdale.stockscreener.views.Screen
 import kotlinx.coroutines.delay
 
 @Composable

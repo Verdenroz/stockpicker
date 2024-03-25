@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.views
+package com.farmingdale.stockscreener.views.home
 
 import android.content.Intent
 import android.graphics.drawable.BitmapDrawable

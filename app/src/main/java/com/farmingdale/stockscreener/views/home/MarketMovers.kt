@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.views
+package com.farmingdale.stockscreener.views.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background

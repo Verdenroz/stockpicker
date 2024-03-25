@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.views
+package com.farmingdale.stockscreener.views.home
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

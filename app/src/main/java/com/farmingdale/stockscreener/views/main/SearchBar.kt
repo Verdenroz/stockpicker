@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.views
+package com.farmingdale.stockscreener.views.main
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
