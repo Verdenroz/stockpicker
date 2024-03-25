@@ -29,21 +29,18 @@ class ImplNewsAPI(private val client: OkHttpClient): NewsAPI {
         val request = Request.Builder()
             .url(url)
             .get()
-            .addHeader("X-RapidAPI-Key", BuildConfig.alphaVantageAPI)
-            .addHeader("X-RapidAPI-Host", "alpha-vantage.p.rapidapi.com")
             .build()
         val call = client.newCall(request)
         val response = call.executeAsync()
         return response.body!!.byteStream()
     }
     @OptIn(ExperimentalSerializationApi::class)
-    override suspend fun getHeadlines(category: Category?, query: String?): News {
+    override suspend fun getHeadlines(category: Category?): News {
         val stream = getByteStream(
             NEWS_API_URL.newBuilder().apply{
                 addPathSegments("top-headlines")
                 addQueryParameter("country", "us")
                 category?.let { addQueryParameter("category", it.name) }
-                query?.let { addQueryParameter("q", it) }
                 addQueryParameter("apiKey", BuildConfig.newsAPIKey)
             }.build()
         )
@@ -63,7 +60,7 @@ class ImplNewsAPI(private val client: OkHttpClient): NewsAPI {
                 publishedAt = article.publishedAt,
                 content = article.content
             )
-        }.shuffled()
+        }.take(10).shuffled()
         return News(articles)
     }
 }
