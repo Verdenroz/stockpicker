@@ -11,7 +11,6 @@ interface NewsAPI {
     /**
      * Get the latest news headlines by category or query
      * @param category the category of the news (business, entertainment, general, health, science, sports, technology)
-     * @param query the search query
      * @return [News] containing the latest news headlines in a list
      */
     suspend fun getHeadlines(category: Category?): News

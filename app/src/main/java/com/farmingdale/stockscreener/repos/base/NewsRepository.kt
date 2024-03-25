@@ -9,7 +9,6 @@ abstract class NewsRepository {
     /**
      * Get relevant headlines based on optional category and query
      * @param category [Category] of the headlines
-     * @param query Optional to narrow headlines to keywords
      * @return Flow of [News]
      */
     abstract suspend fun getHeadlines(category: Category?): Flow<News>
