@@ -99,12 +99,12 @@ fun PortfolioStockCard(quote: FullQuoteData) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = quote.change.toString(),
+                    text = String.format("%+.2f", quote.change),
                     style = MaterialTheme.typography.labelSmall,
                     color = if (quote.change > 0) positiveTextColor else negativeTextColor
                 )
                 Text(
-                    text = quote.changesPercentage.toString(),
+                    text = String.format("%+.2f%%", quote.changesPercentage),
                     style = MaterialTheme.typography.labelSmall,
                     color = if (quote.change > 0) positiveTextColor else negativeTextColor
                 )
