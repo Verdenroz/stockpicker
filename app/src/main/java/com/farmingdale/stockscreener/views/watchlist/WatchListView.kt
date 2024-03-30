@@ -1,23 +1,25 @@
 package com.farmingdale.stockscreener.views.watchlist
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.farmingdale.stockscreener.R
+import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.WatchList
+import com.farmingdale.stockscreener.ui.theme.negativeBackgroundColor
+import com.farmingdale.stockscreener.ui.theme.negativeTextColor
+import com.farmingdale.stockscreener.ui.theme.positiveBackgroundColor
+import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 
 @Composable
 fun WatchListView(
@@ -25,36 +27,59 @@ fun WatchListView(
     deleteFromWatchList: (String) -> Unit
 ) {
     LazyColumn(
-        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize(),
         content = {
-            item {
-                Text(
-                    text = stringResource(id = R.string.welcome),
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.displayMedium
-                )
-            }
             watchList?.quotes?.forEach { quote ->
                 item {
-                    ListItem(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp),
-                        headlineContent = { Text(quote.name) },
-                        leadingContent = { Text(quote.symbol) },
-                        trailingContent = {
-                            IconButton(onClick = { deleteFromWatchList(quote.symbol) }) {
-                                Icon(
-                                    Icons.Default.Clear,
-                                    contentDescription = stringResource(id = R.string.delete)
-                                )
-                            }
-                        }
+                    WatchListStock(
+                        quoteData = (quote),
+                        deleteFromWatchList = deleteFromWatchList,
                     )
                 }
             }
+        }
+    )
+}
+
+@Composable
+fun WatchListStock(
+    quoteData: FullQuoteData,
+    deleteFromWatchList: (String) -> Unit
+) {
+    ListItem(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(4.dp),
+        headlineContent = {
+            Text(
+                text = quoteData.name,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Light,
+            )
+        },
+        leadingContent = {
+            Text(
+                text = quoteData.symbol,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSecondary,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(25))
+                    .background(MaterialTheme.colorScheme.secondary)
+                    .padding(8.dp)
+            )
+        },
+        trailingContent = {
+            Text(
+                text = quoteData.price.toString(),
+                style = MaterialTheme.typography.labelLarge,
+                color = if (quoteData.change > 0) positiveTextColor else negativeTextColor,
+                modifier = Modifier
+                    .background(
+                        if (quoteData.change > 0) positiveBackgroundColor else negativeBackgroundColor
+                    )
+                    .padding(8.dp)
+            )
         }
     )
 }
