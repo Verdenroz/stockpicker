@@ -1,5 +1,6 @@
 package com.farmingdale.stockscreener.repos
 
+import android.util.Log
 import com.farmingdale.stockscreener.model.local.UnitedStatesExchanges
 import com.farmingdale.stockscreener.model.local.googlefinance.GoogleFinanceNews
 import com.farmingdale.stockscreener.model.local.googlefinance.GoogleFinanceStock
@@ -8,44 +9,74 @@ import com.farmingdale.stockscreener.providers.ImplGoogleFinanceAPI
 import com.farmingdale.stockscreener.providers.okHttpClient
 import com.farmingdale.stockscreener.repos.base.GoogleFinanceRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 
-class ImplGoogleFinanceRepository() : GoogleFinanceRepository() {
+class ImplGoogleFinanceRepository : GoogleFinanceRepository() {
     private val api = ImplGoogleFinanceAPI(okHttpClient)
-    override suspend fun getIndices(): Flow<List<MarketIndex>> = flow {
-        try {
-            emit(api.getIndices())
-        } catch (e: Exception) {
-            e.printStackTrace()
+    private val refreshInterval = 30000L
+
+    private val indicesFlow = MutableStateFlow<List<MarketIndex>?>(null)
+    private val activesFlow = MutableStateFlow<List<GoogleFinanceStock>?>(null)
+    private val losersFlow = MutableStateFlow<List<GoogleFinanceStock>?>(null)
+    private val gainersFlow = MutableStateFlow<List<GoogleFinanceStock>?>(null)
+
+    override val indices: Flow<List<MarketIndex>?> = flow {
+        while (true) {
+            indicesFlow.value = api.getIndices()
+            emit(indicesFlow.value)
+            delay(refreshInterval)
         }
     }.flowOn(Dispatchers.IO)
 
-    override suspend fun getActives(): Flow<List<GoogleFinanceStock>> = flow {
-        try {
-            emit(api.getActiveStocks())
-        } catch (e: Exception) {
-            e.printStackTrace()
+    override val actives: Flow<List<GoogleFinanceStock>?> = flow {
+        while (true) {
+            activesFlow.value = api.getActiveStocks()
+            emit(activesFlow.value)
+            delay(refreshInterval)
         }
     }.flowOn(Dispatchers.IO)
 
-    override suspend fun getLosers(): Flow<List<GoogleFinanceStock>> = flow {
-        try {
-            emit(api.getLosers())
-        } catch (e: Exception) {
-            e.printStackTrace()
+    override val losers: Flow<List<GoogleFinanceStock>?> = flow {
+        while (true) {
+            losersFlow.value = api.getLosers()
+            emit(losersFlow.value)
+            delay(refreshInterval)
         }
     }.flowOn(Dispatchers.IO)
 
-
-    override suspend fun getGainers(): Flow<List<GoogleFinanceStock>> = flow {
-        try {
-            emit(api.getGainers())
-        } catch (e: Exception) {
-            e.printStackTrace()
+    override val gainers: Flow<List<GoogleFinanceStock>?> = flow {
+        while (true) {
+            gainersFlow.value = api.getGainers()
+            emit(gainersFlow.value)
+            delay(refreshInterval)
         }
     }.flowOn(Dispatchers.IO)
+
+    override suspend fun refreshValues() {
+        Log.d("ImplGoogleFinanceRepository", "Refreshing values")
+        coroutineScope {
+            val indicesDeferred = async(Dispatchers.IO) { api.getIndices() }
+            val activesDeferred = async(Dispatchers.IO) { api.getActiveStocks() }
+            val losersDeferred = async(Dispatchers.IO) { api.getLosers() }
+            val gainersDeferred = async(Dispatchers.IO) { api.getGainers() }
+
+            indicesFlow.value = indicesDeferred.await()
+            activesFlow.value = activesDeferred.await()
+            losersFlow.value = losersDeferred.await()
+            gainersFlow.value = gainersDeferred.await()
+
+            indicesFlow.emit(indicesFlow.value)
+            activesFlow.emit(activesFlow.value)
+            losersFlow.emit(losersFlow.value)
+            gainersFlow.emit(gainersFlow.value)
+        }
+    }
 
     override suspend fun getNews(
         symbol: String,

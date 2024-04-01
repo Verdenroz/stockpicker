@@ -10,29 +10,31 @@ import kotlinx.coroutines.flow.Flow
  * Repository for fetching information from Google Finance
  */
 abstract class GoogleFinanceRepository {
-    /**
-     * Get the indices from Google Finance
-     * @return [Flow] of [List] of [MarketIndex]
-     */
-    abstract suspend fun getIndices(): Flow<List<MarketIndex>>
 
     /**
-     * Get the active stocks from Google Finance
-     * @return [Flow] of [List] of [GoogleFinanceStock]
+     *  Market indices as list of [MarketIndex]
      */
-    abstract suspend fun getActives(): Flow<List<GoogleFinanceStock>>
+    abstract val indices: Flow<List<MarketIndex>?>
 
     /**
-     * Get the losers from Google Finance
-     * @return [Flow] of [List] of [GoogleFinanceStock]
+     * Active stocks as list of [GoogleFinanceStock]
      */
-    abstract suspend fun getLosers(): Flow<List<GoogleFinanceStock>>
+    abstract val actives: Flow<List<GoogleFinanceStock>?>
 
     /**
-     * Get the gainers from Google Finance
-     * @return [Flow] of [List] of [GoogleFinanceStock]
+     * Losers as list of [GoogleFinanceStock]
      */
-    abstract suspend fun getGainers(): Flow<List<GoogleFinanceStock>>
+    abstract val losers: Flow<List<GoogleFinanceStock>?>
+
+    /**
+     * Gainers as list of [GoogleFinanceStock]
+     */
+    abstract val gainers: Flow<List<GoogleFinanceStock>?>
+
+    /**
+     * Refresh the [actives], [losers], [gainers] and [indices] values
+     */
+    abstract suspend fun refreshValues()
 
     /**
      * Get the news for a stock from Google Finance
