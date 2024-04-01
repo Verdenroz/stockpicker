@@ -25,8 +25,8 @@ import com.farmingdale.stockscreener.model.local.WatchList
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
 import com.farmingdale.stockscreener.viewmodels.ImplMainViewModel
 import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
-import com.farmingdale.stockscreener.views.home.HomeView
 import com.farmingdale.stockscreener.views.Screen
+import com.farmingdale.stockscreener.views.home.HomeView
 import com.farmingdale.stockscreener.views.watchlist.WatchListView
 import kotlinx.coroutines.delay
 
@@ -129,6 +129,11 @@ fun MainContent(
             composable(Screen.Alerts.route) {
                 Log.d("MainNavigation", "Alerts")
                 TODO("Alerts")
+            }
+            composable("stock/{symbol}") { backStackEntry ->
+                val symbol = backStackEntry.arguments?.getString("symbol")
+                // Fetch the FullQuoteData based on the symbol
+                // Then pass it to the StockView
             }
         }
     }
