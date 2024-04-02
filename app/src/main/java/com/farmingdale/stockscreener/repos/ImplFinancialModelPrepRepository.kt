@@ -1,6 +1,7 @@
 package com.farmingdale.stockscreener.repos
 
 import android.content.Context
+import android.util.Log
 import com.farmingdale.stockscreener.model.database.AppDatabase
 import com.farmingdale.stockscreener.model.database.DBQuoteData
 import com.farmingdale.stockscreener.model.local.Exchange
@@ -41,7 +42,7 @@ class ImplFinancialModelPrepRepository(application: Context) : FinancialModelPre
         }
     }.flowOn(Dispatchers.IO)
 
-    override suspend fun getWatchList(): Flow<WatchList> {
+    override fun getWatchList(): Flow<WatchList> {
         return db.getAllFullQuoteDataFlow().map { it.toWatchList()
         }.flowOn(Dispatchers.IO)
     }
@@ -66,6 +67,7 @@ class ImplFinancialModelPrepRepository(application: Context) : FinancialModelPre
     }
 
     override suspend fun updateWatchList() {
+        Log.d("ImplFinancialModelPrepRepository", "Updating watch list")
         val symbols = db.getAllFullQuoteDataFlow()
             .flowOn(Dispatchers.IO)
             .flatMapConcat { it.asFlow() }
