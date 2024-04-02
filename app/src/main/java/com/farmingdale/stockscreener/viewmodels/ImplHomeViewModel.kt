@@ -1,7 +1,6 @@
 package com.farmingdale.stockscreener.viewmodels
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.farmingdale.stockscreener.model.local.WatchList
 import com.farmingdale.stockscreener.model.local.googlefinance.GoogleFinanceStock
@@ -29,27 +28,27 @@ class ImplHomeViewModel(application: Application): HomeViewModel(application) {
     private val newsRepo = NewsRepository.get(application)
     private val googleFinanceRepo = GoogleFinanceRepository.get()
 
-    override val watchList: StateFlow<WatchList?> = financialModelRepo.getWatchList().stateIn(viewModelScope, SharingStarted.Lazily, null)
+    override val watchList: StateFlow<WatchList?> = financialModelRepo.getWatchList().stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
     private val _preferredCategory: MutableStateFlow<Category?> = MutableStateFlow(newsRepo.getPreferredCategory())
     override val preferredCategory: StateFlow<Category?> = _preferredCategory.asStateFlow()
 
-    override val news: StateFlow<News?> = newsRepo.headlines.stateIn(viewModelScope, SharingStarted.Lazily, null)
+    override val news: StateFlow<News?> = newsRepo.headlines.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
-    override val indices: StateFlow<List<MarketIndex>?> = googleFinanceRepo.indices.stateIn(viewModelScope, SharingStarted.Lazily, null)
+    override val indices: StateFlow<List<MarketIndex>?> = googleFinanceRepo.indices.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
-    override val actives: StateFlow<List<GoogleFinanceStock>?> = googleFinanceRepo.actives.stateIn(viewModelScope, SharingStarted.Lazily, null)
+    override val actives: StateFlow<List<GoogleFinanceStock>?> = googleFinanceRepo.actives.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
-    override val losers: StateFlow<List<GoogleFinanceStock>?> = googleFinanceRepo.losers.stateIn(viewModelScope, SharingStarted.Lazily, null)
+    override val losers: StateFlow<List<GoogleFinanceStock>?> = googleFinanceRepo.losers.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
-    override val gainers: StateFlow<List<GoogleFinanceStock>?> = googleFinanceRepo.gainers.stateIn(viewModelScope, SharingStarted.Lazily, null)
+    override val gainers: StateFlow<List<GoogleFinanceStock>?> = googleFinanceRepo.gainers.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
     override fun setPreferredCategory(category: Category) {
         newsRepo.setPreferredCategory(category)
+        _preferredCategory.value = category
     }
 
     override fun refresh() {
-        Log.d("ImplHomeViewModel", "refresh() called")
         viewModelScope.launch(Dispatchers.IO) {
             val refreshValuesDeferred = async { googleFinanceRepo.refreshValues() }
             val updateWatchListDeferred = async { financialModelRepo.updateWatchList() }

@@ -68,7 +68,7 @@ fun HomeContent(
     if (pullRefreshState.isRefreshing) {
         LaunchedEffect(true) {
             refresh()
-            delay(500L)
+            delay(1000L)
             pullRefreshState.endRefresh()
         }
     }

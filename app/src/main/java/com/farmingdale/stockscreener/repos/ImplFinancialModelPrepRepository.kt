@@ -1,7 +1,6 @@
 package com.farmingdale.stockscreener.repos
 
 import android.content.Context
-import android.util.Log
 import com.farmingdale.stockscreener.model.database.AppDatabase
 import com.farmingdale.stockscreener.model.database.DBQuoteData
 import com.farmingdale.stockscreener.model.local.Exchange
@@ -12,6 +11,7 @@ import com.farmingdale.stockscreener.providers.ImplFinancialModelPrepAPI
 import com.farmingdale.stockscreener.providers.okHttpClient
 import com.farmingdale.stockscreener.repos.base.FinancialModelPrepRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flatMapConcat
@@ -66,8 +66,8 @@ class ImplFinancialModelPrepRepository(application: Context) : FinancialModelPre
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun updateWatchList() {
-        Log.d("ImplFinancialModelPrepRepository", "Updating watch list")
         val symbols = db.getAllFullQuoteDataFlow()
             .flowOn(Dispatchers.IO)
             .flatMapConcat { it.asFlow() }

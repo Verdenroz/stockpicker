@@ -1,6 +1,5 @@
 package com.farmingdale.stockscreener.repos
 
-import android.util.Log
 import com.farmingdale.stockscreener.model.local.UnitedStatesExchanges
 import com.farmingdale.stockscreener.model.local.googlefinance.GoogleFinanceNews
 import com.farmingdale.stockscreener.model.local.googlefinance.GoogleFinanceStock
@@ -8,75 +7,56 @@ import com.farmingdale.stockscreener.model.local.googlefinance.MarketIndex
 import com.farmingdale.stockscreener.providers.ImplGoogleFinanceAPI
 import com.farmingdale.stockscreener.providers.okHttpClient
 import com.farmingdale.stockscreener.repos.base.GoogleFinanceRepository
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
 
 class ImplGoogleFinanceRepository : GoogleFinanceRepository() {
     private val api = ImplGoogleFinanceAPI(okHttpClient)
-    private val refreshInterval = 30000L
+    private val refreshInterval = 10000L
+    private val _indicesFlow = MutableStateFlow<List<MarketIndex>?>(null)
+    private val _activesFlow = MutableStateFlow<List<GoogleFinanceStock>?>(null)
+    private val _losersFlow = MutableStateFlow<List<GoogleFinanceStock>?>(null)
+    private val _gainersFlow = MutableStateFlow<List<GoogleFinanceStock>?>(null)
 
-    private val indicesFlow = MutableStateFlow<List<MarketIndex>?>(null)
-    private val activesFlow = MutableStateFlow<List<GoogleFinanceStock>?>(null)
-    private val losersFlow = MutableStateFlow<List<GoogleFinanceStock>?>(null)
-    private val gainersFlow = MutableStateFlow<List<GoogleFinanceStock>?>(null)
-
-    override val indices: Flow<List<MarketIndex>?> = flow {
-        while (true) {
-            indicesFlow.value = api.getIndices()
-            emit(indicesFlow.value)
-            delay(refreshInterval)
-        }
-    }.flowOn(Dispatchers.IO)
-
-    override val actives: Flow<List<GoogleFinanceStock>?> = flow {
-        while (true) {
-            activesFlow.value = api.getActiveStocks()
-            emit(activesFlow.value)
-            delay(refreshInterval)
-        }
-    }.flowOn(Dispatchers.IO)
-
-    override val losers: Flow<List<GoogleFinanceStock>?> = flow {
-        while (true) {
-            losersFlow.value = api.getLosers()
-            emit(losersFlow.value)
-            delay(refreshInterval)
-        }
-    }.flowOn(Dispatchers.IO)
-
-    override val gainers: Flow<List<GoogleFinanceStock>?> = flow {
-        while (true) {
-            gainersFlow.value = api.getGainers()
-            emit(gainersFlow.value)
-            delay(refreshInterval)
-        }
-    }.flowOn(Dispatchers.IO)
-
-    override suspend fun refreshValues() {
-        Log.d("ImplGoogleFinanceRepository", "Refreshing values")
-        coroutineScope {
-            val indicesDeferred = async(Dispatchers.IO) { api.getIndices() }
-            val activesDeferred = async(Dispatchers.IO) { api.getActiveStocks() }
-            val losersDeferred = async(Dispatchers.IO) { api.getLosers() }
-            val gainersDeferred = async(Dispatchers.IO) { api.getGainers() }
-
-            indicesFlow.value = indicesDeferred.await()
-            activesFlow.value = activesDeferred.await()
-            losersFlow.value = losersDeferred.await()
-            gainersFlow.value = gainersDeferred.await()
-
-            indicesFlow.emit(indicesFlow.value)
-            activesFlow.emit(activesFlow.value)
-            losersFlow.emit(losersFlow.value)
-            gainersFlow.emit(gainersFlow.value)
-        }
+    init {
+        refreshValuesPeriodically()
     }
+
+    override val indices: Flow<List<MarketIndex>?> = _indicesFlow.asStateFlow()
+
+    override val actives: Flow<List<GoogleFinanceStock>?> = _activesFlow.asStateFlow()
+
+    override val losers: Flow<List<GoogleFinanceStock>?> = _losersFlow.asStateFlow()
+
+    override val gainers: Flow<List<GoogleFinanceStock>?> = _gainersFlow.asStateFlow()
+
+    override suspend fun refreshValues() = coroutineScope {
+        val indicesDeferred = async(Dispatchers.IO) { api.getIndices() }
+        val activesDeferred = async(Dispatchers.IO) { api.getActiveStocks() }
+        val losersDeferred = async(Dispatchers.IO) { api.getLosers() }
+        val gainersDeferred = async(Dispatchers.IO) { api.getGainers() }
+
+        _indicesFlow.emit(indicesDeferred.await())
+        _activesFlow.emit(activesDeferred.await())
+        _losersFlow.emit(losersDeferred.await())
+        _gainersFlow.emit(gainersDeferred.await())
+    }
+
+    private fun refreshValuesPeriodically() = flow<Unit> {
+        while (true) {
+            refreshValues()
+            delay(refreshInterval)
+        }
+    }.flowOn(Dispatchers.IO).launchIn(CoroutineScope(Dispatchers.IO))
 
     override suspend fun getNews(
         symbol: String,
