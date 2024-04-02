@@ -18,7 +18,7 @@ abstract class FinancialModelPrepRepository {
     abstract suspend fun getFullQuote(symbol: String): Flow<FullQuoteData>
 
     /**
-     * Get the user's [WatchList
+     * Get the user's [WatchList]
      */
     abstract fun getWatchList(): Flow<WatchList>
 
