@@ -19,7 +19,7 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
     abstract val searchResults: StateFlow<GeneralSearchData?>
 
     /**
-     * The user's watch list
+     * The user's [WatchList]
      */
     abstract val watchList: StateFlow<WatchList?>
 
@@ -34,17 +34,17 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
     abstract fun search(query: String)
 
     /**
-     * Update the user's [watchList] with fresh or new data
+     * Update the user's [WatchList] with fresh or new data
      */
     abstract fun updateWatchList()
 
     /**
-     * Add a stock to the user's [watchList]
+     * Add a stock to the user's [WatchList]
      */
     abstract fun addToWatchList(symbol: String)
 
     /**
-     * Remove a stock from the user's [watchList]
+     * Remove a stock from the user's [WatchList]
      */
     abstract fun deleteFromWatchList(symbol: String)
 

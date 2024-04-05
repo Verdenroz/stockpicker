@@ -27,6 +27,7 @@ import com.farmingdale.stockscreener.viewmodels.ImplMainViewModel
 import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
 import com.farmingdale.stockscreener.views.home.HomeView
 import com.farmingdale.stockscreener.views.Screen
+import com.farmingdale.stockscreener.views.watchlist.WatchListView
 import kotlinx.coroutines.delay
 
 @Composable
@@ -113,12 +114,13 @@ fun MainContent(
             modifier = Modifier.padding(padding)
         ) {
             composable(Screen.Home.route) {
-                Log.d("MainNavigation", "Home")
                 HomeView()
             }
             composable(Screen.Watchlist.route) {
-                Log.d("MainNavigation", "Watchlist")
-                TODO("WatchList")
+                WatchListView(
+                    watchList = watchList,
+                    deleteFromWatchList = deleteFromWatchList
+                )
             }
             composable(Screen.Simulate.route) {
                 Log.d("MainNavigation", "Simulation")

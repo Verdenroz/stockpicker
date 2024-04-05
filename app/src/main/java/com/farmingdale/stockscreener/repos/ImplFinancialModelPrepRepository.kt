@@ -11,6 +11,7 @@ import com.farmingdale.stockscreener.providers.ImplFinancialModelPrepAPI
 import com.farmingdale.stockscreener.providers.okHttpClient
 import com.farmingdale.stockscreener.repos.base.FinancialModelPrepRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flatMapConcat
@@ -41,7 +42,7 @@ class ImplFinancialModelPrepRepository(application: Context) : FinancialModelPre
         }
     }.flowOn(Dispatchers.IO)
 
-    override suspend fun getWatchList(): Flow<WatchList> {
+    override fun getWatchList(): Flow<WatchList> {
         return db.getAllFullQuoteDataFlow().map { it.toWatchList()
         }.flowOn(Dispatchers.IO)
     }
@@ -65,6 +66,7 @@ class ImplFinancialModelPrepRepository(application: Context) : FinancialModelPre
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun updateWatchList() {
         val symbols = db.getAllFullQuoteDataFlow()
             .flowOn(Dispatchers.IO)

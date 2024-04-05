@@ -12,14 +12,14 @@ import kotlinx.coroutines.flow.StateFlow
 abstract class HomeViewModel(application: Application): AndroidViewModel(application) {
 
     /**
-     * The list of market indices as [MarketIndex]
-     */
-    abstract val indices: StateFlow<List<MarketIndex>?>
-
-    /**
      * The user's watchlist
      */
     abstract val watchList: StateFlow<WatchList?>
+
+    /**
+     * The user's preferred news [Category]
+     */
+    abstract val preferredCategory: StateFlow<Category?>
 
     /**
      * The news for the user's preferred category as a [News] object
@@ -27,9 +27,9 @@ abstract class HomeViewModel(application: Application): AndroidViewModel(applica
     abstract val news: StateFlow<News?>
 
     /**
-     * The user's preferred news [Category]
+     * The list of market indices as [MarketIndex]
      */
-    abstract val preferredCategory: StateFlow<Category?>
+    abstract val indices: StateFlow<List<MarketIndex>?>
 
     /**
      * List of active stocks as [GoogleFinanceStock]
@@ -47,39 +47,9 @@ abstract class HomeViewModel(application: Application): AndroidViewModel(applica
     abstract val losers: StateFlow<List<GoogleFinanceStock>?>
 
     /**
-     * Set the user's preferred news category
+     * Set the user's preferred news [Category]
      */
     abstract fun setPreferredCategory(category: Category)
-
-    /**
-     * Updates [news] for a given category, caching them if the same category, and shuffles randomly the returned headlines
-     */
-    abstract fun getHeadlines(category: Category?)
-
-    /**
-     * Update the user's [watchList] with fresh or new data
-     */
-    abstract fun updateWatchList()
-
-    /**
-     * Get the market indices and updates [indices]
-     */
-    abstract fun getIndices()
-
-    /**
-     * Get the list of active stocks and updates [actives]
-     */
-    abstract fun getActives()
-
-    /**
-     * Get the list of losing stocks and updates [losers]
-     */
-    abstract fun getLosers()
-
-    /**
-     * Get the list of gaining stocks and updates [gainers]
-     */
-    abstract fun getGainers()
 
     /**
      * Refresh the home screen with new data

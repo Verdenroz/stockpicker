@@ -8,10 +8,9 @@ abstract class NewsRepository {
 
     /**
      * Get relevant headlines based on optional category and query
-     * @param category [Category] of the headlines
      * @return Flow of [News]
      */
-    abstract suspend fun getHeadlines(category: Category?): Flow<News>
+    abstract val headlines: Flow<News?>
 
     /**
      * Set preferred category in shared preferences
@@ -22,6 +21,8 @@ abstract class NewsRepository {
      * Get preferred category from shared preferences
      */
     abstract fun getPreferredCategory(): Category?
+
+    abstract suspend fun refreshHeadlines()
 
     companion object
 

@@ -11,9 +11,11 @@ import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.collections.mutableMapOf
 import kotlin.collections.set
@@ -27,14 +29,9 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
     private val _searchResults = MutableStateFlow<GeneralSearchData?>(null)
     override val searchResults: StateFlow<GeneralSearchData?> = _searchResults.asStateFlow()
 
-    private val _watchList = MutableStateFlow<WatchList?>(null)
-    override val watchList: StateFlow<WatchList?> = _watchList.asStateFlow()
+    override val watchList: StateFlow<WatchList?> = financialModelRepo.getWatchList().stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     private val searchCache = mutableMapOf<String, GeneralSearchData?>()
-
-    init {
-        updateWatchList()
-    }
 
     override fun updateQuery(query: String) {
         _query.value = query
@@ -65,9 +62,7 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
 
     override fun updateWatchList() {
         viewModelScope.launch(Dispatchers.IO) {
-            financialModelRepo.getWatchList().collect { updatedWatchList ->
-                _watchList.value = updatedWatchList
-            }
+            financialModelRepo.updateWatchList()
         }
     }
 
