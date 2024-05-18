@@ -29,26 +29,8 @@ android {
 
         buildConfigField(
             "String",
-            "alphaVantageAPI",
-            properties.getProperty("ALPHA_VANTAGE_API_KEY")
-        )
-
-        buildConfigField(
-            "String",
-            "financialModelPrepAPI",
-            properties.getProperty("FINANCIAL_MODEL_PREP_KEY")
-        )
-
-        buildConfigField(
-            "String",
-            "newsAPIKey",
-            properties.getProperty("NEWS_API_KEY")
-        )
-
-        buildConfigField(
-            "String",
-            "googleFinanceAPIKey",
-            properties.getProperty("GOOGLE_FINANCE_API_KEY")
+            "financeQueryAPIKey",
+            properties.getProperty("FINANCE_QUERY_API_KEY")
         )
     }
 

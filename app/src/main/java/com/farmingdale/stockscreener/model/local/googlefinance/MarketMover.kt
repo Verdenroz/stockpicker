@@ -1,17 +1,17 @@
 package com.farmingdale.stockscreener.model.local.googlefinance
 
 /**
- * Local data class for Google Finance stock information
+ * Local data class for market movers
  * @param symbol Stock symbol
  * @param name Stock name
- * @param current Current stock price
+ * @param price Current stock price
  * @param change Change in stock price
  * @param percentChange Percent change in stock price
  */
-data class GoogleFinanceStock(
+data class MarketMover(
     val symbol: String,
     val name: String,
-    val current: String,
+    val price: String,
     val change: String,
     val percentChange: String
 )
