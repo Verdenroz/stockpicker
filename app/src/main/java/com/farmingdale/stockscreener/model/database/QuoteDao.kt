@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.farmingdale.stockscreener.model.local.FullQuoteData
+import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -27,9 +28,6 @@ interface QuoteDao {
     suspend fun deleteAll()
 
     @Query("SELECT * FROM DBQuoteData")
-    fun getAllFullQuoteData(): List<FullQuoteData>
-
-    @Query("SELECT * FROM DBQuoteData")
-    fun getAllFullQuoteDataFlow(): Flow<List<FullQuoteData>>
+    fun getAllQuoteDataFlow(): Flow<List<SimpleQuoteData>>
 
 }
