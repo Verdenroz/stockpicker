@@ -15,20 +15,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.farmingdale.stockscreener.model.local.FullQuoteData
-import com.farmingdale.stockscreener.model.local.WatchList
+import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.ui.theme.negativeBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
-import com.farmingdale.stockscreener.views.stock.StockView
 
 @Composable
 fun WatchListView(
-    watchList: WatchList?,
+    watchList: List<SimpleQuoteData>?,
     deleteFromWatchList: (String) -> Unit
 ) {
     val navController = rememberNavController()
@@ -36,7 +33,7 @@ fun WatchListView(
         modifier = Modifier
             .fillMaxSize(),
         content = {
-            watchList?.quotes?.forEach { quote ->
+            watchList?.forEach { quote ->
                 item {
                     WatchListStock(
                         quoteData = (quote),
@@ -51,7 +48,7 @@ fun WatchListView(
 
 @Composable
 fun WatchListStock(
-    quoteData: FullQuoteData,
+    quoteData: SimpleQuoteData,
     navController: NavHostController,
     deleteFromWatchList: (String) -> Unit
 ) {
@@ -82,10 +79,10 @@ fun WatchListStock(
             Text(
                 text = quoteData.price.toString(),
                 style = MaterialTheme.typography.labelLarge,
-                color = if (quoteData.change > 0) positiveTextColor else negativeTextColor,
+                color = if (quoteData.change.contains('+')) positiveTextColor else negativeTextColor,
                 modifier = Modifier
                     .background(
-                        if (quoteData.change > 0) positiveBackgroundColor else negativeBackgroundColor
+                        if (quoteData.change.contains('+')) positiveBackgroundColor else negativeBackgroundColor
                     )
                     .padding(8.dp)
             )

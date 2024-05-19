@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.model.local.googlefinance
+package com.farmingdale.stockscreener.model.local
 
 /**
  * Local data class for market movers

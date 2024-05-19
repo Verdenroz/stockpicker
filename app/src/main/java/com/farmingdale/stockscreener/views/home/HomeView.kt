@@ -18,11 +18,10 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.farmingdale.stockscreener.model.local.WatchList
-import com.farmingdale.stockscreener.model.local.googlefinance.GoogleFinanceStock
-import com.farmingdale.stockscreener.model.local.googlefinance.MarketIndex
-import com.farmingdale.stockscreener.model.local.news.Category
-import com.farmingdale.stockscreener.model.local.news.News
+import com.farmingdale.stockscreener.model.local.News
+import com.farmingdale.stockscreener.model.local.SimpleQuoteData
+import com.farmingdale.stockscreener.model.local.MarketIndex
+import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.viewmodels.ImplHomeViewModel
 import com.farmingdale.stockscreener.viewmodels.base.HomeViewModel
 import kotlinx.coroutines.delay
@@ -36,7 +35,6 @@ fun HomeView() {
     val actives by homeViewModel.actives.collectAsState()
     val losers by homeViewModel.losers.collectAsState()
     val gainers by homeViewModel.gainers.collectAsState()
-    val preferredCategory by homeViewModel.preferredCategory.collectAsState()
 
     HomeContent(
         watchList = watchList,
@@ -45,8 +43,6 @@ fun HomeView() {
         actives = actives,
         losers = losers,
         gainers = gainers,
-        preferredCategory = preferredCategory,
-        setPreferredCategory = homeViewModel::setPreferredCategory,
         refresh = homeViewModel::refresh
     )
 }
@@ -54,14 +50,12 @@ fun HomeView() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeContent(
-    watchList: WatchList?,
-    news: News?,
+    watchList: List<SimpleQuoteData>?,
+    news: List<News>?,
     indices: List<MarketIndex>?,
-    actives: List<GoogleFinanceStock>?,
-    losers: List<GoogleFinanceStock>?,
-    gainers: List<GoogleFinanceStock>?,
-    preferredCategory: Category?,
-    setPreferredCategory: (Category) -> Unit,
+    actives: List<MarketMover>?,
+    losers: List<MarketMover>?,
+    gainers: List<MarketMover>?,
     refresh: () -> Unit,
 ) {
     val pullRefreshState = rememberPullToRefreshState()
@@ -94,8 +88,6 @@ fun HomeContent(
             item {
                 NewsFeed(
                     news = news,
-                    preferredCategory = preferredCategory,
-                    onCategorySelected = setPreferredCategory,
                     refresh = refresh,
                 )
             }
@@ -127,8 +119,6 @@ fun PreviewHomeContent() {
         actives = null,
         losers = null,
         gainers = null,
-        preferredCategory = null,
-        setPreferredCategory = {},
         refresh = {},
     )
 }

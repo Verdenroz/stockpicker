@@ -20,15 +20,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.farmingdale.stockscreener.model.local.GeneralSearchData
-import com.farmingdale.stockscreener.model.local.WatchList
+import com.farmingdale.stockscreener.model.local.SearchResult
+import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
 import com.farmingdale.stockscreener.viewmodels.ImplMainViewModel
 import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
 import com.farmingdale.stockscreener.views.Screen
 import com.farmingdale.stockscreener.views.home.HomeView
 import com.farmingdale.stockscreener.views.watchlist.WatchListView
-import kotlinx.coroutines.delay
 
 @Composable
 fun MainView() {
@@ -37,7 +36,6 @@ fun MainView() {
     val searchResults by mainViewModel.searchResults.collectAsState()
     val watchList by mainViewModel.watchList.collectAsState()
     LaunchedEffect(key1 = query) {
-        delay(500)
         mainViewModel.search(query)
     }
     StockScreenerTheme {
@@ -53,8 +51,8 @@ fun MainView() {
 
 @Composable
 fun MainContent(
-    searchResults: GeneralSearchData?,
-    watchList: WatchList?,
+    searchResults: List<SearchResult>?,
+    watchList: List<SimpleQuoteData>?,
     updateQuery: (String) -> Unit,
     addToWatchList: (String) -> Unit,
     deleteFromWatchList: (String) -> Unit,
