@@ -2,14 +2,23 @@ package com.farmingdale.stockscreener.viewmodels.base
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import com.farmingdale.stockscreener.model.local.WatchList
-import com.farmingdale.stockscreener.model.local.googlefinance.GoogleFinanceStock
-import com.farmingdale.stockscreener.model.local.googlefinance.MarketIndex
-import com.farmingdale.stockscreener.model.local.news.Category
-import com.farmingdale.stockscreener.model.local.news.News
+import com.farmingdale.stockscreener.model.local.News
+import com.farmingdale.stockscreener.model.local.SimpleQuoteData
+import com.farmingdale.stockscreener.model.local.MarketMover
+import com.farmingdale.stockscreener.model.local.MarketIndex
 import kotlinx.coroutines.flow.StateFlow
 
 abstract class HomeViewModel(application: Application): AndroidViewModel(application) {
+
+    /**
+     * The user's watchlist as a list of [SimpleQuoteData]
+     */
+    abstract val watchList: StateFlow<List<SimpleQuoteData>?>
+
+    /**
+     * Current [News] headlines displayed on the home screen
+     */
+    abstract val news: StateFlow<List<News>?>
 
     /**
      * The list of market indices as [MarketIndex]
@@ -17,69 +26,19 @@ abstract class HomeViewModel(application: Application): AndroidViewModel(applica
     abstract val indices: StateFlow<List<MarketIndex>?>
 
     /**
-     * The user's watchlist
+     * List of active stocks as [MarketMover]
      */
-    abstract val watchList: StateFlow<WatchList?>
+    abstract val actives: StateFlow<List<MarketMover>?>
 
     /**
-     * The news for the user's preferred category as a [News] object
+     * List of losing stocks as [MarketMover]
      */
-    abstract val news: StateFlow<News?>
+    abstract val gainers: StateFlow<List<MarketMover>?>
 
     /**
-     * The user's preferred news [Category]
+     * List of gaining stocks as [MarketMover]
      */
-    abstract val preferredCategory: StateFlow<Category?>
-
-    /**
-     * List of active stocks as [GoogleFinanceStock]
-     */
-    abstract val actives: StateFlow<List<GoogleFinanceStock>?>
-
-    /**
-     * List of losing stocks as [GoogleFinanceStock]
-     */
-    abstract val gainers: StateFlow<List<GoogleFinanceStock>?>
-
-    /**
-     * List of gaining stocks as [GoogleFinanceStock]
-     */
-    abstract val losers: StateFlow<List<GoogleFinanceStock>?>
-
-    /**
-     * Set the user's preferred news category
-     */
-    abstract fun setPreferredCategory(category: Category)
-
-    /**
-     * Updates [news] for a given category, caching them if the same category, and shuffles randomly the returned headlines
-     */
-    abstract fun getHeadlines(category: Category?)
-
-    /**
-     * Update the user's [watchList] with fresh or new data
-     */
-    abstract fun updateWatchList()
-
-    /**
-     * Get the market indices and updates [indices]
-     */
-    abstract fun getIndices()
-
-    /**
-     * Get the list of active stocks and updates [actives]
-     */
-    abstract fun getActives()
-
-    /**
-     * Get the list of losing stocks and updates [losers]
-     */
-    abstract fun getLosers()
-
-    /**
-     * Get the list of gaining stocks and updates [gainers]
-     */
-    abstract fun getGainers()
+    abstract val losers: StateFlow<List<MarketMover>?>
 
     /**
      * Refresh the home screen with new data

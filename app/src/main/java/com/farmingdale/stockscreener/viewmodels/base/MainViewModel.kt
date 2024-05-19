@@ -2,8 +2,8 @@ package com.farmingdale.stockscreener.viewmodels.base
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import com.farmingdale.stockscreener.model.local.GeneralSearchData
-import com.farmingdale.stockscreener.model.local.WatchList
+import com.farmingdale.stockscreener.model.local.SearchResult
+import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import kotlinx.coroutines.flow.StateFlow
 
 abstract class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -14,14 +14,14 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
     abstract val query: StateFlow<String>
 
     /**
-     * The search results for the current query as [GeneralSearchData]
+     * The search results for the current query as a list of [SearchResult]
      */
-    abstract val searchResults: StateFlow<GeneralSearchData?>
+    abstract val searchResults: StateFlow<List<SearchResult>?>
 
     /**
-     * The user's watch list
+     * The user's watchlist as a list of [SimpleQuoteData]
      */
-    abstract val watchList: StateFlow<WatchList?>
+    abstract val watchList: StateFlow<List<SimpleQuoteData>?>
 
     /**
      * Update the current [query] string
@@ -34,17 +34,17 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
     abstract fun search(query: String)
 
     /**
-     * Update the user's [watchList] with fresh or new data
+     * Update the user's watchlist with fresh or new data
      */
-    abstract fun updateWatchList()
+    abstract fun refreshWatchList()
 
     /**
-     * Add a stock to the user's [watchList]
+     * Add a stock to the user's watchlist
      */
     abstract fun addToWatchList(symbol: String)
 
     /**
-     * Remove a stock from the user's [watchList]
+     * Remove a stock from the user's watchlist
      */
     abstract fun deleteFromWatchList(symbol: String)
 
