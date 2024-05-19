@@ -32,6 +32,18 @@ android {
             "financeQueryAPIKey",
             properties.getProperty("FINANCE_QUERY_API_KEY")
         )
+
+        buildConfigField(
+            "String",
+            "algoliaAppID",
+            properties.getProperty("ALGOLIA_APP_ID")
+        )
+
+        buildConfigField(
+            "String",
+            "algoliaAPIKey",
+            properties.getProperty("ALGOLIA_API_KEY")
+        )
     }
 
     buildTypes {
@@ -104,6 +116,8 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:32.7.4"))
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
-
+    //Algolia
+    implementation("com.algolia:instantsearch-android:3.3.0")
+    implementation("com.algolia:instantsearch-compose:3.3.0")
 
 }
