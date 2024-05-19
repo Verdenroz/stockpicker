@@ -7,8 +7,8 @@ import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
 import com.farmingdale.stockscreener.model.local.TimeSeriesData
-import com.farmingdale.stockscreener.model.local.googlefinance.MarketMover
-import com.farmingdale.stockscreener.model.local.googlefinance.MarketIndex
+import com.farmingdale.stockscreener.model.local.MarketMover
+import com.farmingdale.stockscreener.model.local.MarketIndex
 
 interface FinanceQueryAPI {
 
@@ -43,8 +43,6 @@ interface FinanceQueryAPI {
      * @see TimePeriod
      */
     suspend fun getHistoricalData(symbol: String, time: TimePeriod, interval: Interval): TimeSeriesData
-
-    suspend fun search(query: String)
 
     /**
      * Get current market indices in the US

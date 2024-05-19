@@ -7,9 +7,9 @@ import kotlinx.serialization.Serializable
  * @param symbol the stock symbol
  * @param name the stock name
  * @param price the current price
- * @param postMarketPrice the price after market close
+ * @param after_hours_price the price after market close
  * @param change the change in price
- * @param percentChange the percentage change in price
+ * @param percent_change the percentage change in price
  * @param open the opening price of the day
  * @param high the highest price of the day
  * @param low the lowest price of the day
@@ -33,23 +33,23 @@ data class FullQuoteResponse(
     val symbol: String,
     val name: String,
     val price: Double,
-    val postMarketPrice: Double,
+    val after_hours_price: Double,
     val change: String,
-    val percentChange: String,
+    val percent_change: String,
     val open: Double,
     val high: Double,
     val low: Double,
-    val yearHigh: Double,
-    val yearLow: Double,
+    val year_high: Double,
+    val year_low: Double,
     val volume: Long,
-    val avgVolume: Long,
-    val marketCap: String,
+    val avg_volume: Long,
+    val market_cap: String,
     val beta: Double?,
     val pe: Double?,
     val eps: Double?,
     val dividend: Double?,
-    val exDividend: Double?,
-    val earningsDate: String?,
+    val ex_dividend: Double?,
+    val earnings_date: String?,
     val sector: String?,
     val industry: String?,
     val about: String?

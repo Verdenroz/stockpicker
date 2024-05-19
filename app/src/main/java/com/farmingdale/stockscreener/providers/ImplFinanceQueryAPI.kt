@@ -9,8 +9,8 @@ import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
 import com.farmingdale.stockscreener.model.local.TimeSeriesData
-import com.farmingdale.stockscreener.model.local.googlefinance.MarketIndex
-import com.farmingdale.stockscreener.model.local.googlefinance.MarketMover
+import com.farmingdale.stockscreener.model.local.MarketIndex
+import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.model.remote.SectorResponse
 import com.farmingdale.stockscreener.model.remote.TimeSeriesResponse
 import com.farmingdale.stockscreener.model.remote.FullQuoteResponse
@@ -73,23 +73,23 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 symbol = it.symbol,
                 name = it.name,
                 price = it.price,
-                postMarketPrice = it.postMarketPrice,
+                postMarketPrice = it.after_hours_price,
                 change = it.change,
-                percentChange = it.percentChange,
+                percentChange = it.percent_change,
                 open = it.open,
                 high = it.high,
                 low = it.low,
-                yearHigh = it.yearHigh,
-                yearLow = it.yearLow,
+                yearHigh = it.year_high,
+                yearLow = it.year_low,
                 volume = it.volume,
-                avgVolume = it.avgVolume,
-                marketCap = it.marketCap,
+                avgVolume = it.avg_volume,
+                marketCap = it.market_cap,
                 beta = it.beta,
                 eps = it.eps,
                 pe = it.pe,
                 dividend = it.dividend,
-                exDividend = it.exDividend,
-                earningsDate = it.earningsDate,
+                exDividend = it.ex_dividend,
+                earningsDate = it.earnings_date,
                 sector = it.sector,
                 industry = it.industry,
                 about = it.about
@@ -118,7 +118,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 name = it.name,
                 price = it.price,
                 change = it.change,
-                percentChange = it.percentChange
+                percentChange = it.percent_change
             )
         }.first()
     }
@@ -145,7 +145,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 name = it.name,
                 price = it.price,
                 change = it.change,
-                percentChange = it.percentChange
+                percentChange = it.percent_change
             )
         }
 
@@ -184,10 +184,6 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 )
             }
         )
-    }
-
-    override suspend fun search(query: String) {
-        TODO("Not yet implemented")
     }
 
     override suspend fun getIndices(): List<MarketIndex> {
@@ -397,7 +393,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 name = it.name,
                 price = it.price,
                 change = it.change,
-                percentChange = it.percentChange
+                percentChange = it.percent_change
             )
         }
     }

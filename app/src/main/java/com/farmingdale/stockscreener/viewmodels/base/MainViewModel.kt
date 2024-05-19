@@ -2,7 +2,7 @@ package com.farmingdale.stockscreener.viewmodels.base
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import com.farmingdale.stockscreener.model.local.GeneralSearchData
+import com.farmingdale.stockscreener.model.local.SearchResult
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import kotlinx.coroutines.flow.StateFlow
 
@@ -14,9 +14,9 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
     abstract val query: StateFlow<String>
 
     /**
-     * The search results for the current query as [GeneralSearchData]
+     * The search results for the current query as a list of [SearchResult]
      */
-    abstract val searchResults: StateFlow<GeneralSearchData?>
+    abstract val searchResults: StateFlow<List<SearchResult>?>
 
     /**
      * The user's watchlist as a list of [SimpleQuoteData]

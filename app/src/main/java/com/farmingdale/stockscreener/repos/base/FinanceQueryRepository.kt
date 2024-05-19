@@ -3,8 +3,8 @@ package com.farmingdale.stockscreener.repos.base
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
-import com.farmingdale.stockscreener.model.local.googlefinance.MarketIndex
-import com.farmingdale.stockscreener.model.local.googlefinance.MarketMover
+import com.farmingdale.stockscreener.model.local.MarketIndex
+import com.farmingdale.stockscreener.model.local.MarketMover
 import kotlinx.coroutines.flow.Flow
 
 abstract class FinanceQueryRepository {

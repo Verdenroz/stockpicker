@@ -4,8 +4,8 @@ import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
-import com.farmingdale.stockscreener.model.local.googlefinance.MarketIndex
-import com.farmingdale.stockscreener.model.local.googlefinance.MarketMover
+import com.farmingdale.stockscreener.model.local.MarketIndex
+import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.repos.ImplFinanceQueryRepository.Companion.get
 import com.farmingdale.stockscreener.repos.ImplWatchlistRepository.Companion.get
 import com.farmingdale.stockscreener.repos.base.FinanceQueryRepository
