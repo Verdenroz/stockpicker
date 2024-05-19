@@ -26,15 +26,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.farmingdale.stockscreener.R
-import com.farmingdale.stockscreener.model.local.GeneralSearchData
-import com.farmingdale.stockscreener.model.local.GeneralSearchMatch
-import com.farmingdale.stockscreener.model.local.WatchList
+import com.farmingdale.stockscreener.model.local.SearchResult
+import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchBar(
-    searchResults: GeneralSearchData?,
-    watchList: WatchList?,
+    searchResults: List<SearchResult>?,
+    watchList: List<SimpleQuoteData>?,
     updateQuery: (String) -> Unit,
     addToWatchList: (String) -> Unit,
     deleteFromWatchList: (String) -> Unit,
@@ -67,8 +66,8 @@ fun SearchBar(
             )
         },
     ) {
-        searchResults?.matches?.forEach { match ->
-            val isInWatchListState = watchList?.quotes?.any { it.symbol == match.symbol } ?: false
+        searchResults?.forEach { match ->
+            val isInWatchListState = watchList?.any { it.symbol == match.symbol } ?: false
             ListItem(
                 modifier = Modifier
                     .clickable {
@@ -103,12 +102,11 @@ fun SearchBar(
 @Preview
 @Composable
 fun PreviewSearchList() {
-    val match = GeneralSearchMatch(
+    val match = SearchResult(
         symbol = "AAPL",
         name = "Apple Inc.",
-        currency = "USD",
-        stockExchange = "NASDAQ",
-        exchangeShortName = "NASDAQ"
+        exchangeShortName = "NASDAQ",
+        type = "stock"
     )
     ListItem(
         headlineContent = { Text(match.name) },

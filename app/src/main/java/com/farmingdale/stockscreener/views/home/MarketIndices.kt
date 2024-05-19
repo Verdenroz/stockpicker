@@ -27,7 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.farmingdale.stockscreener.R
-import com.farmingdale.stockscreener.model.local.googlefinance.MarketIndex
+import com.farmingdale.stockscreener.model.local.MarketIndex
 import com.farmingdale.stockscreener.ui.theme.indexColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
@@ -105,7 +105,7 @@ fun MarketIndexCard(index: MarketIndex) {
                     color = indexColor
                 )
                 Text(
-                    text = index.score,
+                    text = index.value,
                     style = MaterialTheme.typography.titleSmall
                 )
                 Row(
@@ -135,7 +135,7 @@ fun PreviewMarketIndexCard() {
         MarketIndexCard(
             MarketIndex(
                 name = "Dow Jones",
-                score = "100.0",
+                value = "100.0",
                 change = "+100.0",
                 percentChange = "+100%"
             ),
@@ -143,7 +143,7 @@ fun PreviewMarketIndexCard() {
         MarketIndexCard(
             MarketIndex(
                 name = "Dow Jones",
-                score = "100.0",
+                value = "100.0",
                 change = "-100.0",
                 percentChange = "-100%"
             )

@@ -30,7 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.farmingdale.stockscreener.R
-import com.farmingdale.stockscreener.model.local.googlefinance.GoogleFinanceStock
+import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.ui.theme.negativeBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveBackgroundColor
@@ -41,9 +41,9 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MarketMovers(
-    actives: List<GoogleFinanceStock>?,
-    losers: List<GoogleFinanceStock>?,
-    gainers: List<GoogleFinanceStock>?,
+    actives: List<MarketMover>?,
+    losers: List<MarketMover>?,
+    gainers: List<MarketMover>?,
     refresh: () -> Unit,
 ) {
     val state = rememberPagerState(pageCount = { 3 })
@@ -139,7 +139,7 @@ fun PreviewMarketMovers() {
 
 @Composable
 fun MarketMoversList(
-    stocks: List<GoogleFinanceStock>?,
+    stocks: List<MarketMover>?,
     refresh: () -> Unit
 ) {
     Column(
@@ -167,7 +167,7 @@ fun MarketMoversList(
 }
 
 @Composable
-fun MarketMoverStock(stock: GoogleFinanceStock) {
+fun MarketMoverStock(stock: MarketMover) {
     Row(
         modifier = Modifier
             .padding(top = 8.dp)
@@ -190,7 +190,7 @@ fun MarketMoverStock(stock: GoogleFinanceStock) {
         }
         Spacer(modifier = Modifier.width(4.dp))
         Text(
-            text = stock.current,
+            text = stock.price,
             modifier = Modifier
                 .weight(1f)
                 .wrapContentSize()

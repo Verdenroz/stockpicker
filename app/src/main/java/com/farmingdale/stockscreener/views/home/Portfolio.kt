@@ -20,15 +20,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.farmingdale.stockscreener.R
-import com.farmingdale.stockscreener.model.local.FullQuoteData
-import com.farmingdale.stockscreener.model.local.WatchList
+import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.ui.theme.indexColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 
 @Composable
 fun Portfolio(
-    watchList: WatchList?,
+    watchList: List<SimpleQuoteData>?,
 ) {
     Column(
         modifier = Modifier
@@ -48,7 +47,7 @@ fun Portfolio(
                 style = MaterialTheme.typography.titleSmall
             )
         }
-        if (watchList?.quotes.isNullOrEmpty()) {
+        if (watchList.isNullOrEmpty()) {
             Card {
                 Text(
                     text = stringResource(id = R.string.portfolio_empty),
@@ -62,7 +61,7 @@ fun Portfolio(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start),
                 content = {
-                    items(watchList!!.quotes) { quote ->
+                    items(watchList) { quote ->
                         PortfolioStockCard(quote = quote)
                     }
                 }
@@ -72,7 +71,7 @@ fun Portfolio(
 }
 
 @Composable
-fun PortfolioStockCard(quote: FullQuoteData) {
+fun PortfolioStockCard(quote: SimpleQuoteData) {
     Card(
         modifier = Modifier
             .size(125.dp, 75.dp)
@@ -99,14 +98,14 @@ fun PortfolioStockCard(quote: FullQuoteData) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = String.format("%+.2f", quote.change),
+                    text = quote.change,
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (quote.change > 0) positiveTextColor else negativeTextColor
+                    color = if (quote.change.contains('+')) positiveTextColor else negativeTextColor
                 )
                 Text(
-                    text = String.format("%+.2f%%", quote.changesPercentage),
+                    text = quote.percentChange,
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (quote.change > 0) positiveTextColor else negativeTextColor
+                    color = if (quote.change.contains('+')) positiveTextColor else negativeTextColor
                 )
             }
         }
@@ -117,29 +116,12 @@ fun PortfolioStockCard(quote: FullQuoteData) {
 @Composable
 fun PreviewPortfolioStockCard() {
     Row {
-        val dummyQuote = FullQuoteData(
+        val dummyQuote = SimpleQuoteData(
             symbol = "DUMMY",
             name = "Dummy Inc.",
             price = 100.0,
-            changesPercentage = 10.0,
-            change = 10.0,
-            dayLow = 90.0,
-            dayHigh = 110.0,
-            yearHigh = 200.0,
-            yearLow = 50.0,
-            marketCap = 1000000L,
-            priceAvg50 = 100.0,
-            priceAvg200 = 100.0,
-            exchange = "Dummy Exchange",
-            volume = 10000L,
-            avgVolume = 10000L,
-            open = 100.0,
-            previousClose = 90.0,
-            eps = 1.0,
-            pe = 10.0,
-            earningsAnnouncement = "2022-01-01",
-            sharesOutstanding = 10000L,
-            timestamp = System.currentTimeMillis()
+            change = "+10.0",
+            percentChange = "+10%"
         )
         PortfolioStockCard(
             quote = dummyQuote

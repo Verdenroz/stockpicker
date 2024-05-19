@@ -7,16 +7,13 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
@@ -24,16 +21,12 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,19 +43,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.farmingdale.stockscreener.R
-import com.farmingdale.stockscreener.model.local.news.Article
-import com.farmingdale.stockscreener.model.local.news.Category
-import com.farmingdale.stockscreener.model.local.news.News
+import com.farmingdale.stockscreener.model.local.News
 
 @Composable
 fun NewsFeed(
-    news: News?,
-    preferredCategory: Category?,
-    onCategorySelected: (Category) -> Unit,
+    news: List<News>?,
     refresh: () -> Unit,
 ) {
     var isNewsSettingsOpen by rememberSaveable { mutableStateOf(false) }
@@ -90,34 +78,19 @@ fun NewsFeed(
                 )
             }
         }
-        if (news?.articles.isNullOrEmpty()) {
+        if (news.isNullOrEmpty()) {
             ErrorCard(refresh = refresh)
         } else {
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 content = {
-                    news?.articles?.forEach { article ->
+                    news.forEach { article ->
                         item {
                             ContentCard(article)
                         }
                     }
                 }
             )
-        }
-        if (isNewsSettingsOpen) {
-            Dialog(onDismissRequest = { isNewsSettingsOpen = false }) {
-                NewsSettingsDialog(
-                    onDismissRequest = { isNewsSettingsOpen = false },
-                    categories = Category.entries,
-                    preferredCategory = rememberSaveable {
-                        mutableStateOf(
-                            preferredCategory ?: Category.BUSINESS
-                        )
-                    },
-                    onCategorySelected = onCategorySelected,
-                    refresh = refresh
-                )
-            }
         }
     }
 
@@ -128,26 +101,24 @@ fun NewsFeed(
 fun PreviewNewsFeed() {
     NewsFeed(
         news = null,
-        preferredCategory = Category.GENERAL,
-        onCategorySelected = {},
         refresh = {}
     )
 }
 
 @Composable
 fun ContentCard(
-    article: Article?
+    article: News?
 ) {
     val context = LocalContext.current
     var image by remember { mutableStateOf<ImageBitmap?>(null) }
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf(false) }
 
-    LaunchedEffect(article!!.urlToImage) {
+    LaunchedEffect(article!!.img) {
         loading = true
         error = false
         val request = ImageRequest.Builder(context)
-            .data(article.urlToImage)
+            .data(article.img)
             .build()
         val result = (context.imageLoader.execute(request).drawable as? BitmapDrawable)?.bitmap
         image = result?.asImageBitmap()
@@ -167,7 +138,7 @@ fun ContentCard(
             modifier = Modifier
                 .fillMaxSize()
                 .clickable {
-                    val articleUrl = article.url
+                    val articleUrl = article.link
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(articleUrl))
                     context.startActivity(intent)
                 },
@@ -210,102 +181,6 @@ fun ContentCard(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun NewsSettingsDialog(
-    onDismissRequest: () -> Unit,
-    categories: List<Category>,
-    preferredCategory: MutableState<Category>,
-    onCategorySelected: (Category) -> Unit,
-    refresh: () -> Unit
-) {
-    Dialog(onDismissRequest = onDismissRequest) {
-        Card {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(text = stringResource(id = R.string.news_category))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    LazyColumn(
-                        modifier = Modifier.weight(.5f)
-                    ) {
-                        items(categories.take(3)) { category ->
-                            Row(
-                                Modifier
-                                    .clickable { preferredCategory.value = category },
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy((-6).dp)
-                            ) {
-                                Box(modifier = Modifier.size(48.dp)) {
-                                    RadioButton(
-                                        selected = preferredCategory.value == category,
-                                        onClick = { preferredCategory.value = category }
-                                    )
-                                }
-                                Text(
-                                    text = category.displayName,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    modifier = Modifier.padding(start = 8.dp)
-                                )
-                            }
-                        }
-                    }
-                    LazyColumn(
-                        modifier = Modifier.weight(.5f)
-                    ) {
-                        items(categories.takeLast(3)) { category ->
-                            Row(
-                                Modifier
-                                    .clickable { preferredCategory.value = category },
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy((-6).dp)
-                            ) {
-                                Box(modifier = Modifier.size(48.dp)) {
-                                    RadioButton(
-                                        selected = preferredCategory.value == category,
-                                        onClick = { preferredCategory.value = category }
-                                    )
-                                }
-                                Text(
-                                    text = category.displayName,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    modifier = Modifier.padding(start = 8.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-
-                HorizontalDivider(modifier = Modifier.padding(4.dp))
-                Row(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.End),
-                ) {
-                    TextButton(onClick = onDismissRequest) {
-                        Text(text = stringResource(id = R.string.cancel))
-                    }
-                    TextButton(onClick = {
-                        onCategorySelected(preferredCategory.value)
-                        refresh()
-                        onDismissRequest()
-                    }
-                    ) {
-                        Text(text = stringResource(id = R.string.save))
-                    }
-                }
-            }
-
         }
     }
 }
