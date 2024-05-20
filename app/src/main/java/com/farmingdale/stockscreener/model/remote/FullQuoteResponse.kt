@@ -33,7 +33,7 @@ data class FullQuoteResponse(
     val symbol: String,
     val name: String,
     val price: Double,
-    val after_hours_price: Double,
+    val after_hours_price: Double?,
     val change: String,
     val percent_change: String,
     val open: Double,
@@ -52,5 +52,6 @@ data class FullQuoteResponse(
     val earnings_date: String?,
     val sector: String?,
     val industry: String?,
-    val about: String?
+    val about: String?,
+    val logo: String?
 )
