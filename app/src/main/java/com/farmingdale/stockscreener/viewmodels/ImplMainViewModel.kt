@@ -6,6 +6,7 @@ import com.algolia.instantsearch.searcher.hits.HitsSearcher
 import com.algolia.search.model.APIKey
 import com.algolia.search.model.ApplicationID
 import com.algolia.search.model.IndexName
+import com.algolia.search.model.search.Query
 import com.farmingdale.stockscreener.BuildConfig
 import com.farmingdale.stockscreener.model.local.SearchResult
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
@@ -37,12 +38,13 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
         applicationID = ApplicationID(BuildConfig.algoliaAppID),
         apiKey = APIKey(BuildConfig.algoliaAPIKey),
         indexName = index,
+        query = Query(hitsPerPage = 5)
     )
 
     init {
         searcher.response.subscribe { response ->
-            _searchResults.value = response?.hits?.map { hit ->
-                hit.deserialize(SearchResult.serializer())
+            _searchResults.value = response?.hits?.mapNotNull { hit ->
+                hit.deserialize(SearchResult.serializer()).takeIf { it.name.isNotBlank() }
             }
         }
     }
@@ -57,8 +59,12 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
     }
 
     override fun search(query: String) {
-        searcher.setQuery(query)
-        searcher.searchAsync()
+        if (query.isEmpty()) {
+            _searchResults.value = null
+        } else {
+            searcher.setQuery(query)
+            searcher.searchAsync()
+        }
     }
 
     override fun refreshWatchList() {
