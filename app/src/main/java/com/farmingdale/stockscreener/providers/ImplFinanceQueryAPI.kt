@@ -332,7 +332,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
             throw RuntimeException("Failed to parse JSON response", e)
         }
 
-        return newsList.map {
+        return newsList.shuffled().map {
             News(
                 title = it.title,
                 link = it.link,
