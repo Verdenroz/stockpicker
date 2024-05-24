@@ -31,6 +31,9 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.InputStream
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 @OptIn(ExperimentalSerializationApi::class)
 class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
@@ -174,10 +177,19 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
         } catch (e: SerializationException) {
             throw RuntimeException("Failed to parse JSON response", e)
         }
+        val formatterWithoutTime = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        val formatter24Hour = DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm:ss")
+        val formatter12Hour = DateTimeFormatter.ofPattern("yyyy-MM-dd h:mm a")
 
         return TimeSeriesData(
             data = timeSeriesResponse.data.mapKeys {
-                LocalDate.parse(it.key)
+                try {
+                    val dateTime24Hour = LocalDateTime.parse(it.key, formatter24Hour)
+                    dateTime24Hour.format(formatter12Hour)
+                } catch (e: DateTimeParseException) {
+                    val dateTime = LocalDate.parse(it.key, formatterWithoutTime)
+                    dateTime.format(formatterWithoutTime)
+                }
             }.mapValues {
                 HistoricalData(
                     open = it.value.open,
