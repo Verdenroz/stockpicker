@@ -30,6 +30,7 @@ import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.InputStream
+import java.time.LocalDate
 
 @OptIn(ExperimentalSerializationApi::class)
 class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
@@ -175,7 +176,9 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
         }
 
         return TimeSeriesData(
-            data = timeSeriesResponse.data.mapValues {
+            data = timeSeriesResponse.data.mapKeys {
+                LocalDate.parse(it.key)
+            }.mapValues {
                 HistoricalData(
                     open = it.value.open,
                     high = it.value.high,

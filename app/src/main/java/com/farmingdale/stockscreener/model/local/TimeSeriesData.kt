@@ -1,5 +1,7 @@
 package com.farmingdale.stockscreener.model.local
 
+import java.time.LocalDate
+
 data class HistoricalData(
     val open: String,
     val high: String,
@@ -9,5 +11,5 @@ data class HistoricalData(
 )
 
 data class TimeSeriesData(
-    val data: Map<String, HistoricalData>
+    val data: Map<LocalDate, HistoricalData>
 )
