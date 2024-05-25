@@ -4,20 +4,19 @@ import com.farmingdale.stockscreener.BuildConfig
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.HistoricalData
 import com.farmingdale.stockscreener.model.local.Interval
+import com.farmingdale.stockscreener.model.local.MarketIndex
+import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
-import com.farmingdale.stockscreener.model.local.TimeSeriesData
-import com.farmingdale.stockscreener.model.local.MarketIndex
-import com.farmingdale.stockscreener.model.local.MarketMover
-import com.farmingdale.stockscreener.model.remote.SectorResponse
-import com.farmingdale.stockscreener.model.remote.TimeSeriesResponse
 import com.farmingdale.stockscreener.model.remote.FullQuoteResponse
-import com.farmingdale.stockscreener.model.remote.SimpleQuoteResponse
 import com.farmingdale.stockscreener.model.remote.IndexResponse
 import com.farmingdale.stockscreener.model.remote.MarketMoverResponse
 import com.farmingdale.stockscreener.model.remote.NewsResponse
+import com.farmingdale.stockscreener.model.remote.SectorResponse
+import com.farmingdale.stockscreener.model.remote.SimpleQuoteResponse
+import com.farmingdale.stockscreener.model.remote.TimeSeriesResponse
 import com.farmingdale.stockscreener.providers.base.FinanceQueryAPI
 import com.farmingdale.stockscreener.utils.FINANCE_QUERY_API_URL
 import com.farmingdale.stockscreener.utils.executeAsync
@@ -33,7 +32,6 @@ import java.io.InputStream
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 
 @OptIn(ExperimentalSerializationApi::class)
 class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
@@ -160,7 +158,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
         symbol: String,
         time: TimePeriod,
         interval: Interval
-    ): TimeSeriesData {
+    ): Map<String, HistoricalData> {
         val stream = getByteStream(
             FINANCE_QUERY_API_URL.newBuilder().apply {
                 addPathSegments("historical")
@@ -177,29 +175,31 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
         } catch (e: SerializationException) {
             throw RuntimeException("Failed to parse JSON response", e)
         }
-        val formatterWithoutTime = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-        val formatter24Hour = DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm:ss")
-        val formatter12Hour = DateTimeFormatter.ofPattern("yyyy-MM-dd h:mm a")
 
-        return TimeSeriesData(
-            data = timeSeriesResponse.data.mapKeys {
-                try {
-                    val dateTime24Hour = LocalDateTime.parse(it.key, formatter24Hour)
-                    dateTime24Hour.format(formatter12Hour)
-                } catch (e: DateTimeParseException) {
-                    val dateTime = LocalDate.parse(it.key, formatterWithoutTime)
-                    dateTime.format(formatterWithoutTime)
-                }
-            }.mapValues {
-                HistoricalData(
-                    open = it.value.open,
-                    high = it.value.high,
-                    low = it.value.low,
-                    close = it.value.adj_close,
-                    volume = it.value.volume
-                )
+
+        // Map each date and HistoricalData from TimeSeriesResponse
+        return timeSeriesResponse.data.mapKeys { entry ->
+            val dateTimeString = entry.key
+            val formatterWithoutTime = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+            val formatter24Hour = DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm:ss")
+            val formatterWithTime = DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a")
+
+            val dateTime = if (dateTimeString.contains(" ")) {
+                LocalDateTime.parse(dateTimeString, formatter24Hour)
+            } else {
+                LocalDate.parse(dateTimeString, formatterWithoutTime).atStartOfDay()
             }
-        )
+
+            dateTime.format(formatterWithTime)
+        }.mapValues { entry ->
+            HistoricalData(
+                open = entry.value.open,
+                high = entry.value.high,
+                low = entry.value.low,
+                close = entry.value.adj_close,
+                volume = entry.value.volume
+            )
+        }
     }
 
     override suspend fun getIndices(): List<MarketIndex> {

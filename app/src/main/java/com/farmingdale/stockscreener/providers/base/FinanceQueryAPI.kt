@@ -1,14 +1,14 @@
 package com.farmingdale.stockscreener.providers.base
 
 import com.farmingdale.stockscreener.model.local.FullQuoteData
+import com.farmingdale.stockscreener.model.local.HistoricalData
 import com.farmingdale.stockscreener.model.local.Interval
+import com.farmingdale.stockscreener.model.local.MarketIndex
+import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
-import com.farmingdale.stockscreener.model.local.TimeSeriesData
-import com.farmingdale.stockscreener.model.local.MarketMover
-import com.farmingdale.stockscreener.model.local.MarketIndex
 
 interface FinanceQueryAPI {
 
@@ -42,7 +42,7 @@ interface FinanceQueryAPI {
      * @see Interval
      * @see TimePeriod
      */
-    suspend fun getHistoricalData(symbol: String, time: TimePeriod, interval: Interval): TimeSeriesData
+    suspend fun getHistoricalData(symbol: String, time: TimePeriod, interval: Interval): Map<String, HistoricalData>
 
     /**
      * Get current market indices in the US
