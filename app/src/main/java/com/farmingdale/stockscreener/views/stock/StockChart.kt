@@ -1,24 +1,33 @@
 package com.farmingdale.stockscreener.views.stock
 
 import android.graphics.Paint
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -32,10 +41,12 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
@@ -64,62 +75,40 @@ const val BOX_HEIGHT = 200f
 @Composable
 fun StockChart(
     modifier: Modifier = Modifier,
+    symbol: String,
     timeSeries: Map<String, HistoricalData> = emptyMap(),
-    positive: Boolean
+    positiveChart: Boolean = true,
+    isDarkTheme: Boolean = isSystemInDarkTheme(),
+    updateTimeSeries: (String, TimePeriod, Interval) -> Unit,
+    backgroundColor: Color =  MaterialTheme.colorScheme.surface,
 ) {
-    if (timeSeries.isEmpty()) {
-        CircularProgressIndicator(modifier = Modifier.fillMaxSize(.25f))
-        return
-    }
-    val data = remember {
-        timeSeries.entries.toList().asReversed().associate { it.key to it.value }
-    }
-    val topShader = remember {
-        if (positive) positiveTextColor.copy(alpha = .5f) else negativeTextColor.copy(alpha = .5f)
-    }
-    val bottomShader = remember {
-        if (positive) positiveBackgroundColor else negativeBackgroundColor
-    }
     val guidelineColor = MaterialTheme.colorScheme.outline
     val markerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = .5f)
+
     val upperValue = remember(timeSeries) {
-        data.values.maxOf { it.close }.plus(1)
+        timeSeries.values.maxOf { it.close }.plus(1)
     }
-    val lowerValue = remember {
-        timeSeries.minOf { it.value.close }.minus(1)
+    val lowerValue = remember(timeSeries) {
+        timeSeries.values.minOf { it.close }.minus(1)
     }
+
     val textMeasurer = rememberTextMeasurer()
     val density = LocalDensity.current
-    val textPaint = remember(density) {
-        Paint().apply {
-            color = android.graphics.Color.BLACK
-            textAlign = Paint.Align.CENTER
-            textSize = density.run { 12.sp.toPx() }
-            typeface = android.graphics.Typeface.DEFAULT_BOLD
-        }
-    }
-    val textStyle = remember {
-        androidx.compose.ui.text.TextStyle(
-            color = Color.Black,
-            fontSize = 12.sp,
-            fontFamily = FontFamily.Monospace,
-            fontWeight = FontWeight.Bold
-        )
-    }
-    val selectedData = remember { mutableStateOf<Pair<String, HistoricalData>?>(null) }
+
+    val selectedData = rememberSaveable { mutableStateOf<Pair<String, HistoricalData>?>(null) }
     Column(
         modifier = Modifier
-            .background(MaterialTheme.colorScheme.surfaceDim)
-    ) {
-        Canvas(modifier = modifier
             .padding(16.dp)
-            .pointerInput(Unit) {
+            .background(backgroundColor)
+    ) {
+        Box(modifier = modifier
+            .pointerInput(timeSeries) {
                 detectTapGestures(
                     onPress = { offset ->
                         val spacePerHour = (size.width - SPACING) / timeSeries.size
                         val index = ((offset.x - SPACING) / spacePerHour).toInt()
-                        if (index in data.entries.indices) {
-                            selectedData.value = data.entries
+                        if (index in timeSeries.entries.indices) {
+                            selectedData.value = timeSeries.entries
                                 .elementAt(index)
                                 .toPair()
                         } else {
@@ -134,15 +123,16 @@ fun StockChart(
                     }
                 )
             }
-            .pointerInput(Unit) {
+            .pointerInput(timeSeries) {
                 detectDragGestures(
                     onDrag = { change, _ ->
                         val spacePerHour = (size.width - SPACING) / timeSeries.size
                         // Calculate the index of the selected data based on the x-coordinate of the drag
                         val index = ((change.position.x - SPACING) / spacePerHour).toInt()
-                        if (index in data.entries.indices) {
+                        if (index in timeSeries.entries.indices
+                        ) {
                             // Update the selected data
-                            selectedData.value = data.entries
+                            selectedData.value = timeSeries.entries
                                 .elementAt(index)
                                 .toPair()
                         } else {
@@ -156,58 +146,177 @@ fun StockChart(
                     }
                 )
             }
-        ) {
-            val spacePerHour = (size.width - SPACING) / timeSeries.size
+            .drawWithCache {
+                val topShader =
+                    if (positiveChart) positiveTextColor.copy(alpha = .5f) else negativeTextColor.copy(
+                        alpha = .5f
+                    )
+                val bottomShader =
+                    if (positiveChart) positiveBackgroundColor else negativeBackgroundColor
+                val textColor =
+                    if (isDarkTheme) android.graphics.Color.WHITE else android.graphics.Color.BLACK
+                val textStyle = TextStyle(
+                    color = Color(textColor),
+                    fontSize = 12.sp,
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold
+                )
+                val textPaint = Paint().apply {
+                    color = textColor
+                    textAlign = Paint.Align.CENTER
+                    textSize = density.run { 12.sp.toPx() }
+                    typeface = android.graphics.Typeface.DEFAULT_BOLD
+                }
+                onDrawBehind {
+                    drawChart(
+                        timeSeries = timeSeries,
+                        size = size,
+                        lowerValue = lowerValue,
+                        upperValue = upperValue,
+                        topShader = topShader,
+                        bottomShader = bottomShader,
+                        guidelineColor = guidelineColor,
+                        markerColor = markerColor,
+                        textPaint = textPaint,
+                        textMeasurer = textMeasurer,
+                        textStyle = textStyle,
+                        density = density,
+                        selectedData = selectedData
+                    )
+                }
+            }
+        )
 
-            // Draw the y-axis labels
-            drawYAxis(
-                drawScope = this,
-                textPaint = textPaint,
-                size = size,
-                lowerValue = lowerValue,
-                upperValue = upperValue
-            )
+        TimePeriodBar(
+            modifier = Modifier.fillMaxWidth(),
+            symbol = symbol,
+            updateTimeSeries = updateTimeSeries
+        )
+    }
+}
 
-            // Draw the x-axis labels
-            drawXAxis(
-                drawScope = this,
-                textPaint = textPaint,
-                size = size,
-                earliestDate = data.keys.first(),
-                spacePerHour = spacePerHour,
-                data = data
+@Composable
+fun TimePeriodBar(
+    modifier: Modifier = Modifier,
+    symbol: String,
+    updateTimeSeries: (String, TimePeriod, Interval) -> Unit
+) {
+    var selectedTimePeriod by rememberSaveable { mutableStateOf(TimePeriod.YEAR_TO_DATE) }
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        TimePeriod.entries.filter { timePeriod ->
+            timePeriod in listOf(
+                TimePeriod.ONE_DAY,
+                TimePeriod.FIVE_DAY,
+                TimePeriod.ONE_MONTH,
+                TimePeriod.SIX_MONTH,
+                TimePeriod.ONE_YEAR,
+                TimePeriod.YEAR_TO_DATE,
+                TimePeriod.FIVE_YEAR
             )
-            // Draw the stroke and fill path
-            drawPaths(
-                drawScope = this,
-                data = data,
-                size = size,
-                lowerValue = lowerValue,
-                upperValue = upperValue,
-                spacePerHour = spacePerHour,
-                topShader = topShader,
-                bottomShader = bottomShader,
-                density = density
-            )
-
-            // Draw the selected data
-            drawSelectedData(
-                drawScope = this,
-                selectedData = selectedData.value,
-                data = data,
-                size = size,
-                lowerValue = lowerValue,
-                upperValue = upperValue,
-                spacePerHour = spacePerHour,
-                guidelineColor = guidelineColor,
-                markerColor = markerColor,
-                textPaint = textPaint,
-                textMeasurer = textMeasurer,
-                textStyle = textStyle,
-                density = density
+        }.forEach { timePeriod ->
+            val interval =
+                if (timePeriod == TimePeriod.ONE_DAY || timePeriod == TimePeriod.FIVE_DAY) Interval.FIFTEEN_MINUTE else Interval.DAILY
+            TimePeriodButton(
+                timePeriod = timePeriod,
+                selected = timePeriod == selectedTimePeriod,
+                onClick = {
+                    selectedTimePeriod = timePeriod
+                    updateTimeSeries(symbol, timePeriod, interval)
+                }
             )
         }
     }
+}
+
+@Composable
+fun TimePeriodButton(
+    timePeriod: TimePeriod,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        RadioButton(selected = selected, onClick = onClick)
+        Text(
+            text = timePeriod.value.uppercase(),
+            style = MaterialTheme.typography.labelMedium
+        )
+    }
+}
+
+/**
+ * Helper function to draw the chart given [timeSeries]
+ */
+fun DrawScope.drawChart(
+    timeSeries: Map<String, HistoricalData>,
+    size: Size,
+    lowerValue: Float,
+    upperValue: Float,
+    topShader: Color,
+    bottomShader: Color,
+    guidelineColor: Color,
+    markerColor: Color,
+    textPaint: Paint,
+    textMeasurer: TextMeasurer,
+    textStyle: TextStyle,
+    density: Density,
+    selectedData: MutableState<Pair<String, HistoricalData>?>
+) {
+    val spacePerHour = (size.width - SPACING) / timeSeries.size
+
+    // Draw the y-axis labels
+    drawYAxis(
+        drawScope = this,
+        textPaint = textPaint,
+        size = size,
+        lowerValue = lowerValue,
+        upperValue = upperValue
+    )
+
+    // Draw the x-axis labels
+    drawXAxis(
+        drawScope = this,
+        textPaint = textPaint,
+        size = size,
+        earliestDate = timeSeries.keys.first(),
+        spacePerHour = spacePerHour,
+        data = timeSeries
+    )
+    // Draw the stroke and fill path
+    drawPaths(
+        drawScope = this,
+        data = timeSeries,
+        size = size,
+        lowerValue = lowerValue,
+        upperValue = upperValue,
+        spacePerHour = spacePerHour,
+        topShader = topShader,
+        bottomShader = bottomShader,
+        density = density
+    )
+
+    // Draw the selected data
+    drawSelectedData(
+        drawScope = this,
+        selectedData = selectedData.value,
+        data = timeSeries,
+        size = size,
+        lowerValue = lowerValue,
+        upperValue = upperValue,
+        spacePerHour = spacePerHour,
+        guidelineColor = guidelineColor,
+        markerColor = markerColor,
+        textPaint = textPaint,
+        textMeasurer = textMeasurer,
+        textStyle = textStyle,
+        density = density
+    )
 }
 
 /**
@@ -226,7 +335,6 @@ fun drawYAxis(
             val price = round(lowerValue + priceStep * i).toString()
             val yPos = size.height - SPACING - i * size.height / 5f
 
-            // Adjust the y coordinate to align the text with the graph
             drawText(price, 5f, yPos - SPACING / 2 + 50f, textPaint)
         }
     }
@@ -258,20 +366,20 @@ fun drawXAxis(
 
         // Draw the tick above the label
         drawScope.drawLine(
-            color = Color.Black,
-            start = Offset(x, size.height - SPACING), // Adjust the y-coordinate as needed
-            end = Offset(x, size.height - 50f), // Adjust the y-coordinate as needed
+            color = Color(textPaint.color),
+            start = Offset(x, size.height - SPACING),
+            end = Offset(x, size.height - 50f),
             strokeWidth = 5f
         )
 
         // Draw the x-axis line
         drawScope.drawLine(
-            color = Color.Black,
-            start = Offset(SPACING, size.height - SPACING), // Adjust the y-coordinate as needed
+            color = Color(textPaint.color),
+            start = Offset(SPACING, size.height - SPACING),
             end = Offset(
                 size.width,
                 size.height - SPACING
-            ), // Adjust the y-coordinate as needed
+            ),
             strokeWidth = 2f
         )
     }
@@ -357,7 +465,7 @@ fun drawSelectedData(
     markerColor: Color,
     textPaint: Paint,
     textMeasurer: TextMeasurer,
-    textStyle: androidx.compose.ui.text.TextStyle,
+    textStyle: TextStyle,
     density: Density
 ) {
     // Draw the selected data
@@ -383,8 +491,8 @@ fun drawSelectedData(
             radius = with(density) { 5.dp.toPx() }
         )
 
-        val boxX = if (x > size.width / 2) x - BOX_WIDTH + SPACING else x + SPACING
-        val boxY = if (y > size.height / 2) y - BOX_HEIGHT + .5f * SPACING else y + .5f * SPACING
+        val boxX = if (x > size.width / 2.5) x - BOX_WIDTH + SPACING / 2 else x + SPACING / 2
+        val boxY = if (y > size.height / 2) y - BOX_HEIGHT + SPACING / 2 else y + SPACING / 2
 
         drawScope.drawRect(
             color = markerColor,
@@ -405,15 +513,16 @@ fun drawSelectedData(
             )
 
             // Calculate the x-coordinate for the text
-            val textX = maxWidth / 2 + boxX - 2 * SPACING
+            val textX = maxWidth / 2 + boxX - SPACING
             drawScope.drawText(
                 textMeasurer = textMeasurer,
                 text = closeText +
                         "\n$date" +
                         "\n$volumeText",
                 style = textStyle,
-                topLeft = Offset(textX, boxY + 25f),
-                maxLines = 3
+                overflow = TextOverflow.Visible,
+                topLeft = Offset(textX - 25f, boxY + 25f),
+                maxLines = 4
             )
         }
     }
@@ -427,7 +536,6 @@ fun getStepSize(earliestDateString: String): Int {
     val earliestDate = LocalDate.parse(earliestDateString, formatter)
     val now = LocalDate.now()
     val daysSinceEarliestDate = ChronoUnit.DAYS.between(earliestDate, now)
-    println("Days since earliest date: $daysSinceEarliestDate")
     return when {
         daysSinceEarliestDate <= 4 -> 8 //TimePeriod.ONE_DAY
         daysSinceEarliestDate <= 12 -> 32 //TimePeriod.FIVE_DAY
@@ -455,7 +563,7 @@ fun formatDate(date: String, earliestDateString: String): String {
     val earliestDate = LocalDate.parse(earliestDateString, formatter)
     val now = LocalDate.now()
     val daysSinceEarliestDate = ChronoUnit.DAYS.between(earliestDate, now)
-    return when  {
+    return when {
         daysSinceEarliestDate <= 4 -> formatDateForTime(date) //TimePeriod.ONE_DAY
         daysSinceEarliestDate <= 12 -> formatDateForMonth(date) //TimePeriod.FIVE_DAY
         daysSinceEarliestDate <= 40 -> formatDateForMonth(date) //TimePeriod.ONE_MONTH
@@ -502,10 +610,20 @@ fun formatDateForYear(date: String): String {
  */
 fun formatVolume(volume: Long): String {
     return when {
-        volume >= 1_000_000_000_000 -> String.format(locale = Locale.US, "%.2fT", volume / 1_000_000_000_000.0)
-        volume >= 1_000_000_000 -> String.format(locale = Locale.US,"%.2fB", volume / 1_000_000_000.0)
-        volume >= 1_000_000 -> String.format(locale = Locale.US,"%.2fM", volume / 1_000_000.0)
-        volume >= 1_000 -> String.format(locale = Locale.US,"%.2fK", volume / 1_000.0)
+        volume >= 1_000_000_000_000 -> String.format(
+            locale = Locale.US,
+            "%.2fT",
+            volume / 1_000_000_000_000.0
+        )
+
+        volume >= 1_000_000_000 -> String.format(
+            locale = Locale.US,
+            "%.2fB",
+            volume / 1_000_000_000.0
+        )
+
+        volume >= 1_000_000 -> String.format(locale = Locale.US, "%.2fM", volume / 1_000_000.0)
+        volume >= 1_000 -> String.format(locale = Locale.US, "%.2fK", volume / 1_000.0)
         else -> volume.toString()
     }
 }
@@ -595,73 +713,92 @@ fun PreviewStockChart() {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp),
+            symbol = "TSLA",
             timeSeries = timeSeries,
-            positive = true
+            positiveChart = true,
+            updateTimeSeries = { _, _, _ -> },
         )
 
         StockChart(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp),
+            symbol = "TSLA",
             timeSeries = timeSeries2,
-            positive = true
+            positiveChart = true,
+            updateTimeSeries = { _, _, _ -> },
         )
         StockChart(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp),
+            symbol = "TSLA",
             timeSeries = timeSeries3,
-            positive = false
+            positiveChart = false,
+            updateTimeSeries = { _, _, _ -> },
         )
         StockChart(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp),
+            symbol = "TSLA",
             timeSeries = timeSeries4,
-            positive = true
+            positiveChart = true,
+            updateTimeSeries = { _, _, _ -> },
         )
         StockChart(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp),
+            symbol = "TSLA",
             timeSeries = timeSeries5,
-            positive = false
+            positiveChart = false,
+            updateTimeSeries = { _, _, _ -> },
         )
         StockChart(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp),
+            symbol = "TSLA",
             timeSeries = timeSeries6,
-            positive = true
+            positiveChart = true,
+            updateTimeSeries = { _, _, _ -> },
         )
         StockChart(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp),
+            symbol = "TSLA",
             timeSeries = timeSeries7,
-            positive = false
+            positiveChart = false,
+            updateTimeSeries = { _, _, _ -> },
         )
         StockChart(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp),
+            symbol = "TSLA",
             timeSeries = timeSeries8,
-            positive = true
+            positiveChart = true,
+            updateTimeSeries = { _, _, _ -> },
         )
         StockChart(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp),
+            symbol = "TSLA",
             timeSeries = timeSeries9,
-            positive = false
+            positiveChart = false,
+            updateTimeSeries = { _, _, _ -> },
         )
         StockChart(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp),
+            symbol = "TSLA",
             timeSeries = timeSeries10,
-            positive = true
+            positiveChart = true,
+            updateTimeSeries = { _, _, _ -> },
         )
-
     }
 }
