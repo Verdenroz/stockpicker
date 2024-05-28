@@ -1,10 +1,13 @@
 package com.farmingdale.stockscreener.repos
 
 import com.farmingdale.stockscreener.model.local.FullQuoteData
+import com.farmingdale.stockscreener.model.local.HistoricalData
+import com.farmingdale.stockscreener.model.local.Interval
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.MarketIndex
 import com.farmingdale.stockscreener.model.local.MarketMover
+import com.farmingdale.stockscreener.model.local.TimePeriod
 import com.farmingdale.stockscreener.providers.ImplFinanceQueryAPI
 import com.farmingdale.stockscreener.providers.okHttpClient
 import com.farmingdale.stockscreener.repos.base.FinanceQueryRepository
@@ -107,6 +110,18 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
     override suspend fun getSimilarStocks(symbol: String): Flow<List<SimpleQuoteData>> = flow {
         try {
             emit(api.getSimilarSymbols(symbol))
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }.flowOn(Dispatchers.IO)
+
+    override suspend fun getTimeSeries(
+        symbol: String,
+        timePeriod: TimePeriod,
+        interval: Interval,
+    ): Flow<Map<String, HistoricalData>> = flow {
+        try {
+            emit(api.getHistoricalData(symbol, timePeriod, interval))
         } catch (e: Exception) {
             e.printStackTrace()
         }

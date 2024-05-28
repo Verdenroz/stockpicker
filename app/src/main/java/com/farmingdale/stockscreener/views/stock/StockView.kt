@@ -5,13 +5,17 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,27 +26,49 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.FullQuoteData
+import com.farmingdale.stockscreener.model.local.HistoricalData
+import com.farmingdale.stockscreener.model.local.Interval
+import com.farmingdale.stockscreener.model.local.TimePeriod
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
-import com.farmingdale.stockscreener.ui.theme.negativeBackgroundColor
-import com.farmingdale.stockscreener.ui.theme.positiveBackgroundColor
+import com.farmingdale.stockscreener.ui.theme.negativeTextColor
+import com.farmingdale.stockscreener.ui.theme.positiveTextColor
+import com.farmingdale.stockscreener.viewmodels.ImplStockViewModel
+import com.farmingdale.stockscreener.viewmodels.base.StockViewModel
 import java.util.Locale
 
 @Composable
 fun StockView(
     quote: FullQuoteData?
 ) {
+    val stockViewModel: StockViewModel = viewModel<ImplStockViewModel>(
+        key = quote?.symbol ?: "",
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return ImplStockViewModel(quote?.symbol ?: "") as T
+            }
+        })
+    val timeSeries by stockViewModel.timeSeries.collectAsState()
     StockScreenerTheme {
-        StockContent(quote = quote)
+        StockContent(
+            quote = quote,
+            timeSeries = timeSeries,
+            updateTimeSeries = stockViewModel::getTimeSeries,
+        )
     }
 }
 
 @Composable
 fun StockContent(
     quote: FullQuoteData?,
+    timeSeries: Map<String, HistoricalData> = emptyMap(),
+    updateTimeSeries: (String, TimePeriod, Interval) -> Unit,
 ) {
     // Adjust brightness of the background color based on the system theme (For better contrast on logos in dark theme)
     val brightnessAdjustment = if (isSystemInDarkTheme()) 2f else 1f
@@ -51,6 +77,7 @@ fun StockContent(
         green = MaterialTheme.colorScheme.surface.green * brightnessAdjustment,
         blue = MaterialTheme.colorScheme.surface.blue * brightnessAdjustment
     )
+
     Scaffold(
         topBar = {
             StockTopBar(quote = quote)
@@ -65,9 +92,7 @@ fun StockContent(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -90,13 +115,13 @@ fun StockContent(
                                 text = quote.change,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
-                                color = let { if (quote.change.startsWith("-")) negativeBackgroundColor else positiveBackgroundColor },
+                                color = let { if (quote.change.startsWith("-")) negativeTextColor else positiveTextColor },
                             )
                             Text(
                                 text = "(${quote.percentChange})",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
-                                color = let { if (quote.change.startsWith("-")) negativeBackgroundColor else positiveBackgroundColor },
+                                color = let { if (quote.change.startsWith("-")) negativeTextColor else positiveTextColor },
                             )
                         }
                         if (quote.postMarketPrice != null) {
@@ -118,7 +143,7 @@ fun StockContent(
                                     ),
                                     style = MaterialTheme.typography.labelLarge,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = let { if (quote.change.startsWith("-")) negativeBackgroundColor else positiveBackgroundColor },
+                                    color = let { if (quote.postMarketPrice < quote.price) negativeTextColor else positiveTextColor },
                                 )
                                 Text(
                                     text = String.format(
@@ -128,7 +153,7 @@ fun StockContent(
                                     ),
                                     style = MaterialTheme.typography.labelLarge,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = let { if (quote.change.startsWith("-")) negativeBackgroundColor else positiveBackgroundColor },
+                                    color = let { if (quote.postMarketPrice < quote.price) negativeTextColor else positiveTextColor },
                                 )
                             }
                         }
@@ -149,6 +174,27 @@ fun StockContent(
                                 .padding(8.dp)
                         )
                     }
+                }
+                if (timeSeries.isEmpty()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+                else{
+                    StockChart(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(.3f),
+                        symbol = quote.symbol,
+                        timeSeries = timeSeries.entries.toList().asReversed().associate { it.key to it.value },
+                        positiveChart = timeSeries.values.first().close > timeSeries.values.last().close,
+                        backgroundColor = bg,
+                        updateTimeSeries = updateTimeSeries,
+                    )
                 }
             }
         }

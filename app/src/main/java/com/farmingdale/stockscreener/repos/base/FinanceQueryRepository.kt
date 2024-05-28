@@ -1,10 +1,13 @@
 package com.farmingdale.stockscreener.repos.base
 
 import com.farmingdale.stockscreener.model.local.FullQuoteData
+import com.farmingdale.stockscreener.model.local.HistoricalData
+import com.farmingdale.stockscreener.model.local.Interval
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.MarketIndex
 import com.farmingdale.stockscreener.model.local.MarketMover
+import com.farmingdale.stockscreener.model.local.TimePeriod
 import kotlinx.coroutines.flow.Flow
 
 abstract class FinanceQueryRepository {
@@ -68,6 +71,15 @@ abstract class FinanceQueryRepository {
      * Find similar stocks for a symbol as a list of [SimpleQuoteData]
      */
     abstract suspend fun getSimilarStocks(symbol: String): Flow<List<SimpleQuoteData>>
+
+    /**
+     * Get historical data for a symbol as a map of dates to [HistoricalData]
+     */
+    abstract suspend fun getTimeSeries(
+        symbol: String,
+        timePeriod: TimePeriod,
+        interval: Interval
+    ): Flow<Map<String, HistoricalData>>
 
     companion object {
         const val REFRESH_INTERVAL = 5000L
