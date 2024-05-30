@@ -1,5 +1,6 @@
 package com.farmingdale.stockscreener.providers
 
+import android.util.Log
 import com.farmingdale.stockscreener.BuildConfig
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.HistoricalData
@@ -75,23 +76,27 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 symbol = it.symbol,
                 name = it.name,
                 price = it.price,
-                postMarketPrice = it.after_hours_price,
+                postMarketPrice = it.afterHoursPrice,
                 change = it.change,
-                percentChange = it.percent_change,
+                percentChange = it.percentChange,
                 open = it.open,
                 high = it.high,
                 low = it.low,
-                yearHigh = it.year_high,
-                yearLow = it.year_low,
+                yearHigh = it.yearHigh,
+                yearLow = it.yearLow,
                 volume = it.volume,
-                avgVolume = it.avg_volume,
-                marketCap = it.market_cap,
+                avgVolume = it.avgVolume,
+                marketCap = it.marketCap,
                 beta = it.beta,
                 eps = it.eps,
                 pe = it.pe,
                 dividend = it.dividend,
-                exDividend = it.ex_dividend,
-                earningsDate = it.earnings_date,
+                yield = it.yield,
+                netAssets = it.netAssets,
+                nav = it.nav,
+                expenseRatio = it.expenseRatio,
+                exDividend = it.exDividend,
+                earningsDate = it.earningsDate,
                 sector = it.sector,
                 industry = it.industry,
                 about = it.about,
@@ -121,7 +126,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 name = it.name,
                 price = it.price,
                 change = it.change,
-                percentChange = it.percent_change
+                percentChange = it.percentChange
             )
         }.first()
     }
@@ -148,7 +153,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 name = it.name,
                 price = it.price,
                 change = it.change,
-                percentChange = it.percent_change
+                percentChange = it.percentChange
             )
         }
 
@@ -196,7 +201,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 open = entry.value.open,
                 high = entry.value.high,
                 low = entry.value.low,
-                close = entry.value.adj_close,
+                close = entry.value.adjClose,
                 volume = entry.value.volume
             )
         }
@@ -221,7 +226,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 name = it.name,
                 value = it.value,
                 change = it.change,
-                percentChange = it.percent_change
+                percentChange = it.percentChange
             )
         }
     }
@@ -243,11 +248,11 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
         return sectorResponseList.map {
             MarketSector(
                 sector = it.sector,
-                dayReturn = it.day_return,
-                ytdReturn = it.ytd_return,
-                yearReturn = it.year_return,
-                threeYearReturn = it.three_year_return,
-                fiveYearReturn = it.five_year_return
+                dayReturn = it.dayReturn,
+                ytdReturn = it.ytdReturn,
+                yearReturn = it.yearReturn,
+                threeYearReturn = it.threeYearReturn,
+                fiveYearReturn = it.fiveYearReturn
             )
         }
     }
@@ -272,7 +277,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 name = it.name,
                 price = it.price,
                 change = it.change,
-                percentChange = it.percent_change
+                percentChange = it.percentChange
             )
         }
     }
@@ -299,7 +304,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 name = it.name,
                 price = it.price,
                 change = it.change,
-                percentChange = it.percent_change
+                percentChange = it.percentChange
             )
         }
     }
@@ -326,7 +331,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 name = it.name,
                 price = it.price,
                 change = it.change,
-                percentChange = it.percent_change
+                percentChange = it.percentChange
             )
         }
     }
@@ -409,7 +414,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 name = it.name,
                 price = it.price,
                 change = it.change,
-                percentChange = it.percent_change
+                percentChange = it.percentChange
             )
         }
     }
