@@ -29,4 +29,19 @@
     <string name="logo">Logo or placeholder</string>
     <string name="after_hours">"After Hours: "</string>
     <string name="back">Return to previous screen</string>
+    <string name="filter">Filter</string>
+    <string name="stock">Stock</string>
+    <string name="etf">ETF</string>
+    <string name="trust">Trust</string>
+    <string name="US">United States</string>
+    <string name="NA">North America</string>
+    <string name="SA">South America</string>
+    <string name="AS">Asia</string>
+    <string name="ME">Middle East</string>
+    <string name="EU">Europe</string>
+    <string name="AF">Africa</string>
+    <string name="AU">Australia</string>
+    <string name="GLOBAL">Global</string>
+    <string name="filter_selected">Selected filter</string>
+    <string name="apply">Apply</string>
 </resources>
