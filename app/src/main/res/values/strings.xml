@@ -44,4 +44,25 @@
     <string name="GLOBAL">Global</string>
     <string name="filter_selected">Selected filter</string>
     <string name="apply">Apply</string>
+    <string name="high">High</string>
+    <string name="low">Low</string>
+    <string name="open">Open</string>
+    <string name="volume">Volume</string>
+    <string name="market_cap">Market Cap</string>
+    <string name="pe_ratio">PE Ratio(TTM)</string>
+    <string name="eps">EPS (TTM)</string>
+    <string name="beta">Beta (5Y Monthly)</string>
+    <string name="fifty_two_week_range">52 Week Range</string>
+    <string name="dividend_yield"><![CDATA[Dividend & Yield]]></string>
+    <string name="ex_dividend">Ex-Dividend Date</string>
+    <string name="earnings_date">Earnings Date</string>
+    <string name="avg_volume">Avg. Volume</string>
+    <string name="sector">Sector</string>
+    <string name="industry">Industry</string>
+    <string name="about">About</string>
+    <string name="summary">Summary</string>
+    <string name="profile">Profile</string>
+    <string name="analysis">Analysis</string>
+    <string name="previous">Previous</string>
+    <string name="forward">Forward</string>
 </resources>

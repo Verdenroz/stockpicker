@@ -70,7 +70,12 @@ fun MarketMovers(
                 },
                 enabled = state.currentPage > 0
             ) {
-                Icon(Icons.AutoMirrored.Default.KeyboardArrowLeft, contentDescription = "Previous")
+                Icon(
+                    Icons.AutoMirrored.Default.KeyboardArrowLeft,
+                    contentDescription = stringResource(
+                        id = R.string.previous
+                    )
+                )
             }
             Text(
                 text = let {
@@ -92,7 +97,12 @@ fun MarketMovers(
                 },
                 enabled = state.currentPage < 2
             ) {
-                Icon(Icons.AutoMirrored.Default.KeyboardArrowRight, contentDescription = "Forward")
+                Icon(
+                    Icons.AutoMirrored.Default.KeyboardArrowRight,
+                    contentDescription = stringResource(
+                        id = R.string.forward
+                    )
+                )
             }
         }
         HorizontalPager(
