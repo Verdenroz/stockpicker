@@ -135,7 +135,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
         val symbolList = symbols.joinToString(",")
         val stream = getByteStream(
             FINANCE_QUERY_API_URL.newBuilder().apply {
-                addPathSegments("quotes")
+                addPathSegments("simple-quotes")
                 addQueryParameter("symbols", symbolList)
             }.build()
         )

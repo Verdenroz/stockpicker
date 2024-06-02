@@ -1,7 +1,6 @@
 package com.farmingdale.stockscreener.repos
 
 import android.content.Context
-import android.util.Log
 import com.farmingdale.stockscreener.model.database.AppDatabase
 import com.farmingdale.stockscreener.model.database.DBQuoteData
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
@@ -10,7 +9,6 @@ import com.farmingdale.stockscreener.providers.okHttpClient
 import com.farmingdale.stockscreener.repos.base.WatchlistRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -36,12 +34,12 @@ class ImplWatchlistRepository(application: Context) : WatchlistRepository() {
         }.flowOn(Dispatchers.IO).launchIn(CoroutineScope(Dispatchers.IO))
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun refreshWatchList() {
         val symbols = db.getAllQuoteData().map { it.symbol }
-        val updatedQuotes = api.getBulkQuote(symbols)
-        Log.d("ImplWatchlistRepository", "refreshWatchList: $updatedQuotes")
-        db.updateAll(updatedQuotes.map { it.toDB() })
+        if (symbols.isNotEmpty()){
+            val updatedQuotes = api.getBulkQuote(symbols)
+            db.updateAll(updatedQuotes.map { it.toDB() })
+        }
     }
 
     override suspend fun addToWatchList(symbol: String) {

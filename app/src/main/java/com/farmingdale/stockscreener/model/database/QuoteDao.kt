@@ -28,6 +28,9 @@ interface QuoteDao {
     suspend fun deleteAll()
 
     @Query("SELECT * FROM DBQuoteData")
+    suspend fun getAllQuoteData(): List<SimpleQuoteData>
+
+    @Query("SELECT * FROM DBQuoteData")
     fun getAllQuoteDataFlow(): Flow<List<SimpleQuoteData>>
 
 }
