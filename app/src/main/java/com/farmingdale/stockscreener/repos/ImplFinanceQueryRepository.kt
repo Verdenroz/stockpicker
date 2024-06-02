@@ -46,7 +46,7 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
     private fun refreshMarketDataPeriodically() = flow<Unit> {
         while (true) {
             refreshMarketData()
-            delay(REFRESH_INTERVAL)
+            delay(refreshInterval)
         }
     }.flowOn(Dispatchers.IO).launchIn(CoroutineScope(Dispatchers.IO))
 

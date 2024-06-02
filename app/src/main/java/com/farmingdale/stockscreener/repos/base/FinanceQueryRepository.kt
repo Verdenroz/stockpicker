@@ -8,9 +8,20 @@ import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.MarketIndex
 import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.model.local.TimePeriod
+import com.farmingdale.stockscreener.utils.isMarketOpen
 import kotlinx.coroutines.flow.Flow
 
 abstract class FinanceQueryRepository {
+    /**
+     * The refresh interval for the user's watch list depending on whether the market is open or not
+     * 15 seconds when the market is open, 30 minutes when the market is closed
+     */
+    var refreshInterval = if (isMarketOpen()) 15000L else 1800000L
+        private set
+
+    fun updateRefreshInterval(interval: Long) {
+        refreshInterval = interval
+    }
 
     /**
      *  Market indices as list of [MarketIndex]
@@ -82,7 +93,6 @@ abstract class FinanceQueryRepository {
     ): Flow<Map<String, HistoricalData>>
 
     companion object {
-        const val REFRESH_INTERVAL = 5000L
         const val NEWS_REFRESH_INTERVAL = 60000L
     }
 

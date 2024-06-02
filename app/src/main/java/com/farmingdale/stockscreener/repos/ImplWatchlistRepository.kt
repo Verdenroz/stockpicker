@@ -29,7 +29,7 @@ class ImplWatchlistRepository(application: Context) : WatchlistRepository() {
         flow<Unit> {
             while (true) {
                 refreshWatchList()
-                delay(REFRESH_INTERVAL)
+                delay(refreshInterval)
             }
         }.flowOn(Dispatchers.IO).launchIn(CoroutineScope(Dispatchers.IO))
     }
