@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.farmingdale.stockscreener.R
@@ -138,8 +139,45 @@ fun SearchBar(
                     }
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                headlineContent = { Text(match.name) },
-                leadingContent = { Text(match.symbol) },
+                headlineContent = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = match.symbol,
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+
+                        Text(
+                            text = match.exchangeShortName,
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+
+
+                    }
+                },
+                supportingContent = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = match.name,
+                            style = MaterialTheme.typography.labelSmall,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 16.dp)
+                        )
+                        Text(
+                            text = match.type,
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    }
+                },
                 trailingContent = {
                     if (isInWatchListState) {
                         IconButton(onClick = { deleteFromWatchList(match.symbol) }) {
