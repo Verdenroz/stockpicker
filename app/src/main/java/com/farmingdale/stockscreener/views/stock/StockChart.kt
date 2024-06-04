@@ -98,7 +98,7 @@ fun StockChart(
     val selectedData = rememberSaveable { mutableStateOf<Pair<String, HistoricalData>?>(null) }
     Column(
         modifier = Modifier
-            .padding(16.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp)
             .background(backgroundColor)
     ) {
         Box(modifier = modifier
@@ -205,7 +205,7 @@ fun TimePeriodBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(horizontal = 8.dp),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         TimePeriod.entries.filter { timePeriod ->

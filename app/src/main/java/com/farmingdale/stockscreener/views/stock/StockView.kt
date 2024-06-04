@@ -12,36 +12,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.ImageLoader
-import coil.compose.AsyncImage
-import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.HistoricalData
 import com.farmingdale.stockscreener.model.local.Interval
 import com.farmingdale.stockscreener.model.local.TimePeriod
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
-import com.farmingdale.stockscreener.ui.theme.negativeTextColor
-import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 import com.farmingdale.stockscreener.viewmodels.ImplStockViewModel
 import com.farmingdale.stockscreener.viewmodels.base.StockViewModel
-import java.util.Locale
 
 @Composable
 fun StockView(
@@ -100,19 +87,20 @@ fun StockContent(
                     ) {
                         CircularProgressIndicator()
                     }
-                }
-                else{
+                } else {
                     StockChart(
                         modifier = Modifier
                             .fillMaxWidth()
                             .fillMaxHeight(.3f),
                         symbol = quote.symbol,
-                        timeSeries = timeSeries.entries.toList().asReversed().associate { it.key to it.value },
+                        timeSeries = timeSeries.entries.toList().asReversed()
+                            .associate { it.key to it.value },
                         positiveChart = timeSeries.values.first().close > timeSeries.values.last().close,
                         backgroundColor = bg,
                         updateTimeSeries = updateTimeSeries,
                     )
                 }
+                StockViewPager(quote = quote)
             }
         }
     }
@@ -149,7 +137,7 @@ fun PreviewStockView(
         sector = "Technology",
         industry = "Consumer Electronics",
         about = "Apple Inc. is an American multinational technology company that designs, manufactures, and markets consumer electronics, computer software, and online services. It is considered one of the Big Five companies in the U.S. information technology industry, along with Amazon, Google, Microsoft, and Facebook.",
-        logo = "https://logo.clearbit.com/apple.com"
+        logo = null
     )
 ) {
     StockView(quote = quote)
