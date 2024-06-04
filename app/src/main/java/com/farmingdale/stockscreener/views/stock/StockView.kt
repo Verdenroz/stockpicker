@@ -89,92 +89,9 @@ fun StockContent(
                     .fillMaxSize()
                     .padding(padding)
                     .background(bg),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(.8f),
-                        verticalArrangement = Arrangement.SpaceBetween,
-                    )
-                    {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = quote.price.toString(),
-                                style = MaterialTheme.typography.displaySmall,
-                                fontWeight = FontWeight.Black,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                            Text(
-                                text = quote.change,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                color = let { if (quote.change.startsWith("-")) negativeTextColor else positiveTextColor },
-                            )
-                            Text(
-                                text = "(${quote.percentChange})",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                color = let { if (quote.change.startsWith("-")) negativeTextColor else positiveTextColor },
-                            )
-                        }
-                        if (quote.postMarketPrice != null) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = stringResource(id = R.string.after_hours) + quote.postMarketPrice.toString(),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                )
-                                Text(
-                                    text = String.format(
-                                        Locale.US,
-                                        "%.2f",
-                                        (quote.postMarketPrice - quote.price)
-                                    ),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = let { if (quote.postMarketPrice < quote.price) negativeTextColor else positiveTextColor },
-                                )
-                                Text(
-                                    text = String.format(
-                                        Locale.US,
-                                        "(%.2f%%)",
-                                        (quote.postMarketPrice - quote.price) / quote.price * 100
-                                    ),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = let { if (quote.postMarketPrice < quote.price) negativeTextColor else positiveTextColor },
-                                )
-                            }
-                        }
-                    }
-                    if (quote.logo != null) {
-                        // Filter the logo with the background color
-                        AsyncImage(
-                            model = quote.logo,
-                            contentDescription = stringResource(id = R.string.logo),
-                            imageLoader = ImageLoader(LocalContext.current),
-                            colorFilter = ColorFilter.lighting(
-                                add = Color.Transparent,
-                                multiply = bg
-                            ),
-                            filterQuality = FilterQuality.High,
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(8.dp)
-                        )
-                    }
-                }
+                StockHeadline(quote = quote, bg = bg)
                 if (timeSeries.isEmpty()) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
