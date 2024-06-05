@@ -25,6 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.HistoricalData
 import com.farmingdale.stockscreener.model.local.Interval
+import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.TimePeriod
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
 import com.farmingdale.stockscreener.viewmodels.ImplStockViewModel
@@ -42,10 +43,12 @@ fun StockView(
             }
         })
     val timeSeries by stockViewModel.timeSeries.collectAsState()
+    val news by stockViewModel.news.collectAsState()
     StockScreenerTheme {
         StockContent(
             quote = quote,
             timeSeries = timeSeries,
+            news = news,
             updateTimeSeries = stockViewModel::getTimeSeries,
         )
     }
@@ -55,6 +58,7 @@ fun StockView(
 fun StockContent(
     quote: FullQuoteData?,
     timeSeries: Map<String, HistoricalData> = emptyMap(),
+    news: List<News> = emptyList(),
     updateTimeSeries: (String, TimePeriod, Interval) -> Unit,
 ) {
     // Adjust brightness of the background color based on the system theme (For better contrast on logos in dark theme)
@@ -100,7 +104,10 @@ fun StockContent(
                         updateTimeSeries = updateTimeSeries,
                     )
                 }
-                StockViewPager(quote = quote)
+                StockViewPager(
+                    quote = quote,
+                    news = news
+                )
             }
         }
     }
