@@ -37,6 +37,7 @@ import com.farmingdale.stockscreener.ui.theme.positiveBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -200,7 +201,7 @@ fun MarketMoverStock(stock: MarketMover) {
         }
         Spacer(modifier = Modifier.width(4.dp))
         Text(
-            text = stock.price,
+            text = String.format(Locale.US, "%.2f", stock.price.toDouble()),
             modifier = Modifier
                 .weight(1f)
                 .wrapContentSize()

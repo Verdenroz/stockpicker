@@ -32,6 +32,7 @@ import com.farmingdale.stockscreener.ui.theme.indexColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @Composable
 fun MarketIndices(
@@ -105,7 +106,7 @@ fun MarketIndexCard(index: MarketIndex) {
                     color = indexColor
                 )
                 Text(
-                    text = index.value,
+                    text = String.format(Locale.US, "%.2f", index.value.toDouble()),
                     style = MaterialTheme.typography.titleSmall
                 )
                 Row(

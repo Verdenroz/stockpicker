@@ -22,6 +22,7 @@ import com.farmingdale.stockscreener.ui.theme.negativeBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
+import java.util.Locale
 
 @Composable
 fun WatchListView(
@@ -36,7 +37,7 @@ fun WatchListView(
             watchList?.forEach { quote ->
                 item {
                     WatchListStock(
-                        quoteData = (quote),
+                        quoteData = quote,
                         navController = navController,
                         deleteFromWatchList = deleteFromWatchList,
                     )
@@ -77,7 +78,7 @@ fun WatchListStock(
         },
         trailingContent = {
             Text(
-                text = quoteData.price.toString(),
+                text = String.format(Locale.US, "%.2f", quoteData.price),
                 style = MaterialTheme.typography.labelLarge,
                 color = if (quoteData.change.contains('+')) positiveTextColor else negativeTextColor,
                 modifier = Modifier

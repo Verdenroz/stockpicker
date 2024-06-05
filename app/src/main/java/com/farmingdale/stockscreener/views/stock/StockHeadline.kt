@@ -37,7 +37,7 @@ fun StockHeadline(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = quote.price.toString(),
+                    text = String.format(Locale.US,"%.2f", quote.price),
                     style = MaterialTheme.typography.displaySmall,
                     fontWeight = FontWeight.Black,
                     color = MaterialTheme.colorScheme.onSurface,
