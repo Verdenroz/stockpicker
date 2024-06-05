@@ -61,8 +61,11 @@
     <string name="industry">Industry</string>
     <string name="about">About</string>
     <string name="summary">Summary</string>
-    <string name="profile">Profile</string>
     <string name="analysis">Analysis</string>
     <string name="previous">Previous</string>
     <string name="forward">Forward</string>
+    <string name="days_range">Day\'s Range</string>
+    <string name="net_assets">Net Assets</string>
+    <string name="nav">NAV</string>
+    <string name="expense_ratio">Expense Ratio (net)</string>
 </resources>

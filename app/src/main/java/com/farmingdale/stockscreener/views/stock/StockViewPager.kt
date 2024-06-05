@@ -1,6 +1,7 @@
 package com.farmingdale.stockscreener.views.stock
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,7 +46,7 @@ fun StockViewPager(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp)
+                .background(MaterialTheme.colorScheme.surfaceContainer)
         ) {
             IconButton(
                 onClick = {
@@ -92,8 +93,6 @@ fun StockViewPager(
         }
         HorizontalPager(
             state = state,
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
         ) { page ->
             when (page) {
                 0 -> {
