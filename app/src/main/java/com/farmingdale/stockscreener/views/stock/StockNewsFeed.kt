@@ -11,6 +11,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,7 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.ImageLoader
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.News
 
@@ -44,9 +51,27 @@ fun StockNewsItem(news: News) {
     val context = LocalContext.current
     ListItem(
         leadingContent = {
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = news.img,
                 contentDescription = stringResource(id = R.string.news_image),
+                loading = {
+                    CircularProgressIndicator()
+                },
+                error = {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        shape = RoundedCornerShape(10),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Icon(
+                            Icons.Default.Warning,
+                            contentDescription = stringResource(id = R.string.notLoaded)
+                        )
+                    }
+                },
                 imageLoader = ImageLoader(context),
                 modifier = Modifier.fillMaxSize(.33f)
             )
