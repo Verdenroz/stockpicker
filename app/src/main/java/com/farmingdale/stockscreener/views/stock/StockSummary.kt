@@ -170,7 +170,7 @@ fun StockSummary(quote: FullQuoteData) {
 fun StockProfile(quote: FullQuoteData) {
     Column(
         modifier = Modifier
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
             .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {

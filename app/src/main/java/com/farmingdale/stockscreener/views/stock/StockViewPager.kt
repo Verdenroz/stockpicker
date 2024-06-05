@@ -1,32 +1,27 @@
 package com.farmingdale.stockscreener.views.stock
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.FullQuoteData
+import com.farmingdale.stockscreener.model.local.News
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -34,60 +29,40 @@ import kotlinx.coroutines.launch
 @Composable
 fun StockViewPager(
     quote: FullQuoteData,
+    news: List<News>
 ) {
     val state = rememberPagerState(pageCount = { 3 })
     val scope = rememberCoroutineScope()
+    val tabTitles = listOf(
+        stringResource(id = R.string.summary),
+        stringResource(id = R.string.news),
+        stringResource(id = R.string.analysis)
+    )
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceContainer)
-        ) {
-            IconButton(
-                onClick = {
-                    scope.launch(Dispatchers.Default) {
-                        state.animateScrollToPage(state.currentPage - 1)
-                    }
-                },
-                enabled = state.currentPage > 0
-            ) {
-                Icon(
-                    Icons.AutoMirrored.Default.KeyboardArrowLeft,
-                    contentDescription = stringResource(
-                        id = R.string.previous
-                    )
+        TabRow(
+            selectedTabIndex = state.currentPage,
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            indicator = { tabPositions ->
+                SecondaryIndicator(
+                    Modifier.tabIndicatorOffset(tabPositions[state.currentPage]),
                 )
-            }
-            Text(
-                text = let {
-                    when (state.currentPage) {
-                        0 -> stringResource(id = R.string.summary)
-                        1 -> stringResource(id = R.string.news)
-                        2 -> stringResource(id = R.string.analysis)
-                        else -> stringResource(id = R.string.summary)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            tabTitles.forEachIndexed { index, title ->
+                Tab(
+                    text = { Text(title) },
+                    selected = state.currentPage == index,
+                    onClick = {
+                        scope.launch(Dispatchers.Default) {
+                            state.animateScrollToPage(index)
+                        }
                     }
-                },
-                style = MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.Center
-            )
-            IconButton(
-                onClick = {
-                    scope.launch(Dispatchers.Default) {
-                        state.animateScrollToPage(state.currentPage + 1)
-                    }
-                },
-                enabled = state.currentPage < 2
-            ) {
-                Icon(
-                    Icons.AutoMirrored.Default.KeyboardArrowRight,
-                    contentDescription = stringResource(
-                        id = R.string.forward
-                    )
                 )
             }
         }
@@ -100,11 +75,11 @@ fun StockViewPager(
                 }
 
                 1 -> {
-                    TODO("News not yet implemented")
+                    StockNewsFeed(news = news)
                 }
 
                 2 -> {
-                    TODO(" Analysis not yet implemented")
+                    StockNewsFeed(news = news)
                 }
             }
         }
@@ -146,6 +121,9 @@ fun PreviewStockViewPager(
     )
 ) {
     Surface {
-        StockViewPager(quote = quote)
+        StockViewPager(
+            quote = quote,
+            news = emptyList(),
+        )
     }
 }
