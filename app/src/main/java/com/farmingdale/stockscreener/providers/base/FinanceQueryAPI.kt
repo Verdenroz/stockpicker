@@ -1,5 +1,6 @@
 package com.farmingdale.stockscreener.providers.base
 
+import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.HistoricalData
 import com.farmingdale.stockscreener.model.local.Interval
@@ -38,7 +39,7 @@ interface FinanceQueryAPI {
      * @param symbol symbol of the stock
      * @param time the time period to get data for (1d, 5d, 1m, 3m, 6m, 1y, 2y, 5y, 10y, ytd, max)
      * @param interval the interval between data points (15m, 30m, 1h, 1d, 1wk, 1mo, 3mo)
-     * @return [TimeSeriesData] containing the historical data
+     * @return a map of dates to [HistoricalData]
      * @see Interval
      * @see TimePeriod
      */
@@ -97,5 +98,10 @@ interface FinanceQueryAPI {
 
     suspend fun getTechnicalIndicator(symbol: String)
 
-    suspend fun getSummaryAnalysis(symbol: String)
+    /**
+     * Get a summary analysis with multiple technical indicators (sma, ema, rsi, etc) of a stock
+     * @param interval optional [Interval] to get data for (15m, 30m, 1h, 1d, 1wk, 1mo, 3mo)
+     * @return [Analysis]
+     */
+    suspend fun getSummaryAnalysis(symbol: String, interval: Interval = Interval.DAILY): Analysis
 }

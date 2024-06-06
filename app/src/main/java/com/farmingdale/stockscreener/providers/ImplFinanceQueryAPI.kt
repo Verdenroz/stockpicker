@@ -1,7 +1,7 @@
 package com.farmingdale.stockscreener.providers
 
-import android.util.Log
 import com.farmingdale.stockscreener.BuildConfig
+import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.HistoricalData
 import com.farmingdale.stockscreener.model.local.Interval
@@ -11,6 +11,7 @@ import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
+import com.farmingdale.stockscreener.model.remote.AnalysisResponse
 import com.farmingdale.stockscreener.model.remote.FullQuoteResponse
 import com.farmingdale.stockscreener.model.remote.IndexResponse
 import com.farmingdale.stockscreener.model.remote.MarketMoverResponse
@@ -423,7 +424,51 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getSummaryAnalysis(symbol: String) {
-        TODO("Not yet implemented")
+    override suspend fun getSummaryAnalysis(symbol: String, interval: Interval): Analysis {
+        val stream = getByteStream(
+            FINANCE_QUERY_API_URL.newBuilder().apply {
+                addPathSegments("analysis")
+                addQueryParameter("symbol", symbol)
+                addQueryParameter("interval", interval.value)
+            }.build()
+        )
+
+        val analysisResponse: AnalysisResponse
+
+        try {
+            analysisResponse = parser.decodeFromStream(AnalysisResponse.serializer(), stream)
+        } catch (e: SerializationException) {
+            throw RuntimeException("Failed to parse JSON response", e)
+        }
+
+        return Analysis(
+            sma10 = analysisResponse.sma10,
+            sma20 = analysisResponse.sma20,
+            sma50 = analysisResponse.sma50,
+            sma100 = analysisResponse.sma100,
+            sma200 = analysisResponse.sma200,
+            ema10 = analysisResponse.ema10,
+            ema20 = analysisResponse.ema20,
+            ema50 = analysisResponse.ema50,
+            ema100 = analysisResponse.ema100,
+            ema200 = analysisResponse.ema200,
+            wma10 = analysisResponse.wma10,
+            wma20 = analysisResponse.wma20,
+            wma50 = analysisResponse.wma50,
+            wma100 = analysisResponse.wma100,
+            wma200 = analysisResponse.wma200,
+            vwma20 = analysisResponse.vwma20,
+            rsi14 = analysisResponse.rsi14,
+            srsi14 = analysisResponse.srsi14,
+            cci20 = analysisResponse.cci20,
+            adx14 = analysisResponse.adx14,
+            macd = analysisResponse.macd,
+            stoch = analysisResponse.stoch,
+            obv = analysisResponse.obv.toLong(),
+            aroon = analysisResponse.aroon.toAroon(),
+            bBands = analysisResponse.bBands.toBBands(),
+            superTrend = analysisResponse.superTrend.toSuperTrend(),
+            ichimokuCloud = analysisResponse.ichimokuCloud.toIchimokuCloud()
+        )
     }
 }

@@ -118,4 +118,14 @@ class FinanceQueryTest {
         }
         println(info)
     }
+
+    @Test
+    fun getAnalysis(){
+        runBlocking {
+            println(api.getSummaryAnalysis("AAPL"))
+            println(api.getSummaryAnalysis("AAPL", Interval.FIFTEEN_MINUTE))
+            println(api.getSummaryAnalysis("GOOGL", Interval.MONTHLY))
+            println(api.getSummaryAnalysis("GOOGL", Interval.WEEKLY))
+        }
+    }
 }
