@@ -60,59 +60,54 @@ fun MarketMovers(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+        TabRow(
+            selectedTabIndex = state.currentPage,
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            indicator = { tabPositions ->
+                SecondaryIndicator(
+                    Modifier.tabIndicatorOffset(tabPositions[state.currentPage]),
+                )
+            },
+            modifier = Modifier.fillMaxWidth()
         ) {
-            TabRow(
-                selectedTabIndex = state.currentPage,
-                containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                indicator = { tabPositions ->
-                    SecondaryIndicator(
-                        Modifier.tabIndicatorOffset(tabPositions[state.currentPage]),
-                    )
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                tabTitles.forEachIndexed { index, title ->
-                    Tab(
-                        text = { Text(title) },
-                        selected = state.currentPage == index,
-                        onClick = {
-                            scope.launch(Dispatchers.Default) {
-                                state.animateScrollToPage(index)
-                            }
+            tabTitles.forEachIndexed { index, title ->
+                Tab(
+                    text = { Text(title) },
+                    selected = state.currentPage == index,
+                    onClick = {
+                        scope.launch(Dispatchers.Default) {
+                            state.animateScrollToPage(index)
                         }
+                    }
+                )
+            }
+        }
+        HorizontalPager(
+            state = state,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+        ) { page ->
+            when (page) {
+                0 -> {
+                    MarketMoversList(
+                        stocks = actives,
+                        refresh = refresh
                     )
                 }
-            }
-            HorizontalPager(
-                state = state,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-            ) { page ->
-                when (page) {
-                    0 -> {
-                        MarketMoversList(
-                            stocks = actives,
-                            refresh = refresh
-                        )
-                    }
 
-                    1 -> {
-                        MarketMoversList(
-                            stocks = gainers,
-                            refresh = refresh
-                        )
-                    }
+                1 -> {
+                    MarketMoversList(
+                        stocks = gainers,
+                        refresh = refresh
+                    )
+                }
 
-                    2 -> {
-                        MarketMoversList(
-                            stocks = losers,
-                            refresh = refresh
-                        )
-                    }
+                2 -> {
+                    MarketMoversList(
+                        stocks = losers,
+                        refresh = refresh
+                    )
                 }
             }
         }
