@@ -7,17 +7,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
@@ -133,32 +131,6 @@ fun PreviewMarketMovers() {
 }
 
 @Composable
-fun CustomTabRow(
-    titles: List<String>,
-    selectedIndex: Int,
-    onTabSelected: (Int) -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        titles.forEachIndexed { index, title ->
-            OutlinedButton(
-                onClick = { onTabSelected(index) },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (index == selectedIndex) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
-                )
-            ) {
-                Text(
-                    text = title,
-                    color = if (index == selectedIndex) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                )
-            }
-        }
-    }
-}
-
-@Composable
 fun MarketMoversList(
     stocks: List<MarketMover>?,
     refresh: () -> Unit
@@ -175,10 +147,11 @@ fun MarketMoversList(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                stocks.forEach { stock ->
-                    item {
-                        MarketMoverStock(stock = stock)
-                    }
+                items(
+                    items = stocks,
+                    key = { stock -> stock.symbol }
+                ) { stock ->
+                    MarketMoverStock(stock = stock)
                 }
             }
         }

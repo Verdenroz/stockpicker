@@ -61,7 +61,10 @@ fun Portfolio(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.Start),
                 content = {
-                    items(watchList) { quote ->
+                    items(
+                        items = watchList,
+                        key = { quote -> quote.symbol }
+                    ) { quote ->
                         PortfolioStockCard(quote = quote)
                     }
                 }

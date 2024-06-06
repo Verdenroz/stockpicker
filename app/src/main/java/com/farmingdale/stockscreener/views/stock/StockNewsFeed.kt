@@ -40,7 +40,10 @@ fun StockNewsFeed(news: List<News>) {
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        items(news) { item ->
+        items(
+            items = news,
+            key = { news -> news.title }
+        ) { item ->
             StockNewsItem(news = item)
         }
     }

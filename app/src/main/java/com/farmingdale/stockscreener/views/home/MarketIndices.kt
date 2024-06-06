@@ -64,7 +64,10 @@ fun MarketIndices(
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 content = {
-                    items(indices) { index ->
+                    items(
+                        items = indices,
+                        key = { index -> index.name }
+                    ) { index ->
                         MarketIndexCard(index = index)
                     }
                 }
