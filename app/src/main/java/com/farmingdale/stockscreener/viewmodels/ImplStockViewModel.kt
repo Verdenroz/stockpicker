@@ -1,6 +1,7 @@
 package com.farmingdale.stockscreener.viewmodels
 
 import androidx.lifecycle.viewModelScope
+import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.HistoricalData
 import com.farmingdale.stockscreener.model.local.Interval
 import com.farmingdale.stockscreener.model.local.News
@@ -24,7 +25,12 @@ class ImplStockViewModel(symbol: String) : StockViewModel() {
     private val _news = MutableStateFlow<List<News>>(emptyList())
     override val news: StateFlow<List<News>> = _news.asStateFlow()
 
+    private val _analysis = MutableStateFlow<Analysis?>(null)
+    override val analysis: StateFlow<Analysis?> = _analysis.asStateFlow()
+
     private val timeSeriesMap = mutableMapOf<TimePeriod, Map<String, HistoricalData>>()
+
+    private val analysisMap = mutableMapOf<Interval, Analysis>()
 
     init {
         if (symbol.isNotEmpty()) {
@@ -39,8 +45,18 @@ class ImplStockViewModel(symbol: String) : StockViewModel() {
                 val deferredTimeSeries5Y = async { loadTimeSeries(symbol, TimePeriod.FIVE_YEAR, Interval.DAILY) }
 
                 val deferredNews = async { getNews(symbol) }
+
+                val deferredAnalysis15M = async { loadAnalysis(symbol, Interval.FIFTEEN_MINUTE) }
+                val deferredAnalysis30M = async { loadAnalysis(symbol, Interval.THIRTY_MINUTE) }
+                val deferredAnalysis1H = async { loadAnalysis(symbol, Interval.ONE_HOUR) }
+                val deferredAnalysis1D = async { loadAnalysis(symbol, Interval.DAILY) }
+                val deferredAnalysis1W = async { loadAnalysis(symbol, Interval.WEEKLY) }
+                val deferredAnalysis1M = async { loadAnalysis(symbol, Interval.MONTHLY) }
+
                 // Set the default time series data (data should already be loaded)
                 val deferredTimeSeries = async{getTimeSeries(symbol, TimePeriod.YEAR_TO_DATE, Interval.DAILY)}
+                //Set the default analysis data (data should already be loaded)
+                val deferredAnalysis = async{getAnalysis(symbol, Interval.DAILY)}
 
                 deferredTimeSeries1D.await()
                 deferredTimeSeries5D.await()
@@ -51,6 +67,14 @@ class ImplStockViewModel(symbol: String) : StockViewModel() {
                 deferredTimeSeries5Y.await()
                 deferredTimeSeries.await()
 
+                deferredAnalysis15M.await()
+                deferredAnalysis30M.await()
+                deferredAnalysis1H.await()
+                deferredAnalysis1D.await()
+                deferredAnalysis1W.await()
+                deferredAnalysis1M.await()
+                deferredAnalysis.await()
+
                 deferredNews.await()
             }
         }
@@ -60,6 +84,14 @@ class ImplStockViewModel(symbol: String) : StockViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             financeQueryRepo.getTimeSeries(symbol, timePeriod, interval).collect {
                 timeSeriesMap[timePeriod] = it
+            }
+        }
+    }
+
+    private fun loadAnalysis(symbol: String, interval: Interval) {
+        viewModelScope.launch(Dispatchers.IO) {
+            financeQueryRepo.getAnalysis(symbol, interval).collect {
+                analysisMap[interval] = it
             }
         }
     }
@@ -82,6 +114,20 @@ class ImplStockViewModel(symbol: String) : StockViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             financeQueryRepo.getNewsForSymbol(symbol).collect {
                 _news.value = it
+            }
+        }
+    }
+
+    override fun getAnalysis(symbol: String, interval: Interval) {
+        viewModelScope.launch(Dispatchers.IO) {
+            // Check if the analysis data has already been loaded
+            if (analysisMap.containsKey(interval)) {
+                _analysis.value = analysisMap[interval]
+                return@launch
+            }
+            // If not, get the data from the repository
+            financeQueryRepo.getAnalysis(symbol, interval).collect {
+                _analysis.value = it
             }
         }
     }

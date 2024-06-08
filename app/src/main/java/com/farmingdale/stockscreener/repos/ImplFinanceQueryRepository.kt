@@ -1,5 +1,6 @@
 package com.farmingdale.stockscreener.repos
 
+import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.HistoricalData
 import com.farmingdale.stockscreener.model.local.Interval
@@ -122,6 +123,14 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
     ): Flow<Map<String, HistoricalData>> = flow {
         try {
             emit(api.getHistoricalData(symbol, timePeriod, interval))
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }.flowOn(Dispatchers.IO)
+
+    override fun getAnalysis(symbol: String, interval: Interval): Flow<Analysis> = flow {
+        try {
+            emit(api.getSummaryAnalysis(symbol, interval))
         } catch (e: Exception) {
             e.printStackTrace()
         }

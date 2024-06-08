@@ -1,5 +1,6 @@
 package com.farmingdale.stockscreener.repos.base
 
+import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.HistoricalData
 import com.farmingdale.stockscreener.model.local.Interval
@@ -91,6 +92,8 @@ abstract class FinanceQueryRepository {
         timePeriod: TimePeriod,
         interval: Interval
     ): Flow<Map<String, HistoricalData>>
+
+    abstract fun getAnalysis(symbol: String, interval: Interval): Flow<Analysis>
 
     companion object {
         const val NEWS_REFRESH_INTERVAL = 60000L
