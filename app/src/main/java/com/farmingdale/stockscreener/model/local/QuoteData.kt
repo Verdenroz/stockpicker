@@ -43,6 +43,11 @@ data class SimpleQuoteData(
  * @param sector the sector the stock belongs to
  * @param industry the industry the stock belongs to
  * @param about a brief description of the company
+ * @param ytdReturn the year to date return
+ * @param yearReturn the one year return
+ * @param threeYearReturn the three year return
+ * @param fiveYearReturn the five year return
+ * @param logo the URL of the company logo
  */
 data class FullQuoteData(
     val symbol: String,
@@ -72,5 +77,9 @@ data class FullQuoteData(
     val sector: String?,
     val industry: String?,
     val about: String?,
+    val ytdReturn: String?,
+    val yearReturn: String?,
+    val threeYearReturn: String?,
+    val fiveYearReturn: String?,
     val logo: String?
 )

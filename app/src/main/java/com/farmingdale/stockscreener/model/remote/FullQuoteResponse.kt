@@ -31,6 +31,10 @@ import kotlinx.serialization.Serializable
  * @param sector the sector the stock belongs to
  * @param industry the industry the stock belongs to
  * @param about a brief description of the company
+ * @param ytdReturn the year to date return
+ * @param yearReturn the one year return
+ * @param threeYearReturn the three year return
+ * @param fiveYearReturn the five year return
  * @param logo the url of the company logo if available
  */
 @Serializable
@@ -62,5 +66,9 @@ data class FullQuoteResponse(
     val sector: String? = null,
     val industry: String? = null,
     val about: String? = null,
+    val ytdReturn: String? = null,
+    val yearReturn: String? = null,
+    val threeYearReturn: String? = null,
+    val fiveYearReturn: String? = null,
     val logo: String? = null
 )

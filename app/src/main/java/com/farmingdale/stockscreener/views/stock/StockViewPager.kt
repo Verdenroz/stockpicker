@@ -117,6 +117,10 @@ fun PreviewStockViewPager(
         sector = "Technology",
         industry = "Consumer Electronics",
         about = "Apple Inc. is an American multinational technology company that designs, manufactures, and markets consumer electronics, computer software, and online services. It is considered one of the Big Five companies in the U.S. information technology industry, along with Amazon, Google, Microsoft, and Facebook.",
+        ytdReturn = "1.23%",
+        yearReturn = "1.23%",
+        threeYearReturn = "1.23%",
+        fiveYearReturn = "1.23%",
         logo = "https://logo.clearbit.com/apple.com"
     )
 ) {
@@ -124,6 +128,7 @@ fun PreviewStockViewPager(
         StockViewPager(
             quote = quote,
             news = emptyList(),
+            analysis = null
         )
     }
 }

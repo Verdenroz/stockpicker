@@ -101,6 +101,10 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 sector = it.sector,
                 industry = it.industry,
                 about = it.about,
+                ytdReturn = it.ytdReturn,
+                yearReturn = it.yearReturn,
+                threeYearReturn = it.threeYearReturn,
+                fiveYearReturn = it.fiveYearReturn,
                 logo = it.logo
             )
         }.first()
