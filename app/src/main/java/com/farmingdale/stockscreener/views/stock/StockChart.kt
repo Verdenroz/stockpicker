@@ -98,7 +98,7 @@ fun StockChart(
     val selectedData = rememberSaveable { mutableStateOf<Pair<String, HistoricalData>?>(null) }
     Column(
         modifier = Modifier
-            .padding(start = 16.dp, end = 16.dp, top = 16.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 32.dp)
             .background(backgroundColor)
     ) {
         Box(modifier = modifier

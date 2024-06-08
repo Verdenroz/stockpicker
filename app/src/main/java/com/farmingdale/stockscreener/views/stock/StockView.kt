@@ -29,6 +29,7 @@ import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.HistoricalData
 import com.farmingdale.stockscreener.model.local.Interval
 import com.farmingdale.stockscreener.model.local.News
+import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
 import com.farmingdale.stockscreener.viewmodels.ImplStockViewModel
@@ -46,11 +47,13 @@ fun StockView(
             }
         })
     val timeSeries by stockViewModel.timeSeries.collectAsState()
+    val similarStocks by stockViewModel.similarStocks.collectAsState()
     val news by stockViewModel.news.collectAsState()
     StockScreenerTheme {
         StockContent(
             quote = quote,
             timeSeries = timeSeries,
+            similarStocks = similarStocks,
             news = news,
             updateTimeSeries = stockViewModel::getTimeSeries,
         )
@@ -61,6 +64,7 @@ fun StockView(
 fun StockContent(
     quote: FullQuoteData?,
     timeSeries: Map<String, HistoricalData> = emptyMap(),
+    similarStocks: List<SimpleQuoteData> = emptyList(),
     news: List<News> = emptyList(),
     updateTimeSeries: (String, TimePeriod, Interval) -> Unit,
 ) {
@@ -113,6 +117,9 @@ fun StockContent(
                                 updateTimeSeries = updateTimeSeries,
                             )
                         }
+                    }
+                    item {
+                        SimilarStockFeed(similarStocks = similarStocks)
                     }
                     item {
                         StockViewPager(

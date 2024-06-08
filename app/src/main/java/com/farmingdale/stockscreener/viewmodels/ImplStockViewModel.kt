@@ -5,6 +5,7 @@ import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.HistoricalData
 import com.farmingdale.stockscreener.model.local.Interval
 import com.farmingdale.stockscreener.model.local.News
+import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
 import com.farmingdale.stockscreener.repos.ImplFinanceQueryRepository.Companion.get
 import com.farmingdale.stockscreener.repos.base.FinanceQueryRepository
@@ -21,6 +22,9 @@ class ImplStockViewModel(symbol: String) : StockViewModel() {
 
     private val _timeSeries = MutableStateFlow<Map<String, HistoricalData>>(emptyMap())
     override val timeSeries: StateFlow<Map<String, HistoricalData>> = _timeSeries.asStateFlow()
+
+    private val _similarStocks = MutableStateFlow<List<SimpleQuoteData>>(emptyList())
+    override val similarStocks: StateFlow<List<SimpleQuoteData>> = _similarStocks.asStateFlow()
 
     private val _news = MutableStateFlow<List<News>>(emptyList())
     override val news: StateFlow<List<News>> = _news.asStateFlow()
@@ -44,6 +48,7 @@ class ImplStockViewModel(symbol: String) : StockViewModel() {
                 val deferredTimeSeries1Y = async { loadTimeSeries(symbol, TimePeriod.ONE_YEAR, Interval.DAILY) }
                 val deferredTimeSeries5Y = async { loadTimeSeries(symbol, TimePeriod.FIVE_YEAR, Interval.DAILY) }
 
+                val deferredSimilar = async { getSimilarStocks(symbol) }
                 val deferredNews = async { getNews(symbol) }
 
                 val deferredAnalysis15M = async { loadAnalysis(symbol, Interval.FIFTEEN_MINUTE) }
@@ -75,6 +80,7 @@ class ImplStockViewModel(symbol: String) : StockViewModel() {
                 deferredAnalysis1M.await()
                 deferredAnalysis.await()
 
+                deferredSimilar.await()
                 deferredNews.await()
             }
         }
@@ -106,6 +112,14 @@ class ImplStockViewModel(symbol: String) : StockViewModel() {
             // If not, get the data from the repository
             financeQueryRepo.getTimeSeries(symbol, timePeriod, interval).collect {
                 _timeSeries.value = it
+            }
+        }
+    }
+
+    override fun getSimilarStocks(symbol: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            financeQueryRepo.getSimilarStocks(symbol).collect {
+                _similarStocks.value = it
             }
         }
     }
