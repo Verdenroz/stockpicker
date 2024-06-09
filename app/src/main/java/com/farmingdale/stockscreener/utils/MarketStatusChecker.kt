@@ -2,6 +2,7 @@ package com.farmingdale.stockscreener.utils
 
 import com.farmingdale.stockscreener.repos.base.FinanceQueryRepository
 import com.farmingdale.stockscreener.repos.base.WatchlistRepository
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
@@ -53,7 +54,9 @@ fun isMarketOpen(): Boolean {
     val nowNewYork = now.atDate(LocalDate.now())
         .atZone(ZoneId.systemDefault())
         .withZoneSameInstant(ZoneId.of("America/New_York"))
-        .toLocalTime()
 
-    return nowNewYork.isAfter(LocalTime.of(9, 30)) && nowNewYork.isBefore(LocalTime.of(16, 0))
+    val isWeekday = nowNewYork.dayOfWeek !in listOf(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)
+    val isBusinessHours = nowNewYork.toLocalTime().isAfter(LocalTime.of(9, 30)) && nowNewYork.toLocalTime().isBefore(LocalTime.of(16, 0))
+
+    return isWeekday && isBusinessHours
 }
