@@ -68,4 +68,9 @@
     <string name="net_assets">Net Assets</string>
     <string name="nav">NAV</string>
     <string name="expense_ratio">Expense Ratio (net)</string>
+    <string name="sma10">Simple Moving Average (10)</string>
+    <string name="sma20">Simple Moving Average (20)</string>
+    <string name="sma50">Simple Moving Average (50)</string>
+    <string name="similar_stocks">Similar To</string>
+    <string name="performance">Performance</string>
 </resources>

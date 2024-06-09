@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.HistoricalData
 import com.farmingdale.stockscreener.model.local.Interval
@@ -50,12 +51,14 @@ fun StockView(
     val timeSeries by stockViewModel.timeSeries.collectAsState()
     val similarStocks by stockViewModel.similarStocks.collectAsState()
     val news by stockViewModel.news.collectAsState()
+    val analysis by stockViewModel.analysis.collectAsState()
     StockScreenerTheme {
         StockContent(
             quote = quote,
             timeSeries = timeSeries,
             similarStocks = similarStocks,
             news = news,
+            analysis = analysis,
             updateTimeSeries = stockViewModel::getTimeSeries,
         )
     }
@@ -67,6 +70,7 @@ fun StockContent(
     timeSeries: Map<String, HistoricalData> = emptyMap(),
     similarStocks: List<SimpleQuoteData> = emptyList(),
     news: List<News> = emptyList(),
+    analysis: Analysis? = null,
     updateTimeSeries: (String, TimePeriod, Interval) -> Unit,
 ) {
     // Adjust brightness of the background color based on the system theme (For better contrast on logos in dark theme)
@@ -120,12 +124,16 @@ fun StockContent(
                         }
                     }
                     item {
-                        SimilarStockFeed(similarStocks = similarStocks)
+                        SimilarStockFeed(
+                            symbol = quote.symbol,
+                            similarStocks = similarStocks
+                        )
                     }
                     item {
                         StockViewPager(
                             quote = quote,
-                            news = news
+                            news = news,
+                            analysis = analysis
                         )
                     }
                 }

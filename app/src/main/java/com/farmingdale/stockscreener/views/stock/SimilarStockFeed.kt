@@ -11,21 +11,28 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 
 
 @Composable
-fun SimilarStockFeed(similarStocks: List<SimpleQuoteData>) {
+fun SimilarStockFeed(
+    symbol: String,
+    similarStocks: List<SimpleQuoteData>
+) {
     Column(
         modifier = Modifier
             .padding(horizontal = 8.dp)
             .fillMaxWidth()
     ){
         Text(
-            text = "Similar Stocks",
+            text = stringResource(id = R.string.similar_stocks) + ": $symbol",
             style = MaterialTheme.typography.titleMedium,
+            letterSpacing = 1.25.sp,
             modifier = Modifier.padding(8.dp)
         )
         LazyRow(
@@ -48,6 +55,7 @@ fun SimilarStockFeed(similarStocks: List<SimpleQuoteData>) {
 @Composable
 fun PreviewSimilarStockFeed(){
     SimilarStockFeed(
+        symbol = "AAPL",
         similarStocks = listOf(
             SimpleQuoteData(
                 symbol = "AAPL",

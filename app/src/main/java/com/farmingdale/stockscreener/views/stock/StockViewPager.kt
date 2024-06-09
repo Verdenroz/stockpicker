@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.farmingdale.stockscreener.R
+import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.News
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +30,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun StockViewPager(
     quote: FullQuoteData,
-    news: List<News>
+    news: List<News>,
+    analysis: Analysis?
 ) {
     val state = rememberPagerState(pageCount = { 3 })
     val scope = rememberCoroutineScope()
@@ -79,12 +81,14 @@ fun StockViewPager(
                 }
 
                 2 -> {
-                    StockNewsFeed(news = news)
+                    StockAnalysis(analysis = analysis)
                 }
             }
         }
     }
 }
+
+
 
 @Preview
 @Composable
