@@ -2,6 +2,7 @@ package com.farmingdale.stockscreener.viewmodels
 
 import androidx.lifecycle.viewModelScope
 import com.farmingdale.stockscreener.model.local.Analysis
+import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.HistoricalData
 import com.farmingdale.stockscreener.model.local.Interval
 import com.farmingdale.stockscreener.model.local.News
@@ -13,12 +14,17 @@ import com.farmingdale.stockscreener.viewmodels.base.StockViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class ImplStockViewModel(symbol: String) : StockViewModel() {
     private val financeQueryRepo = FinanceQueryRepository.get()
+
+    override val quote: StateFlow<FullQuoteData?> =
+        financeQueryRepo.getFullQuote(symbol).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), null)
 
     private val _timeSeries = MutableStateFlow<Map<String, HistoricalData>>(emptyMap())
     override val timeSeries: StateFlow<Map<String, HistoricalData>> = _timeSeries.asStateFlow()
@@ -40,13 +46,20 @@ class ImplStockViewModel(symbol: String) : StockViewModel() {
         if (symbol.isNotEmpty()) {
             viewModelScope.launch(Dispatchers.IO) {
                 // Load all time series data in parallel
-                val deferredTimeSeriesYTD = async { loadTimeSeries(symbol, TimePeriod.YEAR_TO_DATE, Interval.DAILY) }
-                val deferredTimeSeries1D = async { loadTimeSeries(symbol, TimePeriod.ONE_DAY, Interval.FIFTEEN_MINUTE) }
-                val deferredTimeSeries5D = async { loadTimeSeries(symbol, TimePeriod.FIVE_DAY, Interval.FIFTEEN_MINUTE) }
-                val deferredTimeSeries1M = async { loadTimeSeries(symbol, TimePeriod.ONE_MONTH, Interval.DAILY) }
-                val deferredTimeSeries6M = async { loadTimeSeries(symbol, TimePeriod.SIX_MONTH, Interval.DAILY) }
-                val deferredTimeSeries1Y = async { loadTimeSeries(symbol, TimePeriod.ONE_YEAR, Interval.DAILY) }
-                val deferredTimeSeries5Y = async { loadTimeSeries(symbol, TimePeriod.FIVE_YEAR, Interval.DAILY) }
+                val deferredTimeSeriesYTD =
+                    async { loadTimeSeries(symbol, TimePeriod.YEAR_TO_DATE, Interval.DAILY) }
+                val deferredTimeSeries1D =
+                    async { loadTimeSeries(symbol, TimePeriod.ONE_DAY, Interval.FIFTEEN_MINUTE) }
+                val deferredTimeSeries5D =
+                    async { loadTimeSeries(symbol, TimePeriod.FIVE_DAY, Interval.FIFTEEN_MINUTE) }
+                val deferredTimeSeries1M =
+                    async { loadTimeSeries(symbol, TimePeriod.ONE_MONTH, Interval.DAILY) }
+                val deferredTimeSeries6M =
+                    async { loadTimeSeries(symbol, TimePeriod.SIX_MONTH, Interval.DAILY) }
+                val deferredTimeSeries1Y =
+                    async { loadTimeSeries(symbol, TimePeriod.ONE_YEAR, Interval.DAILY) }
+                val deferredTimeSeries5Y =
+                    async { loadTimeSeries(symbol, TimePeriod.FIVE_YEAR, Interval.DAILY) }
 
                 val deferredSimilar = async { getSimilarStocks(symbol) }
                 val deferredNews = async { getNews(symbol) }
@@ -59,9 +72,10 @@ class ImplStockViewModel(symbol: String) : StockViewModel() {
                 val deferredAnalysis1M = async { loadAnalysis(symbol, Interval.MONTHLY) }
 
                 // Set the default time series data (data should already be loaded)
-                val deferredTimeSeries = async{getTimeSeries(symbol, TimePeriod.YEAR_TO_DATE, Interval.DAILY)}
+                val deferredTimeSeries =
+                    async { getTimeSeries(symbol, TimePeriod.YEAR_TO_DATE, Interval.DAILY) }
                 //Set the default analysis data (data should already be loaded)
-                val deferredAnalysis = async{getAnalysis(symbol, Interval.DAILY)}
+                val deferredAnalysis = async { getAnalysis(symbol, Interval.DAILY) }
 
                 deferredTimeSeries1D.await()
                 deferredTimeSeries5D.await()

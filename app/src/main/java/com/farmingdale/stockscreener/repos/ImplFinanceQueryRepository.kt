@@ -76,7 +76,7 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
         }
     }
 
-    override suspend fun getFullQuote(symbol: String): Flow<FullQuoteData> = flow {
+    override fun getFullQuote(symbol: String): Flow<FullQuoteData> = flow {
         try {
             emit(api.getQuote(symbol))
         } catch (e: Exception) {

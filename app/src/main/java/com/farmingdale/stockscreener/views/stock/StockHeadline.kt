@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -105,7 +106,10 @@ fun StockHeadline(
                     modifier = Modifier.defaultMinSize(48.dp)
                 )
             }
-        }
+        },
+        colors = ListItemDefaults.colors(
+            containerColor = bg
+        )
     )
 }
 

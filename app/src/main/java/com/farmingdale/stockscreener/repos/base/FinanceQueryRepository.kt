@@ -62,7 +62,7 @@ abstract class FinanceQueryRepository {
     /**
      * Get full quote data for a stock with all available information as [FullQuoteData]
      */
-    abstract suspend fun getFullQuote(symbol: String): Flow<FullQuoteData>
+    abstract fun getFullQuote(symbol: String): Flow<FullQuoteData>
 
     /**
      * Get simple quote data for a stock with basic information as [SimpleQuoteData]

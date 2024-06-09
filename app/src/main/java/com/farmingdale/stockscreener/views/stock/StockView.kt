@@ -37,15 +37,16 @@ import com.farmingdale.stockscreener.viewmodels.base.StockViewModel
 
 @Composable
 fun StockView(
-    quote: FullQuoteData?
+    symbol: String
 ) {
     val stockViewModel: StockViewModel = viewModel<ImplStockViewModel>(
-        key = quote?.symbol ?: "",
+        key = symbol,
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return ImplStockViewModel(quote?.symbol ?: "") as T
+                return ImplStockViewModel(symbol) as T
             }
         })
+    val quote by stockViewModel.quote.collectAsState()
     val timeSeries by stockViewModel.timeSeries.collectAsState()
     val similarStocks by stockViewModel.similarStocks.collectAsState()
     val news by stockViewModel.news.collectAsState()
@@ -135,41 +136,6 @@ fun StockContent(
 
 @Preview
 @Composable
-fun PreviewStockView(
-    quote: FullQuoteData? = FullQuoteData(
-        name = "Apple Inc.",
-        symbol = "AAPL",
-        price = 180.11,
-        postMarketPrice = 179.74,
-        change = "+1.23",
-        percentChange = "+1.5%",
-        high = 123.45,
-        low = 123.45,
-        open = 123.45,
-        volume = 12345678,
-        marketCap = "1.23T",
-        pe = 12.34,
-        eps = 1.23,
-        beta = 1.23,
-        yearHigh = 123.45,
-        yearLow = 123.45,
-        dividend = 1.23,
-        yield = "1.23%",
-        netAssets = null,
-        nav = null,
-        expenseRatio = null,
-        exDividend = "2022-01-01",
-        earningsDate = "2022-01-01",
-        avgVolume = 12345678,
-        sector = "Technology",
-        industry = "Consumer Electronics",
-        about = "Apple Inc. is an American multinational technology company that designs, manufactures, and markets consumer electronics, computer software, and online services. It is considered one of the Big Five companies in the U.S. information technology industry, along with Amazon, Google, Microsoft, and Facebook.",
-        ytdReturn = "1.23%",
-        yearReturn = "1.23%",
-        threeYearReturn = "1.23%",
-        fiveYearReturn = "1.23%",
-        logo = null
-    )
-) {
-    StockView(quote = quote)
+fun PreviewStockView() {
+    StockView("AAPL")
 }
