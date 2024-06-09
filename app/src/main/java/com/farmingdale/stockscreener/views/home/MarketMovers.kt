@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -34,13 +35,13 @@ import com.farmingdale.stockscreener.ui.theme.negativeBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Locale
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MarketMovers(
+    listState: LazyListState,
     actives: List<MarketMover>?,
     losers: List<MarketMover>?,
     gainers: List<MarketMover>?,
@@ -76,8 +77,13 @@ fun MarketMovers(
                     text = { Text(title) },
                     selected = state.currentPage == index,
                     onClick = {
-                        scope.launch(Dispatchers.Default) {
-                            state.animateScrollToPage(index)
+                        scope.launch {
+                            listState.animateScrollToItem(
+                                index = 3,
+                            )
+                            state.animateScrollToPage(
+                                page = index,
+                            )
                         }
                     },
                     modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant)
@@ -119,6 +125,7 @@ fun MarketMovers(
 @Composable
 fun PreviewMarketMovers() {
     MarketMovers(
+        listState = LazyListState(),
         actives = null,
         losers = null,
         gainers = null,

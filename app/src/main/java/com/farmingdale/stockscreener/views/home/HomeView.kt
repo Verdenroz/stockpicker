@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -18,11 +19,10 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.farmingdale.stockscreener.model.local.News
-import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.MarketIndex
 import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.model.local.MarketSector
+import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.viewmodels.ImplHomeViewModel
 import com.farmingdale.stockscreener.viewmodels.base.HomeViewModel
 import kotlinx.coroutines.delay
@@ -67,10 +67,12 @@ fun HomeContent(
             pullRefreshState.endRefresh()
         }
     }
+    val listState = rememberLazyListState()
     Box(
         modifier = Modifier.nestedScroll(pullRefreshState.nestedScrollConnection),
     ) {
         LazyColumn(
+            state = listState,
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.SpaceAround,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -95,6 +97,7 @@ fun HomeContent(
             }
             item {
                 MarketMovers(
+                    listState = listState,
                     actives = actives,
                     losers = losers,
                     gainers = gainers,
