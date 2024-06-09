@@ -6,6 +6,7 @@ import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.model.local.MarketIndex
+import com.farmingdale.stockscreener.model.local.MarketSector
 import kotlinx.coroutines.flow.StateFlow
 
 abstract class HomeViewModel(application: Application): AndroidViewModel(application) {
@@ -24,6 +25,11 @@ abstract class HomeViewModel(application: Application): AndroidViewModel(applica
      * The list of market indices as [MarketIndex]
      */
     abstract val indices: StateFlow<List<MarketIndex>?>
+
+    /**
+     * List of market sectors as [MarketSector]
+     */
+    abstract val sectors: StateFlow<List<MarketSector>?>
 
     /**
      * List of active stocks as [MarketMover]

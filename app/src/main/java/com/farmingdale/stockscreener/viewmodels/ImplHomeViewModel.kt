@@ -6,6 +6,7 @@ import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.MarketIndex
 import com.farmingdale.stockscreener.model.local.MarketMover
+import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.repos.ImplFinanceQueryRepository.Companion.get
 import com.farmingdale.stockscreener.repos.ImplWatchlistRepository.Companion.get
 import com.farmingdale.stockscreener.repos.base.FinanceQueryRepository
@@ -34,6 +35,8 @@ class ImplHomeViewModel(application: Application): HomeViewModel(application) {
     override val news: StateFlow<List<News>?> = financeQueryRepo.headlines.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
     override val indices: StateFlow<List<MarketIndex>?> = financeQueryRepo.indices.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+
+    override val sectors: StateFlow<List<MarketSector>?> = financeQueryRepo.sectors.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
     override val actives: StateFlow<List<MarketMover>?> = financeQueryRepo.actives.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 

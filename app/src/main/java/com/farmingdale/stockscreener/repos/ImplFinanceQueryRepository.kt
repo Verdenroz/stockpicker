@@ -8,6 +8,7 @@ import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.MarketIndex
 import com.farmingdale.stockscreener.model.local.MarketMover
+import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.model.local.TimePeriod
 import com.farmingdale.stockscreener.providers.ImplFinanceQueryAPI
 import com.farmingdale.stockscreener.providers.okHttpClient
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 class ImplFinanceQueryRepository : FinanceQueryRepository() {
@@ -38,6 +40,9 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
     override val losers: Flow<List<MarketMover>?> = _losersFlow.asStateFlow()
     override val gainers: Flow<List<MarketMover>?> = _gainersFlow.asStateFlow()
     override val headlines: Flow<List<News>?> = _headlinesFlow.asStateFlow()
+    override val sectors: Flow<List<MarketSector>> = flow {
+        emit(api.getSectors())
+    }.flowOn(Dispatchers.IO)
 
     init {
         refreshMarketDataPeriodically()
@@ -135,6 +140,11 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
             e.printStackTrace()
         }
     }.flowOn(Dispatchers.IO)
+
+    override fun getSectorPerformance(sector: String): Flow<MarketSector> = flow {
+        sectors.map { marketSectors ->
+            marketSectors.filter { it.sector == sector } }.flowOn(Dispatchers.IO)
+    }
 
     companion object {
         private var repo: ImplFinanceQueryRepository? = null

@@ -8,7 +8,9 @@ import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.MarketIndex
 import com.farmingdale.stockscreener.model.local.MarketMover
+import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.model.local.TimePeriod
+import com.farmingdale.stockscreener.model.remote.SectorResponse
 import com.farmingdale.stockscreener.utils.isMarketOpen
 import kotlinx.coroutines.flow.Flow
 
@@ -48,6 +50,11 @@ abstract class FinanceQueryRepository {
      * Latest news headlines as list of [News]
      */
     abstract val headlines: Flow<List<News>?>
+
+    /**
+     * Sectors as list of [MarketSector]
+     */
+    abstract val sectors: Flow<List<MarketSector>>
 
     /**
      * Refresh indices and market movers data
@@ -93,7 +100,15 @@ abstract class FinanceQueryRepository {
         interval: Interval
     ): Flow<Map<String, HistoricalData>>
 
+    /**
+     * Get summary analysis for a symbol as [Analysis] given an [Interval]
+     */
     abstract fun getAnalysis(symbol: String, interval: Interval): Flow<Analysis>
+
+    /**
+     * Get a specific sector's performance as [MarketSector]
+     */
+    abstract fun getSectorPerformance(sector: String): Flow<MarketSector>
 
     companion object {
         const val NEWS_REFRESH_INTERVAL = 60000L
