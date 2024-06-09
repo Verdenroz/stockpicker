@@ -100,7 +100,7 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
         }
     }.flowOn(Dispatchers.IO)
 
-    override suspend fun getNewsForSymbol(symbol: String): Flow<List<News>> = flow {
+    override fun getNewsForSymbol(symbol: String): Flow<List<News>> = flow {
         try {
             emit(api.getNewsForSymbol(symbol))
         } catch (e: Exception) {
@@ -108,7 +108,7 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
         }
     }.flowOn(Dispatchers.IO)
 
-    override suspend fun getSimilarStocks(symbol: String): Flow<List<SimpleQuoteData>> = flow {
+    override fun getSimilarStocks(symbol: String): Flow<List<SimpleQuoteData>> = flow {
         try {
             emit(api.getSimilarSymbols(symbol))
         } catch (e: Exception) {

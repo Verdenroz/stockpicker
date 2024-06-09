@@ -24,10 +24,6 @@ abstract class StockViewModel : ViewModel() {
 
     abstract fun getTimeSeries(symbol: String, timePeriod: TimePeriod, interval: Interval)
 
-    abstract fun getSimilarStocks(symbol: String)
-
-    abstract fun getNews(symbol: String)
-
     abstract fun getAnalysis(symbol: String, interval: Interval)
 
 }

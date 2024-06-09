@@ -77,12 +77,12 @@ abstract class FinanceQueryRepository {
     /**
      * Get news for a symbol as a list of [News]
      */
-    abstract suspend fun getNewsForSymbol(symbol: String): Flow<List<News>>
+    abstract fun getNewsForSymbol(symbol: String): Flow<List<News>>
 
     /**
      * Find similar stocks for a symbol as a list of [SimpleQuoteData]
      */
-    abstract suspend fun getSimilarStocks(symbol: String): Flow<List<SimpleQuoteData>>
+    abstract fun getSimilarStocks(symbol: String): Flow<List<SimpleQuoteData>>
 
     /**
      * Get historical data for a symbol as a map of dates to [HistoricalData]
