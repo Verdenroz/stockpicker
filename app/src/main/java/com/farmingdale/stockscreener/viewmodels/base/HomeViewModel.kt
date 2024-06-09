@@ -12,11 +12,6 @@ import kotlinx.coroutines.flow.StateFlow
 abstract class HomeViewModel(application: Application): AndroidViewModel(application) {
 
     /**
-     * The user's watchlist as a list of [SimpleQuoteData]
-     */
-    abstract val watchList: StateFlow<List<SimpleQuoteData>?>
-
-    /**
      * Current [News] headlines displayed on the home screen
      */
     abstract val news: StateFlow<List<News>?>

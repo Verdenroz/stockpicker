@@ -79,7 +79,8 @@ fun MarketMovers(
                         scope.launch(Dispatchers.Default) {
                             state.animateScrollToPage(index)
                         }
-                    }
+                    },
+                    modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant)
                 )
             }
         }

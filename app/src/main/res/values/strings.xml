@@ -73,4 +73,10 @@
     <string name="sma50">Simple Moving Average (50)</string>
     <string name="similar_stocks">Similar To</string>
     <string name="performance">Performance</string>
+    <string name="ytd_return">YTD Return</string>
+    <string name="one_year_return">1Y Return</string>
+    <string name="three_year_return">3Y Return</string>
+    <string name="five_year_return">5Y Return</string>
+    <string name="day_return">Day Return</string>
+    <string name="sector_performance">Sector Performance</string>
 </resources>

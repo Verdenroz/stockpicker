@@ -30,8 +30,6 @@ class ImplHomeViewModel(application: Application): HomeViewModel(application) {
         marketStatusChecker.startChecking()
     }
 
-    override val watchList: StateFlow<List<SimpleQuoteData>?> = watchlistRepo.watchlist.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
-
     override val news: StateFlow<List<News>?> = financeQueryRepo.headlines.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
     override val indices: StateFlow<List<MarketIndex>?> = financeQueryRepo.indices.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)

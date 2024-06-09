@@ -38,16 +38,14 @@ fun NewsFeed(
 ) {
     Column(
         modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 4.dp)
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = stringResource(id = R.string.news),
             style = MaterialTheme.typography.titleSmall,
-            modifier = Modifier
-                .align(Alignment.Start)
-                .padding(vertical = 8.dp)
+            modifier = Modifier.fillMaxWidth()
         )
         if (news.isNullOrEmpty()) {
             ErrorCard(refresh = refresh)

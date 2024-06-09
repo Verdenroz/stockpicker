@@ -46,18 +46,12 @@ fun MarketIndices(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(id = R.string.market_performance),
-                style = MaterialTheme.typography.titleSmall
-            )
+        Text(
+            text = stringResource(id = R.string.market_performance),
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.fillMaxWidth()
+        )
 
-        }
         if (indices.isNullOrEmpty()) {
             ErrorCard(refresh = refresh)
         } else {
