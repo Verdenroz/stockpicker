@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
-import com.farmingdale.stockscreener.views.home.PortfolioStockCard
 
 
 @Composable
@@ -24,7 +23,6 @@ fun SimilarStockFeed(similarStocks: List<SimpleQuoteData>) {
             .padding(horizontal = 8.dp)
             .fillMaxWidth()
     ){
-
         Text(
             text = "Similar Stocks",
             style = MaterialTheme.typography.titleMedium,
@@ -39,7 +37,7 @@ fun SimilarStockFeed(similarStocks: List<SimpleQuoteData>) {
                 items = similarStocks,
                 key = { stock -> stock.symbol }
             ) {
-                PortfolioStockCard(quote = it)
+                StockCard(quote = it)
             }
         }
     }
