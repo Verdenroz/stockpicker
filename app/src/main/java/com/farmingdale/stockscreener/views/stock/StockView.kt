@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -16,7 +15,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
@@ -29,6 +27,7 @@ import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.HistoricalData
 import com.farmingdale.stockscreener.model.local.Interval
+import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
@@ -50,6 +49,7 @@ fun StockView(
     val quote by stockViewModel.quote.collectAsState()
     val timeSeries by stockViewModel.timeSeries.collectAsState()
     val similarStocks by stockViewModel.similarStocks.collectAsState()
+    val sectorPerformance by stockViewModel.sectorPerformance.collectAsState()
     val news by stockViewModel.news.collectAsState()
     val analysis by stockViewModel.analysis.collectAsState()
     StockScreenerTheme {
@@ -57,6 +57,7 @@ fun StockView(
             quote = quote,
             timeSeries = timeSeries,
             similarStocks = similarStocks,
+            sectorPerformance = sectorPerformance,
             news = news,
             analysis = analysis,
             updateTimeSeries = stockViewModel::getTimeSeries,
@@ -69,6 +70,7 @@ fun StockContent(
     quote: FullQuoteData?,
     timeSeries: Map<String, HistoricalData> = emptyMap(),
     similarStocks: List<SimpleQuoteData> = emptyList(),
+    sectorPerformance: MarketSector? = null,
     news: List<News> = emptyList(),
     analysis: Analysis? = null,
     updateTimeSeries: (String, TimePeriod, Interval) -> Unit,
@@ -102,13 +104,7 @@ fun StockContent(
                     }
                     item {
                         if (timeSeries.isEmpty()) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                LinearProgressIndicator()
-                            }
+                            LinearProgressIndicator(Modifier.fillMaxWidth())
                         } else {
                             StockChart(
                                 modifier = Modifier
@@ -122,6 +118,12 @@ fun StockContent(
                                 updateTimeSeries = updateTimeSeries,
                             )
                         }
+                    }
+                    item {
+                        StockPerformance(
+                            quote = quote,
+                            sectorPerformance = sectorPerformance
+                        )
                     }
                     item {
                         SimilarStockFeed(

@@ -1,14 +1,15 @@
 package com.farmingdale.stockscreener.repos
 
+import android.util.Log
 import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.HistoricalData
 import com.farmingdale.stockscreener.model.local.Interval
-import com.farmingdale.stockscreener.model.local.News
-import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.MarketIndex
 import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.model.local.MarketSector
+import com.farmingdale.stockscreener.model.local.News
+import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
 import com.farmingdale.stockscreener.providers.ImplFinanceQueryAPI
 import com.farmingdale.stockscreener.providers.okHttpClient
@@ -34,19 +35,19 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
     private val _losersFlow = MutableStateFlow<List<MarketMover>?>(null)
     private val _gainersFlow = MutableStateFlow<List<MarketMover>?>(null)
     private val _headlinesFlow = MutableStateFlow<List<News>?>(null)
+    private val _sectorsFlow = MutableStateFlow<List<MarketSector>>(emptyList())
 
     override val indices: Flow<List<MarketIndex>?> = _indicesFlow.asStateFlow()
     override val actives: Flow<List<MarketMover>?> = _activesFlow.asStateFlow()
     override val losers: Flow<List<MarketMover>?> = _losersFlow.asStateFlow()
     override val gainers: Flow<List<MarketMover>?> = _gainersFlow.asStateFlow()
     override val headlines: Flow<List<News>?> = _headlinesFlow.asStateFlow()
-    override val sectors: Flow<List<MarketSector>> = flow {
-        emit(api.getSectors())
-    }.flowOn(Dispatchers.IO)
+    override val sectors: Flow<List<MarketSector>> = _sectorsFlow.asStateFlow()
 
     init {
         refreshMarketDataPeriodically()
         refreshHeadlinesPeriodically()
+        refreshSectorsPeriodically()
     }
 
     private fun refreshMarketDataPeriodically() = flow<Unit> {
@@ -63,6 +64,15 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
         }
     }.flowOn(Dispatchers.IO).launchIn(CoroutineScope(Dispatchers.IO))
 
+
+    private fun refreshSectorsPeriodically() = flow<Unit> {
+        while (true) {
+            refreshSectors()
+            delay(SECTOR_REFRESH_INTERVAL)
+        }
+    }.flowOn(Dispatchers.IO).launchIn(CoroutineScope(Dispatchers.IO))
+
+
     override suspend fun refreshMarketData() = coroutineScope {
         val indicesDeferred = async(Dispatchers.IO) { api.getIndices() }
         val activesDeferred = async(Dispatchers.IO) { api.getActives() }
@@ -78,6 +88,12 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
     override suspend fun refreshNews() {
         withContext(Dispatchers.IO) {
             _headlinesFlow.emit(api.getNews())
+        }
+    }
+
+    override suspend fun refreshSectors() {
+        withContext(Dispatchers.IO) {
+            _sectorsFlow.emit(api.getSectors())
         }
     }
 
@@ -143,6 +159,7 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
 
     override fun getSectorPerformance(sector: String): Flow<MarketSector> = flow {
         sectors.map { marketSectors ->
+            Log.d("ImplFinanceQueryRepository", "Market sectors: $marketSectors")
             marketSectors.filter { it.sector == sector } }.flowOn(Dispatchers.IO)
     }
 

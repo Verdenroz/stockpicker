@@ -79,4 +79,15 @@
     <string name="five_year_return">5Y Return</string>
     <string name="day_return">Day Return</string>
     <string name="sector_performance">Sector Performance</string>
+    <string name="sector_technology">Technology</string>
+    <string name="sector_healthcare">Healthcare</string>
+    <string name="sector_financial_services">Financial Services</string>
+    <string name="sector_consumer_cyclical">Consumer Cyclical</string>
+    <string name="sector_industrials">Industrials</string>
+    <string name="sector_consumer_defensive">Consumer Defensive</string>
+    <string name="sector_energy">Energy</string>
+    <string name="sector_real_estate">Real Estate</string>
+    <string name="sector_utilities">Utilities</string>
+    <string name="sector_basic_materials">Basic Materials</string>
+    <string name="sector_communication_services">Communication Services</string>
 </resources>

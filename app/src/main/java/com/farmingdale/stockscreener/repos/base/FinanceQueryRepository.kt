@@ -4,13 +4,12 @@ import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.HistoricalData
 import com.farmingdale.stockscreener.model.local.Interval
-import com.farmingdale.stockscreener.model.local.News
-import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.MarketIndex
 import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.model.local.MarketSector
+import com.farmingdale.stockscreener.model.local.News
+import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
-import com.farmingdale.stockscreener.model.remote.SectorResponse
 import com.farmingdale.stockscreener.utils.isMarketOpen
 import kotlinx.coroutines.flow.Flow
 
@@ -57,14 +56,19 @@ abstract class FinanceQueryRepository {
     abstract val sectors: Flow<List<MarketSector>>
 
     /**
-     * Refresh indices and market movers data
+     * Refresh [indices], [actives], [losers], [gainers]
      */
     abstract suspend fun refreshMarketData()
 
     /**
-     * Refresh news headlines
+     * Refresh [headlines]
      */
     abstract suspend fun refreshNews()
+
+    /**
+     * Refresh [sectors]
+     */
+    abstract suspend fun refreshSectors()
 
     /**
      * Get full quote data for a stock with all available information as [FullQuoteData]
@@ -112,6 +116,7 @@ abstract class FinanceQueryRepository {
 
     companion object {
         const val NEWS_REFRESH_INTERVAL = 60000L
+        const val SECTOR_REFRESH_INTERVAL = 3600000L
     }
 
 }

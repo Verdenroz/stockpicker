@@ -5,6 +5,7 @@ import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.HistoricalData
 import com.farmingdale.stockscreener.model.local.Interval
+import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -31,6 +33,14 @@ class ImplStockViewModel(symbol: String) : StockViewModel() {
 
     override val similarStocks: StateFlow<List<SimpleQuoteData>> =
         financeQueryRepo.getSimilarStocks(symbol).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), emptyList())
+
+    override val sectorPerformance: StateFlow<MarketSector?> =
+        combine(
+            financeQueryRepo.sectors,
+            quote
+        ) { sectors, fullQuoteData ->
+            sectors.firstOrNull { it.sector == fullQuoteData?.sector }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), null)
 
     override val news: StateFlow<List<News>>  =
         financeQueryRepo.getNewsForSymbol(symbol).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), emptyList())
