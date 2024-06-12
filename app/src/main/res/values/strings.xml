@@ -90,4 +90,5 @@
     <string name="sector_utilities">Utilities</string>
     <string name="sector_basic_materials">Basic Materials</string>
     <string name="sector_communication_services">Communication Services</string>
+    <string name="loading_quote">Loading…</string>
 </resources>

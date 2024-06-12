@@ -32,64 +32,67 @@ import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
 
 @Composable
-fun StockTopBar(quote: FullQuoteData?) {
+fun StockTopBar(
+    symbol: String,
+    quote: FullQuoteData?
+) {
     Column(
         modifier = Modifier.background(MaterialTheme.colorScheme.surfaceDim),
     ) {
-        if (quote != null) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(
+                onClick = { /*TODO*/ },
+                modifier = Modifier.align(Alignment.CenterVertically)
             ) {
-                IconButton(
-                    onClick = { /*TODO*/ },
-                    modifier = Modifier.align(Alignment.CenterVertically)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        contentDescription = stringResource(id = R.string.back),
-                    )
-                }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    contentDescription = stringResource(id = R.string.back),
+                )
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            ) {
+                quote?.let {
                     Text(
-                        text = quote.name,
+                        text = it.name,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
-                    Text(
-                        text = quote.symbol,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(25))
-                            .background(MaterialTheme.colorScheme.onPrimaryContainer)
-                            .padding(4.dp)
-                    )
                 }
-                IconButton(onClick = { /*TODO*/ }) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        contentDescription = stringResource(id = R.string.add_description)
-                    )
-                }
+                Text(
+                    text = symbol,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(25))
+                        .background(MaterialTheme.colorScheme.onPrimaryContainer)
+                        .padding(4.dp)
+                )
             }
-            HorizontalDivider(
-                thickness = Dp.Hairline,
-                color = MaterialTheme.colorScheme.surfaceTint,
-            )
+            IconButton(onClick = { /*TODO*/ }) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    contentDescription = stringResource(id = R.string.add_description)
+                )
+            }
         }
+        HorizontalDivider(
+            thickness = Dp.Hairline,
+            color = MaterialTheme.colorScheme.surfaceTint,
+        )
     }
 }
 
@@ -133,7 +136,10 @@ fun PreviewStockTopBar(
 ) {
     StockScreenerTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
-            StockTopBar(quote = quote)
+            StockTopBar(
+                symbol = quote?.symbol.orEmpty(),
+                quote = quote
+            )
         }
     }
 }
