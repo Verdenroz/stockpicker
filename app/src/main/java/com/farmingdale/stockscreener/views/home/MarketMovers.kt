@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -26,7 +27,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.farmingdale.stockscreener.R
@@ -126,7 +130,9 @@ fun MarketMovers(
 fun PreviewMarketMovers() {
     MarketMovers(
         listState = LazyListState(),
-        actives = null,
+        actives = listOf(
+            MarketMover("AAPL", "Apple Inc.", "100.00", "+10.00", "+10.00%"),
+        ),
         losers = null,
         gainers = null,
         refresh = {}
@@ -178,11 +184,19 @@ fun MarketMoverStock(stock: MarketMover) {
         ) {
             Text(
                 text = stock.symbol,
-                style = MaterialTheme.typography.bodyMedium
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSecondary,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(25))
+                    .background(MaterialTheme.colorScheme.secondary)
+                    .padding(4.dp)
             )
             Text(
                 text = stock.name,
-                style = MaterialTheme.typography.labelSmall
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Light,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
         }
         Spacer(modifier = Modifier.width(4.dp))
