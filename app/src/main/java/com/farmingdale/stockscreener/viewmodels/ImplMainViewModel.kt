@@ -47,8 +47,8 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
     private val _searchResults = MutableStateFlow<List<SearchResult>?>(null)
     override val searchResults: StateFlow<List<SearchResult>?> = _searchResults.asStateFlow()
 
-    override val watchList: StateFlow<List<SimpleQuoteData>?> =
-        watchlistRepo.watchlist.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+    override val watchList: StateFlow<List<SimpleQuoteData>> =
+        watchlistRepo.watchlist.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
     private val index = IndexName("stocks")
     private val searcher = HitsSearcher(

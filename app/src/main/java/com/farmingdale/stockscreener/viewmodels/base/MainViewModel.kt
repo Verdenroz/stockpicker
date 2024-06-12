@@ -38,7 +38,7 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
     /**
      * The user's watchlist as a list of [SimpleQuoteData]
      */
-    abstract val watchList: StateFlow<List<SimpleQuoteData>?>
+    abstract val watchList: StateFlow<List<SimpleQuoteData>>
 
     abstract fun updateRegionFilter(region: RegionFilter)
 

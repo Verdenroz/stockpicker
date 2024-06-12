@@ -48,7 +48,7 @@ import com.farmingdale.stockscreener.model.local.TypeFilter
 @Composable
 fun SearchBar(
     searchResults: List<SearchResult>?,
-    watchList: List<SimpleQuoteData>?,
+    watchList: List<SimpleQuoteData>,
     regionFilter: RegionFilter,
     typeFilters: List<TypeFilter>,
     updateRegionFilter: (RegionFilter) -> Unit,
@@ -131,7 +131,7 @@ fun SearchBar(
         }
     ) {
         searchResults?.forEach { match ->
-            val isInWatchListState = watchList?.any { it.symbol == match.symbol } ?: false
+            val isInWatchListState = watchList.any { it.symbol == match.symbol }
             ListItem(
                 modifier = Modifier
                     .clickable {

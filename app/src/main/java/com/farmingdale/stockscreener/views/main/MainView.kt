@@ -62,7 +62,7 @@ fun MainView() {
 @Composable
 fun MainContent(
     searchResults: List<SearchResult>?,
-    watchList: List<SimpleQuoteData>?,
+    watchList: List<SimpleQuoteData>,
     regionFilter: RegionFilter,
     typeFilters: List<TypeFilter>,
     updateRegionFilter: (RegionFilter) -> Unit,
