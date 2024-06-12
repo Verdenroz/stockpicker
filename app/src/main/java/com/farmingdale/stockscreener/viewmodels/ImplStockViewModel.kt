@@ -1,5 +1,6 @@
 package com.farmingdale.stockscreener.viewmodels
 
+import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
@@ -10,7 +11,9 @@ import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
 import com.farmingdale.stockscreener.repos.ImplFinanceQueryRepository.Companion.get
+import com.farmingdale.stockscreener.repos.ImplWatchlistRepository.Companion.get
 import com.farmingdale.stockscreener.repos.base.FinanceQueryRepository
+import com.farmingdale.stockscreener.repos.base.WatchlistRepository
 import com.farmingdale.stockscreener.viewmodels.base.StockViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -22,8 +25,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class ImplStockViewModel(symbol: String) : StockViewModel() {
+class ImplStockViewModel(symbol: String, application: Application) : StockViewModel(application) {
     private val financeQueryRepo = FinanceQueryRepository.get()
+    private val watchlistRepo = WatchlistRepository.get(application)
 
     override val quote: StateFlow<FullQuoteData?> =
         financeQueryRepo.getFullQuote(symbol).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), null)
@@ -47,6 +51,9 @@ class ImplStockViewModel(symbol: String) : StockViewModel() {
 
     private val _analysis = MutableStateFlow<Analysis?>(null)
     override val analysis: StateFlow<Analysis?> = _analysis.asStateFlow()
+
+    override val watchList: StateFlow<List<SimpleQuoteData>> =
+        watchlistRepo.watchlist.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
     private val timeSeriesMap = mutableMapOf<TimePeriod, Map<String, HistoricalData>>()
 
@@ -145,6 +152,26 @@ class ImplStockViewModel(symbol: String) : StockViewModel() {
             financeQueryRepo.getAnalysis(symbol, interval).collect {
                 _analysis.value = it
             }
+        }
+    }
+
+    private fun refreshWatchList() {
+        viewModelScope.launch(Dispatchers.IO) {
+            watchlistRepo.refreshWatchList()
+        }
+    }
+
+    override fun addToWatchList(symbol: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            watchlistRepo.addToWatchList(symbol)
+            refreshWatchList()
+        }
+    }
+
+    override fun deleteFromWatchList(symbol: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            watchlistRepo.deleteFromWatchList(symbol)
+            refreshWatchList()
         }
     }
 

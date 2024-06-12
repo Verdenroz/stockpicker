@@ -1,5 +1,6 @@
 package com.farmingdale.stockscreener.views.stock
 
+import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,11 +47,12 @@ import com.farmingdale.stockscreener.viewmodels.base.StockViewModel
 fun StockView(
     symbol: String
 ) {
+    val application = LocalContext.current.applicationContext as Application
     val stockViewModel: StockViewModel = viewModel<ImplStockViewModel>(
         key = symbol,
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return ImplStockViewModel(symbol) as T
+                return ImplStockViewModel(symbol, application) as T
             }
         })
     val quote by stockViewModel.quote.collectAsState()
@@ -58,6 +61,7 @@ fun StockView(
     val sectorPerformance by stockViewModel.sectorPerformance.collectAsState()
     val news by stockViewModel.news.collectAsState()
     val analysis by stockViewModel.analysis.collectAsState()
+    val watchList by stockViewModel.watchList.collectAsState()
     StockScreenerTheme {
         StockContent(
             symbol = symbol,
@@ -67,7 +71,10 @@ fun StockView(
             sectorPerformance = sectorPerformance,
             news = news,
             analysis = analysis,
+            watchList = watchList,
             updateTimeSeries = stockViewModel::getTimeSeries,
+            addToWatchList = stockViewModel::addToWatchList,
+            deleteFromWatchList = stockViewModel::deleteFromWatchList
         )
     }
 }
@@ -81,7 +88,10 @@ fun StockContent(
     sectorPerformance: MarketSector? = null,
     news: List<News> = emptyList(),
     analysis: Analysis? = null,
+    watchList: List<SimpleQuoteData> = emptyList(),
     updateTimeSeries: (String, TimePeriod, Interval) -> Unit,
+    addToWatchList: (String) -> Unit,
+    deleteFromWatchList: (String) -> Unit
 ) {
     // Adjust brightness of the background color based on the system theme (For better contrast on logos in dark theme)
     val brightnessAdjustment = if (isSystemInDarkTheme()) 2f else 1f
@@ -95,7 +105,10 @@ fun StockContent(
         topBar = {
             StockTopBar(
                 symbol = symbol,
-                quote = quote
+                quote = quote,
+                watchList = watchList,
+                addToWatchList = addToWatchList,
+                deleteFromWatchList = deleteFromWatchList
             )
         }
     ) { padding ->

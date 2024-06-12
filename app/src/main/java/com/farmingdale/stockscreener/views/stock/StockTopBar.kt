@@ -10,7 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,12 +30,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.FullQuoteData
+import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
 
 @Composable
 fun StockTopBar(
     symbol: String,
-    quote: FullQuoteData?
+    quote: FullQuoteData?,
+    watchList: List<SimpleQuoteData>,
+    addToWatchList: (String) -> Unit,
+    deleteFromWatchList: (String) -> Unit,
 ) {
     Column(
         modifier = Modifier.background(MaterialTheme.colorScheme.surfaceDim),
@@ -81,12 +86,20 @@ fun StockTopBar(
                         .padding(4.dp)
                 )
             }
-            IconButton(onClick = { /*TODO*/ }) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    contentDescription = stringResource(id = R.string.add_description)
-                )
+            if (watchList.any { it.symbol == symbol }) {
+                IconButton(onClick = { deleteFromWatchList(symbol) }) {
+                    Icon(
+                        Icons.Default.Clear,
+                        contentDescription = stringResource(id = R.string.remove_description)
+                    )
+                }
+            } else {
+                IconButton(onClick = { addToWatchList(symbol) }) {
+                    Icon(
+                        Icons.Default.AddCircle,
+                        contentDescription = stringResource(id = R.string.add_description)
+                    )
+                }
             }
         }
         HorizontalDivider(
@@ -138,7 +151,10 @@ fun PreviewStockTopBar(
         Surface(modifier = Modifier.fillMaxSize()) {
             StockTopBar(
                 symbol = quote?.symbol.orEmpty(),
-                quote = quote
+                quote = quote,
+                watchList = emptyList(),
+                addToWatchList = {},
+                deleteFromWatchList = {}
             )
         }
     }
