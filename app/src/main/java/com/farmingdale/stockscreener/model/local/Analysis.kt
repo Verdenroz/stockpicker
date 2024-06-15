@@ -29,7 +29,6 @@ data class Analysis(
     val adx14: Double,
     val macd: Macd,
     val stoch: Double,
-    val obv: Long,
     val aroon: Aroon,
     val bBands: BBands,
     val superTrend: SuperTrend,

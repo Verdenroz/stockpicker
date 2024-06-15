@@ -45,7 +45,7 @@ data class AnalysisResponse(
     val vwma20: Double,
     @SerialName("RSI(14)")
     val rsi14: Double,
-    @SerialName("SRSI(14)")
+    @SerialName("SRSI(3,3,14,14)")
     val srsi14: Double,
     @SerialName("CCI(20)")
     val cci20: Double,
@@ -53,10 +53,8 @@ data class AnalysisResponse(
     val adx14: Double,
     @SerialName("MACD(12,26)")
     val macd: MacdResponse,
-    @SerialName("STOCH(3,3,14,14)")
+    @SerialName("STOCH %K(14,3,3)")
     val stoch: Double,
-    @SerialName("OBV")
-    val obv: Double,
     @SerialName("Aroon(25)")
     val aroon: AroonResponse,
     @SerialName("BBANDS(20,2)")
