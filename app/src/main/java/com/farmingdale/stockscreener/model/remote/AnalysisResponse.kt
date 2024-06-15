@@ -3,6 +3,7 @@ package com.farmingdale.stockscreener.model.remote
 import com.farmingdale.stockscreener.model.remote.indicators.AroonResponse
 import com.farmingdale.stockscreener.model.remote.indicators.BBandsResponse
 import com.farmingdale.stockscreener.model.remote.indicators.IchimokuCloudResponse
+import com.farmingdale.stockscreener.model.remote.indicators.MacdResponse
 import com.farmingdale.stockscreener.model.remote.indicators.SuperTrendResponse
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -51,7 +52,7 @@ data class AnalysisResponse(
     @SerialName("ADX(14)")
     val adx14: Double,
     @SerialName("MACD(12,26)")
-    val macd: Double,
+    val macd: MacdResponse,
     @SerialName("STOCH(3,3,14,14)")
     val stoch: Double,
     @SerialName("OBV")

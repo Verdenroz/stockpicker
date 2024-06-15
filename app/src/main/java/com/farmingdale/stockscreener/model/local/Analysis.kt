@@ -3,6 +3,7 @@ package com.farmingdale.stockscreener.model.local
 import com.farmingdale.stockscreener.model.local.indicators.Aroon
 import com.farmingdale.stockscreener.model.local.indicators.BBands
 import com.farmingdale.stockscreener.model.local.indicators.IchimokuCloud
+import com.farmingdale.stockscreener.model.local.indicators.Macd
 import com.farmingdale.stockscreener.model.local.indicators.SuperTrend
 
 data class Analysis(
@@ -26,7 +27,7 @@ data class Analysis(
     val srsi14: Double,
     val cci20: Double,
     val adx14: Double,
-    val macd: Double,
+    val macd: Macd,
     val stoch: Double,
     val obv: Long,
     val aroon: Aroon,
