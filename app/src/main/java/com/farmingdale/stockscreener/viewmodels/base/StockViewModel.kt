@@ -10,6 +10,7 @@ import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
+import com.farmingdale.stockscreener.model.local.indicators.AnalysisIndicators
 import kotlinx.coroutines.flow.StateFlow
 
 abstract class StockViewModel(application: Application) : AndroidViewModel(application) {
@@ -26,6 +27,13 @@ abstract class StockViewModel(application: Application) : AndroidViewModel(appli
 
     abstract val analysis: StateFlow<Analysis?>
 
+    abstract val signals: StateFlow<Map<AnalysisIndicators, String>>
+
+    abstract val movingAveragesSummary: StateFlow<Double>
+    abstract val oscillatorsSummary: StateFlow<Double>
+    abstract val trendsSummary: StateFlow<Double>
+    abstract val overallSummary : StateFlow<Double>
+
     abstract val watchList: StateFlow<List<SimpleQuoteData>>
 
 
@@ -34,5 +42,6 @@ abstract class StockViewModel(application: Application) : AndroidViewModel(appli
     abstract fun getAnalysis(symbol: String, interval: Interval)
 
     abstract fun addToWatchList(symbol: String)
+
     abstract fun deleteFromWatchList(symbol: String)
 }

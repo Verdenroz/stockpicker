@@ -23,6 +23,8 @@ import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.News
+import com.farmingdale.stockscreener.model.local.indicators.AnalysisIndicators
+import com.farmingdale.stockscreener.views.stock.analysis.StockAnalysis
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -31,7 +33,12 @@ import kotlinx.coroutines.launch
 fun StockViewPager(
     quote: FullQuoteData,
     news: List<News>,
-    analysis: Analysis?
+    analysis: Analysis?,
+    signals: Map<AnalysisIndicators, String>,
+    movingAverageSummary: Double,
+    oscillatorsSummary: Double,
+    trendsSummary: Double,
+    overallSummary: Double
 ) {
     val state = rememberPagerState(pageCount = { 3 })
     val scope = rememberCoroutineScope()
@@ -81,7 +88,14 @@ fun StockViewPager(
                 }
 
                 2 -> {
-                    StockAnalysis(analysis = analysis)
+                    StockAnalysis(
+                        analysis = analysis,
+                        signals = signals,
+                        movingAverageSummary = movingAverageSummary,
+                        oscillatorSummary = oscillatorsSummary,
+                        trendSummary = trendsSummary,
+                        overallSummary = overallSummary
+                    )
                 }
             }
         }
@@ -132,7 +146,12 @@ fun PreviewStockViewPager(
         StockViewPager(
             quote = quote,
             news = emptyList(),
-            analysis = null
+            analysis = null,
+            signals = emptyMap(),
+            movingAverageSummary = 0.0,
+            oscillatorsSummary = 0.0,
+            trendsSummary = 0.0,
+            overallSummary = 0.0
         )
     }
 }

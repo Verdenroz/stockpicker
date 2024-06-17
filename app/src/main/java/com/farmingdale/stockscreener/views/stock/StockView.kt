@@ -39,6 +39,7 @@ import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
+import com.farmingdale.stockscreener.model.local.indicators.AnalysisIndicators
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
 import com.farmingdale.stockscreener.viewmodels.ImplStockViewModel
 import com.farmingdale.stockscreener.viewmodels.base.StockViewModel
@@ -61,6 +62,11 @@ fun StockView(
     val sectorPerformance by stockViewModel.sectorPerformance.collectAsState()
     val news by stockViewModel.news.collectAsState()
     val analysis by stockViewModel.analysis.collectAsState()
+    val signals by stockViewModel.signals.collectAsState()
+    val movingAverageSummary by stockViewModel.movingAveragesSummary.collectAsState()
+    val oscillatorsSummary by stockViewModel.oscillatorsSummary.collectAsState()
+    val trendsSummary by stockViewModel.trendsSummary.collectAsState()
+    val overallSummary by stockViewModel.overallSummary.collectAsState()
     val watchList by stockViewModel.watchList.collectAsState()
     StockScreenerTheme {
         StockContent(
@@ -71,6 +77,11 @@ fun StockView(
             sectorPerformance = sectorPerformance,
             news = news,
             analysis = analysis,
+            signals = signals,
+            movingAverageSummary = movingAverageSummary,
+            oscillatorsSummary = oscillatorsSummary,
+            trendsSummary = trendsSummary,
+            overallSummary = overallSummary,
             watchList = watchList,
             updateTimeSeries = stockViewModel::getTimeSeries,
             addToWatchList = stockViewModel::addToWatchList,
@@ -88,6 +99,11 @@ fun StockContent(
     sectorPerformance: MarketSector? = null,
     news: List<News> = emptyList(),
     analysis: Analysis? = null,
+    signals: Map<AnalysisIndicators, String> = emptyMap(),
+    movingAverageSummary: Double,
+    oscillatorsSummary: Double,
+    trendsSummary: Double,
+    overallSummary: Double,
     watchList: List<SimpleQuoteData> = emptyList(),
     updateTimeSeries: (String, TimePeriod, Interval) -> Unit,
     addToWatchList: (String) -> Unit,
@@ -159,7 +175,12 @@ fun StockContent(
                         StockViewPager(
                             quote = quote,
                             news = news,
-                            analysis = analysis
+                            analysis = analysis,
+                            signals = signals,
+                            movingAverageSummary = movingAverageSummary,
+                            oscillatorsSummary = oscillatorsSummary,
+                            trendsSummary = trendsSummary,
+                            overallSummary = overallSummary
                         )
                     }
                 }
