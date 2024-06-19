@@ -468,7 +468,6 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
             adx14 = analysisResponse.adx14,
             macd = analysisResponse.macd.toMacd(),
             stoch = analysisResponse.stoch,
-            obv = analysisResponse.obv.toLong(),
             aroon = analysisResponse.aroon.toAroon(),
             bBands = analysisResponse.bBands.toBBands(),
             superTrend = analysisResponse.superTrend.toSuperTrend(),
