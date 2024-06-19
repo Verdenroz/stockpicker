@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.FullQuoteData
+import java.util.Locale
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -252,7 +253,7 @@ fun PriceRangeLine(low: Double, high: Double, current: Double) {
             .fillMaxWidth(.65f),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        SimpleDetailText(text = low.toString())
+        SimpleDetailText(text = String.format(Locale.US, "%.2f", low))
         Box(
             modifier = Modifier
                 .weight(fraction)
@@ -271,7 +272,7 @@ fun PriceRangeLine(low: Double, high: Double, current: Double) {
                 .height(1.dp)
                 .background(MaterialTheme.colorScheme.onSurface),
         )
-        SimpleDetailText(text = high.toString())
+        SimpleDetailText(text = String.format(Locale.US, "%.2f", high))
     }
 }
 
@@ -280,7 +281,7 @@ fun SimpleDetailText(
     text: String
 ) {
     Text(
-        text = text,
+        text = formatText(text),
         style = MaterialTheme.typography.labelLarge,
         letterSpacing = 1.5.sp,
         modifier = Modifier
@@ -288,6 +289,35 @@ fun SimpleDetailText(
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
             .padding(4.dp)
     )
+}
+
+private fun formatText(text: String): String {
+    // For Dividend Yield
+    if (text.contains('%')) {
+        val parts = text.split(' ')
+        val firstPart = parts[0]
+        val secondPart = parts[1].removeSurrounding("(", "%)")
+
+        val formattedFirstPart = try {
+            String.format(Locale.US, "%.2f", firstPart.toDouble())
+        } catch (e: NumberFormatException) {
+            firstPart
+        }
+
+        val formattedSecondPart = try {
+            String.format(Locale.US, "%.2f", secondPart.toDouble())
+        } catch (e: NumberFormatException) {
+            secondPart
+        }
+
+        return "$formattedFirstPart ($formattedSecondPart%)"
+    }
+
+    return try {
+        String.format(Locale.US, "%.2f", text.toDouble())
+    } catch (e: NumberFormatException) {
+        text
+    }
 }
 
 @Preview
