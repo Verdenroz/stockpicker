@@ -1,15 +1,8 @@
 package com.farmingdale.stockscreener.views.stock.analysis
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.indicators.AnalysisIndicators
@@ -18,16 +11,8 @@ import com.farmingdale.stockscreener.model.local.indicators.AnalysisIndicators
 fun MovingAverageSection(
     analysis: Analysis,
     signals: Map<AnalysisIndicators, String>,
-    modifier: Modifier = Modifier
 ) {
     Column {
-        Text(
-            text = stringResource(id = R.string.moving_averages),
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
-            letterSpacing = 1.25.sp,
-            modifier = modifier.padding(start = 16.dp)
-        )
         AnalysisDetail(
             title = stringResource(id = R.string.sma10),
             signals = signals,
@@ -92,7 +77,7 @@ fun MovingAverageSection(
             title = stringResource(id = R.string.wma10),
             signals = signals,
             value = analysis.wma10,
-            type = AnalysisIndicators.WMA20
+            type = AnalysisIndicators.WMA10
         )
         AnalysisDetail(
             title = stringResource(id = R.string.wma20),

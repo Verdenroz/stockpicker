@@ -41,7 +41,7 @@ fun StockNewsFeed(news: List<News>) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 300.dp, max = 600.dp)
+            .heightIn(min = 300.dp, max = 900.dp)
             .background(MaterialTheme.colorScheme.surfaceContainer),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -51,7 +51,7 @@ fun StockNewsFeed(news: List<News>) {
         ) {
             items(
                 items = news,
-                key = { news -> news.title }
+                key = { news -> news.title },
             ) { item ->
                 StockNewsItem(news = item)
             }

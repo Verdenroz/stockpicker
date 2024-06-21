@@ -29,7 +29,7 @@ enum class AnalysisIndicators {
     ICHIMOKUCLOUD;
 
     companion object {
-        val MOVING_AVERAGES: List<AnalysisIndicators> = listOf(
+        val MOVING_AVERAGES: Set<AnalysisIndicators> = setOf(
             SMA10,
             SMA20,
             SMA50,
@@ -47,13 +47,13 @@ enum class AnalysisIndicators {
             WMA200,
             VWMA20
         )
-        val OSCILLATORS: List<AnalysisIndicators> = listOf(
+        val OSCILLATORS: Set<AnalysisIndicators> = setOf(
             RSI,
             SRSI,
             STOCH,
             CCI,
         )
-        val TRENDS: List<AnalysisIndicators> = listOf(
+        val TRENDS: Set<AnalysisIndicators> = setOf(
             ADX,
             MACD,
             BBANDS,
