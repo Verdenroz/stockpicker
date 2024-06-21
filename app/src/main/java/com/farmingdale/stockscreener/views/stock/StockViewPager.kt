@@ -4,6 +4,8 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
@@ -38,7 +40,8 @@ fun StockViewPager(
     movingAverageSummary: Double,
     oscillatorsSummary: Double,
     trendsSummary: Double,
-    overallSummary: Double
+    overallSummary: Double,
+    listState: LazyListState
 ) {
     val state = rememberPagerState(pageCount = { 3 })
     val scope = rememberCoroutineScope()
@@ -68,7 +71,8 @@ fun StockViewPager(
                     text = { Text(title) },
                     selected = state.currentPage == index,
                     onClick = {
-                        scope.launch(Dispatchers.Default) {
+                        scope.launch  {
+                            listState.scrollToItem(5)
                             state.animateScrollToPage(index)
                         }
                     }
@@ -151,7 +155,8 @@ fun PreviewStockViewPager(
             movingAverageSummary = 0.0,
             oscillatorsSummary = 0.0,
             trendsSummary = 0.0,
-            overallSummary = 0.0
+            overallSummary = 0.0,
+            listState = rememberLazyListState()
         )
     }
 }

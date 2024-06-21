@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -128,11 +129,13 @@ fun StockContent(
             )
         }
     ) { padding ->
+        val listState = rememberLazyListState()
         if (quote != null) {
             Box(
                 modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection()),
             ) {
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)
@@ -180,7 +183,8 @@ fun StockContent(
                             movingAverageSummary = movingAverageSummary,
                             oscillatorsSummary = oscillatorsSummary,
                             trendsSummary = trendsSummary,
-                            overallSummary = overallSummary
+                            overallSummary = overallSummary,
+                            listState = listState
                         )
                     }
                 }
