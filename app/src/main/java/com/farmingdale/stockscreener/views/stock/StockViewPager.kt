@@ -1,14 +1,17 @@
 package com.farmingdale.stockscreener.views.stock
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -17,17 +20,17 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.indicators.AnalysisIndicators
 import com.farmingdale.stockscreener.views.stock.analysis.StockAnalysis
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -45,42 +48,22 @@ fun StockViewPager(
 ) {
     val state = rememberPagerState(pageCount = { 3 })
     val scope = rememberCoroutineScope()
-    val tabTitles = listOf(
-        stringResource(id = R.string.summary),
-        stringResource(id = R.string.news),
-        stringResource(id = R.string.analysis)
-    )
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        TabRow(
-            selectedTabIndex = state.currentPage,
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-            indicator = { tabPositions ->
-                SecondaryIndicator(
-                    Modifier.tabIndicatorOffset(tabPositions[state.currentPage]),
-                )
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            tabTitles.forEachIndexed { index, title ->
-                Tab(
-                    text = { Text(title) },
-                    selected = state.currentPage == index,
-                    onClick = {
-                        scope.launch  {
-                            listState.scrollToItem(5)
-                            state.animateScrollToPage(index)
-                        }
-                    }
-                )
-            }
+    Scaffold(
+        modifier = Modifier.heightIn(min = 300.dp, max = 900.dp),
+        topBar = {
+            StockPagerTabs(
+                state = state,
+                listState = listState,
+                scope = scope
+            )
         }
+    ) { padding ->
         HorizontalPager(
             state = state,
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxHeight()
         ) { page ->
             when (page) {
                 0 -> {
@@ -106,6 +89,43 @@ fun StockViewPager(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun StockPagerTabs(
+    state: PagerState,
+    listState: LazyListState,
+    scope: CoroutineScope
+){
+    val tabTitles = listOf(
+        stringResource(id = R.string.summary),
+        stringResource(id = R.string.news),
+        stringResource(id = R.string.analysis)
+    )
+    TabRow(
+        selectedTabIndex = state.currentPage,
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        indicator = { tabPositions ->
+            SecondaryIndicator(
+                Modifier.tabIndicatorOffset(tabPositions[state.currentPage]),
+            )
+        },
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        tabTitles.forEachIndexed { index, title ->
+            Tab(
+                text = { Text(title) },
+                selected = state.currentPage == index,
+                onClick = {
+                    scope.launch {
+                        listState.scrollToItem(5)
+                        state.animateScrollToPage(index)
+                    }
+                }
+            )
+        }
+    }
+}
 
 
 @Preview
