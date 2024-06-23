@@ -1,6 +1,7 @@
 package com.farmingdale.stockscreener.views.stock
 
 import android.app.Application
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -91,6 +92,7 @@ fun StockView(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StockContent(
     symbol: String,
@@ -142,7 +144,7 @@ fun StockContent(
                         .background(bg),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    item {
+                    stickyHeader {
                         StockHeadline(quote = quote, bg = bg)
                     }
                     item {

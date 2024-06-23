@@ -2,7 +2,9 @@ package com.farmingdale.stockscreener.views.stock
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -17,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.ImageLoader
 import coil.compose.AsyncImage
@@ -103,13 +106,18 @@ fun StockHeadline(
                         multiply = bg
                     ),
                     filterQuality = FilterQuality.High,
-                    modifier = Modifier.defaultMinSize(48.dp)
+                    modifier = Modifier.size(48.dp)
                 )
             }
         },
         colors = ListItemDefaults.colors(
             containerColor = bg
         )
+    )
+    HorizontalDivider(
+        thickness = Dp.Hairline,
+        color = MaterialTheme.colorScheme.outline,
+        modifier = Modifier.fillMaxWidth()
     )
 }
 
