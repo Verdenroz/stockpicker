@@ -9,13 +9,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -24,6 +20,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -44,22 +41,18 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.HistoricalData
 import com.farmingdale.stockscreener.model.local.Interval
 import com.farmingdale.stockscreener.model.local.TimePeriod
-import com.farmingdale.stockscreener.providers.ImplFinanceQueryAPI
-import com.farmingdale.stockscreener.providers.okHttpClient
 import com.farmingdale.stockscreener.ui.theme.negativeBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import java.lang.Math.round
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -72,6 +65,7 @@ private const val SPACING = 75f
 @Composable
 fun StockChart(
     modifier: Modifier = Modifier,
+    listState: LazyListState,
     symbol: String,
     timeSeries: Map<String, HistoricalData> = emptyMap(),
     positiveChart: Boolean = true,
@@ -89,14 +83,14 @@ fun StockChart(
     }
 
     val density = LocalDensity.current
+    val scope = rememberCoroutineScope()
 
     val selectedData = rememberSaveable { mutableStateOf<Pair<String, HistoricalData>?>(null) }
     Text(
         text = selectedData.value.let {
-            it?.let { ( _, historicalData) ->
+            it?.let { (_, historicalData) ->
                 "${historicalData.close}"
             } ?: ""
-
         },
         style = MaterialTheme.typography.titleLarge,
         fontWeight = FontWeight.Black,
@@ -140,6 +134,7 @@ fun StockChart(
                     onPress = { offset ->
                         val spacePerHour = (size.width - SPACING) / timeSeries.size
                         val index = ((offset.x - SPACING) / spacePerHour).toInt()
+
                         if (index in timeSeries.entries.indices) {
                             selectedData.value = timeSeries.entries
                                 .elementAt(index)
@@ -147,6 +142,7 @@ fun StockChart(
                         } else {
                             selectedData.value = null
                         }
+                        scope.launch { listState.animateScrollToItem(0) }
                     },
                     onDoubleTap = {
                         selectedData.value = null
@@ -172,6 +168,7 @@ fun StockChart(
                             // Clear the selected data if the drag is outside the data range
                             selectedData.value = null
                         }
+                        scope.launch { listState.animateScrollToItem(0) }
                     },
                     onDragEnd = {
                         // Clear the selected data when the drag ends
@@ -606,177 +603,177 @@ fun formatVolume(volume: Long): String {
     }
 }
 
-@Preview
-@Composable
-fun PreviewStockChart() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        val api = ImplFinanceQueryAPI(okHttpClient)
-        val timeSeries = runBlocking {
-            api.getHistoricalData(
-                "TSLA",
-                TimePeriod.ONE_DAY,
-                Interval.FIFTEEN_MINUTE
-            )
-        }
-        val timeSeries2 = runBlocking {
-            api.getHistoricalData(
-                "TSLA",
-                TimePeriod.FIVE_DAY,
-                Interval.FIFTEEN_MINUTE
-            )
-        }
-        val timeSeries3 = runBlocking {
-            api.getHistoricalData(
-                "TSLA",
-                TimePeriod.ONE_MONTH,
-                Interval.DAILY
-            )
-        }
-        val timeSeries4 = runBlocking {
-            api.getHistoricalData(
-                "TSLA",
-                TimePeriod.THREE_MONTH,
-                Interval.DAILY
-            )
-        }
-        val timeSeries5 = runBlocking {
-            api.getHistoricalData(
-                "TSLA",
-                TimePeriod.SIX_MONTH,
-                Interval.DAILY
-            )
-        }
-        val timeSeries6 = runBlocking {
-            api.getHistoricalData(
-                "TSLA",
-                TimePeriod.ONE_YEAR,
-                Interval.DAILY
-            )
-        }
-        val timeSeries7 = runBlocking {
-            api.getHistoricalData(
-                "TSLA",
-                TimePeriod.FIVE_YEAR,
-                Interval.DAILY
-            )
-        }
-        val timeSeries8 = runBlocking {
-            api.getHistoricalData(
-                "TSLA",
-                TimePeriod.TEN_YEAR,
-                Interval.DAILY
-            )
-        }
-        val timeSeries9 = runBlocking {
-            api.getHistoricalData(
-                "TSLA",
-                TimePeriod.YEAR_TO_DATE,
-                Interval.DAILY
-            )
-        }
-        val timeSeries10 = runBlocking {
-            api.getHistoricalData(
-                "TSLA",
-                TimePeriod.MAX,
-                Interval.DAILY
-            )
-        }
-        StockChart(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            symbol = "TSLA",
-            timeSeries = timeSeries,
-            positiveChart = true,
-            updateTimeSeries = { _, _, _ -> },
-        )
-
-        StockChart(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            symbol = "TSLA",
-            timeSeries = timeSeries2,
-            positiveChart = true,
-            updateTimeSeries = { _, _, _ -> },
-        )
-        StockChart(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            symbol = "TSLA",
-            timeSeries = timeSeries3,
-            positiveChart = false,
-            updateTimeSeries = { _, _, _ -> },
-        )
-        StockChart(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            symbol = "TSLA",
-            timeSeries = timeSeries4,
-            positiveChart = true,
-            updateTimeSeries = { _, _, _ -> },
-        )
-        StockChart(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            symbol = "TSLA",
-            timeSeries = timeSeries5,
-            positiveChart = false,
-            updateTimeSeries = { _, _, _ -> },
-        )
-        StockChart(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            symbol = "TSLA",
-            timeSeries = timeSeries6,
-            positiveChart = true,
-            updateTimeSeries = { _, _, _ -> },
-        )
-        StockChart(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            symbol = "TSLA",
-            timeSeries = timeSeries7,
-            positiveChart = false,
-            updateTimeSeries = { _, _, _ -> },
-        )
-        StockChart(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            symbol = "TSLA",
-            timeSeries = timeSeries8,
-            positiveChart = true,
-            updateTimeSeries = { _, _, _ -> },
-        )
-        StockChart(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            symbol = "TSLA",
-            timeSeries = timeSeries9,
-            positiveChart = false,
-            updateTimeSeries = { _, _, _ -> },
-        )
-        StockChart(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            symbol = "TSLA",
-            timeSeries = timeSeries10,
-            positiveChart = true,
-            updateTimeSeries = { _, _, _ -> },
-        )
-    }
-}
+//@Preview
+//@Composable
+//fun PreviewStockChart() {
+//    Column(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .padding(16.dp)
+//            .verticalScroll(rememberScrollState()),
+//        verticalArrangement = Arrangement.spacedBy(16.dp)
+//    ) {
+//        val api = ImplFinanceQueryAPI(okHttpClient)
+//        val timeSeries = runBlocking {
+//            api.getHistoricalData(
+//                "TSLA",
+//                TimePeriod.ONE_DAY,
+//                Interval.FIFTEEN_MINUTE
+//            )
+//        }
+//        val timeSeries2 = runBlocking {
+//            api.getHistoricalData(
+//                "TSLA",
+//                TimePeriod.FIVE_DAY,
+//                Interval.FIFTEEN_MINUTE
+//            )
+//        }
+//        val timeSeries3 = runBlocking {
+//            api.getHistoricalData(
+//                "TSLA",
+//                TimePeriod.ONE_MONTH,
+//                Interval.DAILY
+//            )
+//        }
+//        val timeSeries4 = runBlocking {
+//            api.getHistoricalData(
+//                "TSLA",
+//                TimePeriod.THREE_MONTH,
+//                Interval.DAILY
+//            )
+//        }
+//        val timeSeries5 = runBlocking {
+//            api.getHistoricalData(
+//                "TSLA",
+//                TimePeriod.SIX_MONTH,
+//                Interval.DAILY
+//            )
+//        }
+//        val timeSeries6 = runBlocking {
+//            api.getHistoricalData(
+//                "TSLA",
+//                TimePeriod.ONE_YEAR,
+//                Interval.DAILY
+//            )
+//        }
+//        val timeSeries7 = runBlocking {
+//            api.getHistoricalData(
+//                "TSLA",
+//                TimePeriod.FIVE_YEAR,
+//                Interval.DAILY
+//            )
+//        }
+//        val timeSeries8 = runBlocking {
+//            api.getHistoricalData(
+//                "TSLA",
+//                TimePeriod.TEN_YEAR,
+//                Interval.DAILY
+//            )
+//        }
+//        val timeSeries9 = runBlocking {
+//            api.getHistoricalData(
+//                "TSLA",
+//                TimePeriod.YEAR_TO_DATE,
+//                Interval.DAILY
+//            )
+//        }
+//        val timeSeries10 = runBlocking {
+//            api.getHistoricalData(
+//                "TSLA",
+//                TimePeriod.MAX,
+//                Interval.DAILY
+//            )
+//        }
+//        StockChart(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(200.dp),
+//            symbol = "TSLA",
+//            timeSeries = timeSeries,
+//            positiveChart = true,
+//            updateTimeSeries = { _, _, _ -> },
+//        )
+//
+//        StockChart(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(200.dp),
+//            symbol = "TSLA",
+//            timeSeries = timeSeries2,
+//            positiveChart = true,
+//            updateTimeSeries = { _, _, _ -> },
+//        )
+//        StockChart(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(200.dp),
+//            symbol = "TSLA",
+//            timeSeries = timeSeries3,
+//            positiveChart = false,
+//            updateTimeSeries = { _, _, _ -> },
+//        )
+//        StockChart(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(200.dp),
+//            symbol = "TSLA",
+//            timeSeries = timeSeries4,
+//            positiveChart = true,
+//            updateTimeSeries = { _, _, _ -> },
+//        )
+//        StockChart(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(200.dp),
+//            symbol = "TSLA",
+//            timeSeries = timeSeries5,
+//            positiveChart = false,
+//            updateTimeSeries = { _, _, _ -> },
+//        )
+//        StockChart(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(200.dp),
+//            symbol = "TSLA",
+//            timeSeries = timeSeries6,
+//            positiveChart = true,
+//            updateTimeSeries = { _, _, _ -> },
+//        )
+//        StockChart(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(200.dp),
+//            symbol = "TSLA",
+//            timeSeries = timeSeries7,
+//            positiveChart = false,
+//            updateTimeSeries = { _, _, _ -> },
+//        )
+//        StockChart(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(200.dp),
+//            symbol = "TSLA",
+//            timeSeries = timeSeries8,
+//            positiveChart = true,
+//            updateTimeSeries = { _, _, _ -> },
+//        )
+//        StockChart(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(200.dp),
+//            symbol = "TSLA",
+//            timeSeries = timeSeries9,
+//            positiveChart = false,
+//            updateTimeSeries = { _, _, _ -> },
+//        )
+//        StockChart(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(200.dp),
+//            symbol = "TSLA",
+//            timeSeries = timeSeries10,
+//            positiveChart = true,
+//            updateTimeSeries = { _, _, _ -> },
+//        )
+//    }
+//}

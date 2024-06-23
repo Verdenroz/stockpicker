@@ -155,6 +155,7 @@ fun StockContent(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .heightIn(min = 200.dp, max = 400.dp),
+                                listState = listState,
                                 symbol = quote.symbol,
                                 timeSeries = timeSeries.entries.toList().asReversed()
                                     .associate { it.key to it.value },
