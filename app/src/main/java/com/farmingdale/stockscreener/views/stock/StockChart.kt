@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -40,17 +41,15 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.HistoricalData
 import com.farmingdale.stockscreener.model.local.Interval
 import com.farmingdale.stockscreener.model.local.TimePeriod
@@ -68,9 +67,7 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
 
-const val SPACING = 75f
-const val BOX_WIDTH = 500f
-const val BOX_HEIGHT = 200f
+private const val SPACING = 75f
 
 @Composable
 fun StockChart(
@@ -80,10 +77,9 @@ fun StockChart(
     positiveChart: Boolean = true,
     isDarkTheme: Boolean = isSystemInDarkTheme(),
     updateTimeSeries: (String, TimePeriod, Interval) -> Unit,
-    backgroundColor: Color =  MaterialTheme.colorScheme.surface,
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
 ) {
     val guidelineColor = MaterialTheme.colorScheme.outline
-    val markerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = .5f)
 
     val upperValue = remember(timeSeries) {
         timeSeries.values.maxOf { it.close }.plus(1)
@@ -92,10 +88,47 @@ fun StockChart(
         timeSeries.values.minOf { it.close }.minus(1)
     }
 
-    val textMeasurer = rememberTextMeasurer()
     val density = LocalDensity.current
 
     val selectedData = rememberSaveable { mutableStateOf<Pair<String, HistoricalData>?>(null) }
+    Text(
+        text = selectedData.value.let {
+            it?.let { ( _, historicalData) ->
+                "${historicalData.close}"
+            } ?: ""
+
+        },
+        style = MaterialTheme.typography.titleLarge,
+        fontWeight = FontWeight.Black,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth()
+    )
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 32.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = selectedData.value.let {
+                it?.let { (date, _) ->
+                    date
+                } ?: ""
+            },
+            style = MaterialTheme.typography.labelLarge,
+            letterSpacing = 1.25.sp,
+        )
+        Text(
+            text = selectedData.value.let {
+                it?.let { (_, historicalData) ->
+                    stringResource(R.string.volume) + " ${formatVolume(historicalData.volume)}"
+                } ?: ""
+            },
+            style = MaterialTheme.typography.labelLarge,
+            letterSpacing = 1.25.sp,
+        )
+    }
+
     Column(
         modifier = Modifier
             .padding(start = 16.dp, end = 16.dp, top = 32.dp)
@@ -155,12 +188,6 @@ fun StockChart(
                     if (positiveChart) positiveBackgroundColor else negativeBackgroundColor
                 val textColor =
                     if (isDarkTheme) android.graphics.Color.WHITE else android.graphics.Color.BLACK
-                val textStyle = TextStyle(
-                    color = Color(textColor),
-                    fontSize = 12.sp,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold
-                )
                 val textPaint = Paint().apply {
                     color = textColor
                     textAlign = Paint.Align.CENTER
@@ -176,10 +203,7 @@ fun StockChart(
                         topShader = topShader,
                         bottomShader = bottomShader,
                         guidelineColor = guidelineColor,
-                        markerColor = markerColor,
                         textPaint = textPaint,
-                        textMeasurer = textMeasurer,
-                        textStyle = textStyle,
                         density = density,
                         selectedData = selectedData
                     )
@@ -261,10 +285,7 @@ fun DrawScope.drawChart(
     topShader: Color,
     bottomShader: Color,
     guidelineColor: Color,
-    markerColor: Color,
     textPaint: Paint,
-    textMeasurer: TextMeasurer,
-    textStyle: TextStyle,
     density: Density,
     selectedData: MutableState<Pair<String, HistoricalData>?>
 ) {
@@ -311,10 +332,6 @@ fun DrawScope.drawChart(
         upperValue = upperValue,
         spacePerHour = spacePerHour,
         guidelineColor = guidelineColor,
-        markerColor = markerColor,
-        textPaint = textPaint,
-        textMeasurer = textMeasurer,
-        textStyle = textStyle,
         density = density
     )
 }
@@ -462,10 +479,6 @@ fun drawSelectedData(
     upperValue: Float,
     spacePerHour: Float,
     guidelineColor: Color,
-    markerColor: Color,
-    textPaint: Paint,
-    textMeasurer: TextMeasurer,
-    textStyle: TextStyle,
     density: Density
 ) {
     // Draw the selected data
@@ -490,41 +503,6 @@ fun drawSelectedData(
             center = Offset(x, y),
             radius = with(density) { 5.dp.toPx() }
         )
-
-        val boxX = if (x > size.width / 2.5) x - BOX_WIDTH + SPACING / 2 else x + SPACING / 2
-        val boxY = if (y > size.height / 2) y - BOX_HEIGHT + SPACING / 2 else y + SPACING / 2
-
-        drawScope.drawRect(
-            color = markerColor,
-            topLeft = Offset(boxX, boxY),
-            size = Size(BOX_WIDTH, BOX_HEIGHT)
-        ).apply {
-            val closeText = "Close: ${historicalData.close}"
-            val volumeText = "Volume: ${formatVolume(historicalData.volume)}"
-
-            val dateTextWidth = textPaint.measureText(date)
-            val closeTextWidth = textPaint.measureText(closeText)
-            val volumeTextWidth = textPaint.measureText(volumeText)
-
-            val maxWidth = maxOf(
-                dateTextWidth,
-                closeTextWidth,
-                volumeTextWidth
-            )
-
-            // Calculate the x-coordinate for the text
-            val textX = maxWidth / 2 + boxX - SPACING
-            drawScope.drawText(
-                textMeasurer = textMeasurer,
-                text = closeText +
-                        "\n$date" +
-                        "\n$volumeText",
-                style = textStyle,
-                overflow = TextOverflow.Visible,
-                topLeft = Offset(textX - 25f, boxY + 25f),
-                maxLines = 4
-            )
-        }
     }
 }
 
