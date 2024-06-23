@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -22,10 +23,14 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -174,14 +179,30 @@ fun StockProfile(quote: FullQuoteData) {
             .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        val isExpanded = remember { mutableStateOf(false) }
         quote.about?.let {
-            Text(
-                text = it,
-                style = MaterialTheme.typography.bodyMedium,
-                letterSpacing = 1.25.sp,
-                maxLines = 10,
-                overflow = TextOverflow.Ellipsis,
-            )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium,
+                    letterSpacing = 1.25.sp,
+                    maxLines = if (isExpanded.value) Int.MAX_VALUE else 10,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                ClickableText(
+                    text = if (isExpanded.value) AnnotatedString(stringResource(id = R.string.show_less))
+                    else AnnotatedString(stringResource(id = R.string.show_more)),
+                    modifier = Modifier.align(Alignment.End),
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        letterSpacing = 1.25.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.End
+                    ),
+                    onClick = { isExpanded.value = !isExpanded.value },
+                )
+            }
         }
         Row(
             modifier = Modifier
@@ -190,7 +211,7 @@ fun StockProfile(quote: FullQuoteData) {
         ) {
             quote.sector?.let {
                 OutlinedButton(
-                    onClick = { /*TODO*/ },
+                    onClick = { TODO("Navigate to sector")},
                     shape = CircleShape
                 ) {
                     Text(
@@ -202,7 +223,7 @@ fun StockProfile(quote: FullQuoteData) {
             }
             quote.industry?.let {
                 OutlinedButton(
-                    onClick = { /*TODO*/ },
+                    onClick = { TODO("Navigate to industry") },
                     shape = CircleShape,
                 ) {
                     Text(

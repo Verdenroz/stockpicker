@@ -125,4 +125,6 @@
     <string name="ichimoku">Ichimoku Cloud (9, 26, 52, 26)</string>
     <string name="trends">Trends</string>
     <string name="overall">Overall</string>
+    <string name="show_more">Show more</string>
+    <string name="show_less">Show less</string>
 </resources>
