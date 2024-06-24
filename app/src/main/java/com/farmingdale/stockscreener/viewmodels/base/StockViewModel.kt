@@ -41,7 +41,4 @@ abstract class StockViewModel(application: Application) : AndroidViewModel(appli
 
     abstract fun getAnalysis(symbol: String, interval: Interval)
 
-    abstract fun addToWatchList(symbol: String)
-
-    abstract fun deleteFromWatchList(symbol: String)
 }

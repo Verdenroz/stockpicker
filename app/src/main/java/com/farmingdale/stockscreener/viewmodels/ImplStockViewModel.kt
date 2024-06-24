@@ -279,26 +279,6 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
         }
     }
 
-    private fun refreshWatchList() {
-        viewModelScope.launch(Dispatchers.IO) {
-            watchlistRepo.refreshWatchList()
-        }
-    }
-
-    override fun addToWatchList(symbol: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            watchlistRepo.addToWatchList(symbol)
-            refreshWatchList()
-        }
-    }
-
-    override fun deleteFromWatchList(symbol: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            watchlistRepo.deleteFromWatchList(symbol)
-            refreshWatchList()
-        }
-    }
-
     private fun createSignal(
         context: Context,
         value: Double,

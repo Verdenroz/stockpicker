@@ -42,7 +42,7 @@ fun StockPerformance(
         )
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         ) {
             quote.ytdReturn?.let {
                 item(key = quote.ytdReturn) {
@@ -196,7 +196,7 @@ fun PerformanceCard(
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = "$sector " + stringResource(id = R.string.sector),
+                            text = sector,
                             style = MaterialTheme.typography.titleSmall,
                             letterSpacing = 1.25.sp
                         )

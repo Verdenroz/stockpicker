@@ -29,6 +29,7 @@ import com.farmingdale.stockscreener.viewmodels.ImplMainViewModel
 import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
 import com.farmingdale.stockscreener.views.Screen
 import com.farmingdale.stockscreener.views.home.HomeView
+import com.farmingdale.stockscreener.views.stock.StockView
 import com.farmingdale.stockscreener.views.watchlist.WatchListView
 import kotlinx.coroutines.delay
 
@@ -72,27 +73,30 @@ fun MainContent(
     deleteFromWatchList: (String) -> Unit,
 ) {
     val navController = rememberNavController()
-
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
     Scaffold(
         topBar = {
-            SearchBar(
-                searchResults = searchResults,
-                watchList = watchList,
-                regionFilter = regionFilter,
-                typeFilters = typeFilters,
-                updateRegionFilter = updateRegionFilter,
-                toggleTypeFilter = toggleTypeFilter,
-                updateQuery = updateQuery,
-                addToWatchList = addToWatchList,
-                deleteFromWatchList = deleteFromWatchList,
-            )
+            if (currentRoute != "stock/{symbol}") {
+                SearchBar(
+                    navController = navController,
+                    searchResults = searchResults,
+                    watchList = watchList,
+                    regionFilter = regionFilter,
+                    typeFilters = typeFilters,
+                    updateRegionFilter = updateRegionFilter,
+                    toggleTypeFilter = toggleTypeFilter,
+                    updateQuery = updateQuery,
+                    addToWatchList = addToWatchList,
+                    deleteFromWatchList = deleteFromWatchList,
+                )
+            }
         },
         bottomBar = {
             NavigationBar(
                 containerColor = MaterialTheme.colorScheme.surfaceContainer,
                 contentColor = MaterialTheme.colorScheme.onSurface,
             ) {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
                 val items = listOf(
                     Screen.Home,
@@ -130,7 +134,9 @@ fun MainContent(
             modifier = Modifier.padding(padding)
         ) {
             composable(Screen.Home.route) {
-                HomeView()
+                HomeView(
+                    navController = navController,
+                )
             }
             composable(Screen.Watchlist.route) {
                 WatchListView(
@@ -148,8 +154,14 @@ fun MainContent(
             }
             composable("stock/{symbol}") { backStackEntry ->
                 val symbol = backStackEntry.arguments?.getString("symbol")
-                // Fetch the FullQuoteData based on the symbol
-                // Then pass it to the StockView
+                if (symbol != null) {
+                    StockView(
+                        symbol = symbol,
+                        navController = navController,
+                        addToWatchList = addToWatchList,
+                        deleteFromWatchList = deleteFromWatchList
+                    )
+                }
             }
         }
     }

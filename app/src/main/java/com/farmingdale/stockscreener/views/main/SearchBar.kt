@@ -38,6 +38,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.RegionFilter
 import com.farmingdale.stockscreener.model.local.SearchResult
@@ -47,6 +48,7 @@ import com.farmingdale.stockscreener.model.local.TypeFilter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchBar(
+    navController: NavController,
     searchResults: List<SearchResult>?,
     watchList: List<SimpleQuoteData>,
     regionFilter: RegionFilter,
@@ -136,6 +138,7 @@ fun SearchBar(
                 modifier = Modifier
                     .clickable {
                         active = false
+                        navController.navigate("stock/${match.symbol}")
                     }
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
@@ -154,8 +157,6 @@ fun SearchBar(
                             text = match.exchangeShortName,
                             style = MaterialTheme.typography.labelSmall,
                         )
-
-
                     }
                 },
                 supportingContent = {

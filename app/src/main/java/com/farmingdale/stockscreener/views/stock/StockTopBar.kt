@@ -28,6 +28,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
@@ -35,6 +37,7 @@ import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
 
 @Composable
 fun StockTopBar(
+    navController: NavController,
     symbol: String,
     quote: FullQuoteData?,
     watchList: List<SimpleQuoteData>,
@@ -52,7 +55,9 @@ fun StockTopBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
-                onClick = { /*TODO*/ },
+                onClick = {
+                    navController.popBackStack()
+                },
                 modifier = Modifier.align(Alignment.CenterVertically)
             ) {
                 Icon(
@@ -150,6 +155,7 @@ fun PreviewStockTopBar(
     StockScreenerTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
             StockTopBar(
+                navController = rememberNavController(),
                 symbol = quote?.symbol.orEmpty(),
                 quote = quote,
                 watchList = emptyList(),

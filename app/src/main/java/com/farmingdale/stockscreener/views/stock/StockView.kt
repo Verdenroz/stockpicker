@@ -32,6 +32,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
@@ -48,7 +50,10 @@ import com.farmingdale.stockscreener.viewmodels.base.StockViewModel
 
 @Composable
 fun StockView(
-    symbol: String
+    symbol: String,
+    navController: NavController,
+    addToWatchList: (String) -> Unit,
+    deleteFromWatchList: (String) -> Unit
 ) {
     val application = LocalContext.current.applicationContext as Application
     val stockViewModel: StockViewModel = viewModel<ImplStockViewModel>(
@@ -72,6 +77,7 @@ fun StockView(
     val watchList by stockViewModel.watchList.collectAsState()
     StockScreenerTheme {
         StockContent(
+            navController = navController,
             symbol = symbol,
             quote = quote,
             timeSeries = timeSeries,
@@ -86,8 +92,8 @@ fun StockView(
             overallSummary = overallSummary,
             watchList = watchList,
             updateTimeSeries = stockViewModel::getTimeSeries,
-            addToWatchList = stockViewModel::addToWatchList,
-            deleteFromWatchList = stockViewModel::deleteFromWatchList
+            addToWatchList = addToWatchList,
+            deleteFromWatchList = deleteFromWatchList
         )
     }
 }
@@ -95,6 +101,7 @@ fun StockView(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StockContent(
+    navController: NavController,
     symbol: String,
     quote: FullQuoteData?,
     timeSeries: Map<String, HistoricalData> = emptyMap(),
@@ -123,6 +130,7 @@ fun StockContent(
     Scaffold(
         topBar = {
             StockTopBar(
+                navController = navController,
                 symbol = symbol,
                 quote = quote,
                 watchList = watchList,
@@ -174,7 +182,8 @@ fun StockContent(
                     item {
                         SimilarStockFeed(
                             symbol = quote.symbol,
-                            similarStocks = similarStocks
+                            similarStocks = similarStocks,
+                            navController = navController
                         )
                     }
                     item {
@@ -192,8 +201,7 @@ fun StockContent(
                     }
                 }
             }
-        }
-        else {
+        } else {
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
@@ -209,5 +217,10 @@ fun StockContent(
 @Preview
 @Composable
 fun PreviewStockView() {
-    StockView("AAPL")
+    StockView(
+        symbol = "AAPL",
+        navController = rememberNavController(),
+        addToWatchList = {},
+        deleteFromWatchList = {}
+    )
 }

@@ -19,6 +19,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.farmingdale.stockscreener.model.local.MarketIndex
 import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.model.local.MarketSector
@@ -28,7 +30,9 @@ import com.farmingdale.stockscreener.viewmodels.base.HomeViewModel
 import kotlinx.coroutines.delay
 
 @Composable
-fun HomeView() {
+fun HomeView(
+    navController: NavController
+) {
     val homeViewModel: HomeViewModel = viewModel<ImplHomeViewModel>()
     val sectors by homeViewModel.sectors.collectAsState()
     val news by homeViewModel.news.collectAsState()
@@ -38,6 +42,7 @@ fun HomeView() {
     val gainers by homeViewModel.gainers.collectAsState()
 
     HomeContent(
+        navController = navController,
         sectors = sectors,
         news = news,
         indices = indices,
@@ -51,6 +56,7 @@ fun HomeView() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeContent(
+    navController: NavController,
     sectors: List<MarketSector>?,
     news: List<News>?,
     indices: List<MarketIndex>?,
@@ -98,6 +104,7 @@ fun HomeContent(
             item {
                 MarketMovers(
                     listState = listState,
+                    navController = navController,
                     actives = actives,
                     losers = losers,
                     gainers = gainers,
@@ -118,6 +125,7 @@ fun HomeContent(
 @Composable
 fun PreviewHomeContent() {
     HomeContent(
+        navController = rememberNavController(),
         sectors = null,
         news = null,
         indices = null,
