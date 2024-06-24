@@ -145,7 +145,6 @@ fun StockContent(
                 modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection()),
             ) {
                 LazyColumn(
-                    state = listState,
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)
@@ -196,7 +195,6 @@ fun StockContent(
                             oscillatorsSummary = oscillatorsSummary,
                             trendsSummary = trendsSummary,
                             overallSummary = overallSummary,
-                            listState = listState
                         )
                     }
                 }

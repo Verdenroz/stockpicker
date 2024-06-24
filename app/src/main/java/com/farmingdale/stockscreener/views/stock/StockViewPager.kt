@@ -1,12 +1,9 @@
 package com.farmingdale.stockscreener.views.stock
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -44,7 +41,6 @@ fun StockViewPager(
     oscillatorsSummary: Double,
     trendsSummary: Double,
     overallSummary: Double,
-    listState: LazyListState
 ) {
     val state = rememberPagerState(pageCount = { 3 })
     val scope = rememberCoroutineScope()
@@ -54,7 +50,6 @@ fun StockViewPager(
         topBar = {
             StockPagerTabs(
                 state = state,
-                listState = listState,
                 scope = scope
             )
         }
@@ -63,7 +58,6 @@ fun StockViewPager(
             state = state,
             modifier = Modifier
                 .padding(padding)
-                .fillMaxHeight()
         ) { page ->
             when (page) {
                 0 -> {
@@ -93,7 +87,6 @@ fun StockViewPager(
 @Composable
 fun StockPagerTabs(
     state: PagerState,
-    listState: LazyListState,
     scope: CoroutineScope
 ){
     val tabTitles = listOf(
@@ -118,7 +111,6 @@ fun StockPagerTabs(
                 selected = state.currentPage == index,
                 onClick = {
                     scope.launch {
-                        listState.scrollToItem(5)
                         state.animateScrollToPage(index)
                     }
                 }
@@ -176,7 +168,6 @@ fun PreviewStockViewPager(
             oscillatorsSummary = 0.0,
             trendsSummary = 0.0,
             overallSummary = 0.0,
-            listState = rememberLazyListState()
         )
     }
 }
