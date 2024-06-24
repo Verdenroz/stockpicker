@@ -5,18 +5,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.FlowRowScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -40,137 +38,117 @@ import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import java.util.Locale
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun StockSummary(quote: FullQuoteData) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 300.dp, max = 900.dp)
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .background(MaterialTheme.colorScheme.surfaceContainerLow),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         StockProfile(quote = quote)
+        StockDetailCell(
+            label = stringResource(id = R.string.open),
+            detailValue = { SimpleDetailText(text = quote.open.toString()) },
+        )
+        StockDetailCell(
+            label = stringResource(id = R.string.days_range),
+            detailValue = {
+                PriceRangeLine(
+                    low = quote.low,
+                    high = quote.high,
+                    current = quote.price
+                )
+            },
 
-        FlowRow(
-            modifier = Modifier.fillMaxSize(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            StockDetailCell(
-                label = stringResource(id = R.string.open),
-                detailValue = { SimpleDetailText(text = quote.open.toString()) },
-                weight = 1f
             )
-            StockDetailCell(
-                label = stringResource(id = R.string.days_range),
-                detailValue = {
-                    PriceRangeLine(
-                        low = quote.low,
-                        high = quote.high,
-                        current = quote.price
-                    )
-                },
-                weight = 1f
+        StockDetailCell(
+            label = stringResource(id = R.string.fifty_two_week_range),
+            detailValue = {
+                PriceRangeLine(
+                    low = quote.yearLow,
+                    high = quote.yearHigh,
+                    current = quote.price
+                )
+            },
+
             )
+        StockDetailCell(
+            label = stringResource(id = R.string.volume),
+            detailValue = { SimpleDetailText(text = formatVolume(quote.volume)) },
+        )
+        StockDetailCell(
+            label = stringResource(id = R.string.avg_volume),
+            detailValue = { SimpleDetailText(text = formatVolume(quote.avgVolume)) },
+        )
+
+        quote.marketCap?.let {
             StockDetailCell(
-                label = stringResource(id = R.string.fifty_two_week_range),
-                detailValue = {
-                    PriceRangeLine(
-                        low = quote.yearLow,
-                        high = quote.yearHigh,
-                        current = quote.price
-                    )
-                },
-                weight = 1f
+                label = stringResource(id = R.string.market_cap),
+                detailValue = { SimpleDetailText(text = it) },
             )
+        }
+
+        quote.netAssets?.let {
             StockDetailCell(
-                label = stringResource(id = R.string.volume),
-                detailValue = { SimpleDetailText(text = formatVolume(quote.volume)) },
-                weight = 1f
+                label = stringResource(id = R.string.net_assets),
+                detailValue = { SimpleDetailText(text = it) },
             )
+        }
+
+        quote.nav?.let {
             StockDetailCell(
-                label = stringResource(id = R.string.avg_volume),
-                detailValue = { SimpleDetailText(text = formatVolume(quote.avgVolume)) },
-                weight = 1f
+                label = stringResource(id = R.string.nav),
+                detailValue = { SimpleDetailText(text = it.toString()) },
             )
+        }
 
-            quote.marketCap?.let {
-                StockDetailCell(
-                    label = stringResource(id = R.string.market_cap),
-                    detailValue = { SimpleDetailText(text = it) },
-                    weight = 1f
-                )
-            }
+        quote.pe?.let {
+            StockDetailCell(
+                label = stringResource(id = R.string.pe_ratio),
+                detailValue = { SimpleDetailText(text = it.toString()) },
+            )
+        }
+        quote.eps?.let {
+            StockDetailCell(
+                label = stringResource(id = R.string.eps),
+                detailValue = { SimpleDetailText(text = it.toString()) },
+            )
+        }
+        quote.beta?.let {
+            StockDetailCell(
+                label = stringResource(id = R.string.beta),
+                detailValue = { SimpleDetailText(text = it.toString()) },
+            )
+        }
 
-            quote.netAssets?.let {
-                StockDetailCell(
-                    label = stringResource(id = R.string.net_assets),
-                    detailValue = { SimpleDetailText(text = it) },
-                    weight = 1f
-                )
-            }
+        quote.expenseRatio?.let {
+            StockDetailCell(
+                label = stringResource(id = R.string.expense_ratio),
+                detailValue = { SimpleDetailText(text = it) },
+            )
+        }
 
-            quote.nav?.let {
-                StockDetailCell(
-                    label = stringResource(id = R.string.nav),
-                    detailValue = { SimpleDetailText(text = it.toString()) },
-                    weight = 1f
-                )
-            }
+        quote.dividend?.let {
+            StockDetailCell(
+                label = stringResource(id = R.string.dividend_yield),
+                detailValue = { SimpleDetailText(text = it.toString() + " (" + quote.yield + ")") },
+            )
+        }
 
-            quote.pe?.let {
-                StockDetailCell(
-                    label = stringResource(id = R.string.pe_ratio),
-                    detailValue = { SimpleDetailText(text = it.toString()) },
-                    weight = 1f
-                )
-            }
-            quote.eps?.let {
-                StockDetailCell(
-                    label = stringResource(id = R.string.eps),
-                    detailValue = { SimpleDetailText(text = it.toString()) },
-                    weight = 1f
-                )
-            }
-            quote.beta?.let {
-                StockDetailCell(
-                    label = stringResource(id = R.string.beta),
-                    detailValue = { SimpleDetailText(text = it.toString()) },
-                    weight = 1f
-                )
-            }
+        quote.exDividend?.let {
+            StockDetailCell(
+                label = stringResource(id = R.string.ex_dividend),
+                detailValue = { SimpleDetailText(text = it) },
+            )
+        }
 
-            quote.expenseRatio?.let {
-                StockDetailCell(
-                    label = stringResource(id = R.string.expense_ratio),
-                    detailValue = { SimpleDetailText(text = it) },
-                    weight = 1f
-                )
-            }
-
-            quote.dividend?.let {
-                StockDetailCell(
-                    label = stringResource(id = R.string.dividend_yield),
-                    detailValue = { SimpleDetailText(text = it.toString() + " (" + quote.yield + ")") },
-                    weight = 1f
-                )
-            }
-
-            quote.exDividend?.let {
-                StockDetailCell(
-                    label = stringResource(id = R.string.ex_dividend),
-                    detailValue = { SimpleDetailText(text = it) },
-                    weight = 1f
-                )
-            }
-
-            quote.earningsDate?.let {
-                StockDetailCell(
-                    label = stringResource(id = R.string.earnings_date),
-                    detailValue = { SimpleDetailText(text = it) },
-                    weight = 1f
-                )
-            }
+        quote.earningsDate?.let {
+            StockDetailCell(
+                label = stringResource(id = R.string.earnings_date),
+                detailValue = { SimpleDetailText(text = it) },
+            )
         }
     }
 }
@@ -244,12 +222,10 @@ fun StockProfile(quote: FullQuoteData) {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun FlowRowScope.StockDetailCell(
+fun StockDetailCell(
     label: String,
     detailValue: @Composable () -> Unit,
-    weight: Float
 ) {
     ListItem(
         headlineContent = {
@@ -266,11 +242,7 @@ fun FlowRowScope.StockDetailCell(
         },
         colors = ListItemDefaults.colors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-        ),
-        modifier = Modifier
-            .let {
-                if (weight == 1f) it.fillMaxWidth() else it.weight(weight)
-            }
+        )
     )
 }
 
