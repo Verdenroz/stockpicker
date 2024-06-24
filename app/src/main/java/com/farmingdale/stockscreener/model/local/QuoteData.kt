@@ -1,7 +1,5 @@
 package com.farmingdale.stockscreener.model.local
 
-import java.net.URL
-
 /**
  * Local data class for basic stock data used in the watchlist
  * @param symbol the stock symbol
@@ -63,7 +61,7 @@ data class FullQuoteData(
     val yearLow: Double,
     val volume: Long,
     val avgVolume: Long,
-    val marketCap: String,
+    val marketCap: String?,
     val beta: Double?,
     val pe: Double?,
     val eps: Double?,

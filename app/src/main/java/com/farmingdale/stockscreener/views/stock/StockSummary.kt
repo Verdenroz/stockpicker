@@ -1,6 +1,7 @@
 package com.farmingdale.stockscreener.views.stock
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -92,11 +93,14 @@ fun StockSummary(quote: FullQuoteData) {
                 detailValue = { SimpleDetailText(text = formatVolume(quote.avgVolume)) },
                 weight = 1f
             )
-            StockDetailCell(
-                label = stringResource(id = R.string.market_cap),
-                detailValue = { SimpleDetailText(text = quote.marketCap) },
-                weight = 1f
-            )
+
+            quote.marketCap?.let {
+                StockDetailCell(
+                    label = stringResource(id = R.string.market_cap),
+                    detailValue = { SimpleDetailText(text = it) },
+                    weight = 1f
+                )
+            }
 
             quote.netAssets?.let {
                 StockDetailCell(
@@ -179,8 +183,8 @@ fun StockProfile(quote: FullQuoteData) {
             .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        val isExpanded = remember { mutableStateOf(false) }
         quote.about?.let {
+            val isExpanded = remember { mutableStateOf(it.length < 300) }
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -190,18 +194,21 @@ fun StockProfile(quote: FullQuoteData) {
                     letterSpacing = 1.25.sp,
                     maxLines = if (isExpanded.value) Int.MAX_VALUE else 10,
                     overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.clickable { isExpanded.value = !isExpanded.value }
                 )
-                ClickableText(
-                    text = if (isExpanded.value) AnnotatedString(stringResource(id = R.string.show_less))
-                    else AnnotatedString(stringResource(id = R.string.show_more)),
-                    modifier = Modifier.align(Alignment.End),
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        letterSpacing = 1.25.sp,
-                        color = MaterialTheme.colorScheme.primary,
-                        textAlign = TextAlign.End
-                    ),
-                    onClick = { isExpanded.value = !isExpanded.value },
-                )
+                if (it.length > 300) {
+                    ClickableText(
+                        text = if (isExpanded.value) AnnotatedString(stringResource(id = R.string.show_less))
+                        else AnnotatedString(stringResource(id = R.string.show_more)),
+                        modifier = Modifier.align(Alignment.End),
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            letterSpacing = 1.25.sp,
+                            color = MaterialTheme.colorScheme.primary,
+                            textAlign = TextAlign.End
+                        ),
+                        onClick = { isExpanded.value = !isExpanded.value },
+                    )
+                }
             }
         }
         Row(
@@ -211,7 +218,7 @@ fun StockProfile(quote: FullQuoteData) {
         ) {
             quote.sector?.let {
                 OutlinedButton(
-                    onClick = { TODO("Navigate to sector")},
+                    onClick = { TODO("Navigate to sector") },
                     shape = CircleShape
                 ) {
                     Text(
@@ -316,7 +323,7 @@ fun SimpleDetailText(
 
 private fun formatText(text: String): String {
     // For Dividend Yield
-    if (text.contains('%')) {
+    if (text.contains('(') && text.contains(')')) {
         val parts = text.split(' ')
         val firstPart = parts[0]
         val secondPart = parts[1].removeSurrounding("(", "%)")

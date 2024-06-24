@@ -52,7 +52,7 @@ data class FullQuoteResponse(
     val yearLow: Double,
     val volume: Long,
     val avgVolume: Long,
-    val marketCap: String,
+    val marketCap: String? = null,
     val beta: Double? = null,
     val pe: Double? = null,
     val eps: Double? = null,
