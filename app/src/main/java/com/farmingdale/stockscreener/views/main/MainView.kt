@@ -140,6 +140,7 @@ fun MainContent(
             }
             composable(Screen.Watchlist.route) {
                 WatchListView(
+                    navController = navController,
                     watchList = watchList,
                     deleteFromWatchList = deleteFromWatchList
                 )
