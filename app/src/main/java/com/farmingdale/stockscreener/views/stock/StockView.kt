@@ -132,7 +132,6 @@ fun StockContent(
             StockTopBar(
                 navController = navController,
                 symbol = symbol,
-                quote = quote,
                 watchList = watchList,
                 addToWatchList = addToWatchList,
                 deleteFromWatchList = deleteFromWatchList

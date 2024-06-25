@@ -24,10 +24,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.farmingdale.stockscreener.R
@@ -39,7 +39,6 @@ import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
 fun StockTopBar(
     navController: NavController,
     symbol: String,
-    quote: FullQuoteData?,
     watchList: List<SimpleQuoteData>,
     addToWatchList: (String) -> Unit,
     deleteFromWatchList: (String) -> Unit,
@@ -66,40 +65,31 @@ fun StockTopBar(
                     contentDescription = stringResource(id = R.string.back),
                 )
             }
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 8.dp)
-            ) {
-                quote?.let {
-                    Text(
-                        text = it.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
-                Text(
-                    text = symbol,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(25))
-                        .background(MaterialTheme.colorScheme.onPrimaryContainer)
-                        .padding(4.dp)
-                )
-            }
+            Text(
+                text = symbol,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onPrimary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(25))
+                    .background(MaterialTheme.colorScheme.onPrimaryContainer)
+                    .padding(4.dp)
+            )
+
             if (watchList.any { it.symbol == symbol }) {
-                IconButton(onClick = { deleteFromWatchList(symbol) }) {
+                IconButton(
+                    onClick = { deleteFromWatchList(symbol) },
+                ) {
                     Icon(
                         Icons.Default.Clear,
                         contentDescription = stringResource(id = R.string.remove_description)
                     )
                 }
             } else {
-                IconButton(onClick = { addToWatchList(symbol) }) {
+                IconButton(
+                    onClick = { addToWatchList(symbol) },
+                ) {
                     Icon(
                         Icons.Default.AddCircle,
                         contentDescription = stringResource(id = R.string.add_description)
@@ -157,7 +147,6 @@ fun PreviewStockTopBar(
             StockTopBar(
                 navController = rememberNavController(),
                 symbol = quote?.symbol.orEmpty(),
-                quote = quote,
                 watchList = emptyList(),
                 addToWatchList = {},
                 deleteFromWatchList = {}
