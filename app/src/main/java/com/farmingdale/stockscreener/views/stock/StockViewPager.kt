@@ -2,8 +2,8 @@ package com.farmingdale.stockscreener.views.stock
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -46,7 +46,12 @@ fun StockViewPager(
     val scope = rememberCoroutineScope()
 
     Scaffold(
-        modifier = Modifier.heightIn(min = 300.dp, max = 900.dp),
+        modifier = Modifier
+            .requiredHeightIn(
+                min = 300.dp,
+                max = if (news.size < 5 && state.currentPage == 1) 300.dp else 900.dp
+            )
+            .fillMaxWidth(),
         topBar = {
             StockPagerTabs(
                 state = state,
@@ -88,7 +93,7 @@ fun StockViewPager(
 fun StockPagerTabs(
     state: PagerState,
     scope: CoroutineScope
-){
+) {
     val tabTitles = listOf(
         stringResource(id = R.string.summary),
         stringResource(id = R.string.news),
