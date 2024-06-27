@@ -22,10 +22,17 @@ import kotlinx.serialization.Serializable
  * @param eps the earnings per share
  * @param pe the price to earnings ratio
  * @param dividend the dividend amount
- * @param yield the dividend yield percentage
- * @param netAssets the net assets of the etf
- * @param nav the net asset value of the etf
- * @param expenseRatio the expense ratio of the etf
+ * @param yield the dividend yield
+ * @param netAssets the net assets
+ * @param nav the net asset value
+ * @param expenseRatio the expense ratio
+ * @param category the category the fund belongs to
+ * @param lastCapitalGain the last capital gain of the fund
+ * @param morningstarRating the morningstar rating of the fund
+ * @param morningstarRiskRating the morningstar risk of the fund
+ * @param holdingsTurnover the holdings turnover of the fund
+ * @param lastDividend the last dividend date
+ * @param inceptionDate the inception date of the fund
  * @param exDividend the last date before which the stock must be bought to receive the dividend
  * @param earningsDate the earnings announcement date
  * @param sector the sector the stock belongs to
@@ -35,7 +42,7 @@ import kotlinx.serialization.Serializable
  * @param yearReturn the one year return
  * @param threeYearReturn the three year return
  * @param fiveYearReturn the five year return
- * @param logo the url of the company logo if available
+ * @param logo the URL of the company logo
  */
 @Serializable
 data class FullQuoteResponse(
@@ -45,13 +52,13 @@ data class FullQuoteResponse(
     val afterHoursPrice: Double? = null,
     val change: String,
     val percentChange: String,
-    val open: Double,
-    val high: Double,
-    val low: Double,
-    val yearHigh: Double,
-    val yearLow: Double,
-    val volume: Long,
-    val avgVolume: Long,
+    val open: Double? = null,
+    val high: Double? = null,
+    val low: Double? = null,
+    val yearHigh: Double? = null,
+    val yearLow: Double? = null,
+    val volume: String? = null,
+    val avgVolume: String? = null,
     val marketCap: String? = null,
     val beta: Double? = null,
     val pe: Double? = null,
@@ -61,6 +68,13 @@ data class FullQuoteResponse(
     val netAssets: String? = null,
     val nav: Double? = null,
     val expenseRatio: String? = null,
+    val category: String? = null,
+    val lastCapitalGain: String? = null,
+    val morningstarRating: String? = null,
+    val morningstarRiskRating: String? = null,
+    val holdingsTurnover: String? = null,
+    val lastDividend: String? = null,
+    val inceptionDate: String? = null,
     val exDividend: String? = null,
     val earningsDate: String? = null,
     val sector: String? = null,

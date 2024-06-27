@@ -25,10 +25,11 @@ class FinanceQueryTest {
 
     @Test
     fun getQuote() {
-        val info = runBlocking {
-            api.getQuote("AAPL")
+        runBlocking {
+            println(api.getQuote("AAPL"))
+            println(api.getQuote("TQQQ"))
+            println(api.getQuote("GTLOX"))
         }
-        println(info)
     }
 
     @Test
