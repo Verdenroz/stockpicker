@@ -92,6 +92,7 @@ fun StockView(
             overallSummary = overallSummary,
             watchList = watchList,
             updateTimeSeries = stockViewModel::getTimeSeries,
+            updateAnalysisInterval = stockViewModel::getAnalysis,
             addToWatchList = addToWatchList,
             deleteFromWatchList = deleteFromWatchList
         )
@@ -116,6 +117,7 @@ fun StockContent(
     overallSummary: Double,
     watchList: List<SimpleQuoteData> = emptyList(),
     updateTimeSeries: (String, TimePeriod, Interval) -> Unit,
+    updateAnalysisInterval: (String, Interval) -> Unit,
     addToWatchList: (String) -> Unit,
     deleteFromWatchList: (String) -> Unit
 ) {
@@ -196,6 +198,7 @@ fun StockContent(
                             oscillatorsSummary = oscillatorsSummary,
                             trendsSummary = trendsSummary,
                             overallSummary = overallSummary,
+                            updateAnalysisInterval = updateAnalysisInterval
                         )
                     }
                 }

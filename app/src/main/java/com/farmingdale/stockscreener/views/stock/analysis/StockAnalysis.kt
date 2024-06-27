@@ -16,9 +16,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.Analysis
+import com.farmingdale.stockscreener.model.local.Interval
 import com.farmingdale.stockscreener.model.local.indicators.AnalysisIndicators
 import com.farmingdale.stockscreener.model.local.indicators.Aroon
 import com.farmingdale.stockscreener.model.local.indicators.BBands
@@ -44,12 +50,14 @@ import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StockAnalysis(
+    symbol: String,
     analysis: Analysis?,
     signals: Map<AnalysisIndicators, String>,
     movingAverageSummary: Double,
     oscillatorSummary: Double,
     trendSummary: Double,
-    overallSummary: Double
+    overallSummary: Double,
+    updateInterval: (String, Interval) -> Unit
 ) {
     if (analysis == null) {
         Box(
@@ -76,6 +84,11 @@ fun StockAnalysis(
                 .background(MaterialTheme.colorScheme.surfaceContainer),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            AnalysisIntervalBar(
+                modifier = Modifier.fillMaxWidth(),
+                symbol = symbol,
+                updateInterval = updateInterval
+            )
             val listState = rememberLazyListState()
             LazyColumn(
                 state = listState,
@@ -203,13 +216,65 @@ fun AnalysisDetail(
     )
 }
 
+@Composable
+fun AnalysisIntervalBar(
+    modifier: Modifier = Modifier,
+    symbol: String,
+    updateInterval: (String, Interval) -> Unit
+) {
+    var selectedInterval by rememberSaveable { mutableStateOf(Interval.DAILY) }
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        Interval.entries.filter { interval ->
+            interval in setOf(
+                Interval.FIFTEEN_MINUTE,
+                Interval.THIRTY_MINUTE,
+                Interval.ONE_HOUR,
+                Interval.DAILY,
+                Interval.WEEKLY,
+                Interval.MONTHLY
+            )
+        }.forEach { interval ->
+            IntervalButton(
+                interval = interval,
+                selectedInterval = interval == selectedInterval,
+                onClick = {
+                    selectedInterval = interval
+                    updateInterval(symbol, interval)
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun IntervalButton(
+    interval: Interval,
+    selectedInterval: Boolean,
+    onClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        RadioButton(selected = selectedInterval, onClick = onClick)
+        Text(
+            text = interval.value.uppercase(),
+            style = MaterialTheme.typography.labelMedium
+        )
+    }
+}
 
 @Preview
 @Composable
 fun PreviewStockAnalysis() {
     Surface {
         StockAnalysis(
-            Analysis(
+            symbol = "AAPL",
+            analysis = Analysis(
                 sma10 = 100.0,
                 sma20 = 200.0,
                 sma50 = 300.0,
@@ -246,7 +311,8 @@ fun PreviewStockAnalysis() {
             movingAverageSummary = 0.0,
             oscillatorSummary = 0.0,
             trendSummary = 0.0,
-            overallSummary = 0.0
+            overallSummary = 0.0,
+            updateInterval = { _, _ -> }
         )
     }
 }

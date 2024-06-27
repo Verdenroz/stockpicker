@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
+import com.farmingdale.stockscreener.model.local.Interval
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.indicators.AnalysisIndicators
 import com.farmingdale.stockscreener.views.stock.analysis.StockAnalysis
@@ -41,6 +42,7 @@ fun StockViewPager(
     oscillatorsSummary: Double,
     trendsSummary: Double,
     overallSummary: Double,
+    updateAnalysisInterval: (String, Interval) -> Unit
 ) {
     val state = rememberPagerState(pageCount = { 3 })
     val scope = rememberCoroutineScope()
@@ -75,12 +77,14 @@ fun StockViewPager(
 
                 2 -> {
                     StockAnalysis(
+                        symbol = quote.symbol,
                         analysis = analysis,
                         signals = signals,
                         movingAverageSummary = movingAverageSummary,
                         oscillatorSummary = oscillatorsSummary,
                         trendSummary = trendsSummary,
-                        overallSummary = overallSummary
+                        overallSummary = overallSummary,
+                        updateInterval = updateAnalysisInterval
                     )
                 }
             }
@@ -180,6 +184,7 @@ fun PreviewStockViewPager(
             oscillatorsSummary = 0.0,
             trendsSummary = 0.0,
             overallSummary = 0.0,
+            updateAnalysisInterval = { _, _ -> }
         )
     }
 }
