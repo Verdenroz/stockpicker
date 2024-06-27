@@ -57,7 +57,7 @@ fun StockHeadline(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = String.format(Locale.US,"%.2f", quote.price),
+                    text = String.format(Locale.US, "%.2f", quote.price),
                     style = MaterialTheme.typography.displaySmall,
                     fontWeight = FontWeight.Black,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -124,8 +124,7 @@ fun StockHeadline(
                     filterQuality = FilterQuality.High,
                     modifier = Modifier.size(48.dp)
                 )
-            }
-            else {
+            } else {
                 Box(
                     modifier = Modifier
                         .size(48.dp)
@@ -138,6 +137,7 @@ fun StockHeadline(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Black,
                         letterSpacing = 1.25.sp,
+                        maxLines = 1,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
@@ -160,28 +160,35 @@ fun PreviewStockHeadline(
     quote: FullQuoteData = FullQuoteData(
         name = "Apple Inc.",
         symbol = "AAPL",
-        price = 180.11,
+        price = 113.2,
         postMarketPrice = 179.74,
         change = "+1.23",
         percentChange = "+1.5%",
-        high = 123.45,
-        low = 123.45,
+        high = 143.45,
+        low = 110.45,
         open = 123.45,
-        volume = 12345678,
+        volume = "12345678",
         marketCap = "1.23T",
         pe = 12.34,
         eps = 1.23,
         beta = 1.23,
-        yearHigh = 123.45,
-        yearLow = 123.45,
+        yearHigh = 163.45,
+        yearLow = 100.45,
         dividend = 1.23,
         yield = "1.23%",
         netAssets = null,
         nav = null,
         expenseRatio = null,
-        exDividend = "2022-01-01",
-        earningsDate = "2022-01-01",
-        avgVolume = 12345678,
+        category = "Blend",
+        lastCapitalGain = "10.00",
+        morningstarRating = "★★",
+        morningstarRisk = "Low",
+        holdingsTurnover = "1.23%",
+        lastDividend = "0.05",
+        inceptionDate = "Jan 1, 2022",
+        exDividend = "Jan 1, 2022",
+        earningsDate = "Jan 1, 2022",
+        avgVolume = "12345678",
         sector = "Technology",
         industry = "Consumer Electronics",
         about = "Apple Inc. is an American multinational technology company that designs, manufactures, and markets consumer electronics, computer software, and online services. It is considered one of the Big Five companies in the U.S. information technology industry, along with Amazon, Google, Microsoft, and Facebook.",
@@ -189,7 +196,7 @@ fun PreviewStockHeadline(
         yearReturn = "1.23%",
         threeYearReturn = "1.23%",
         fiveYearReturn = "1.23%",
-        logo = null
+        logo = "https://logo.clearbit.com/apple.com"
     )
 ) {
     StockHeadline(

@@ -128,4 +128,12 @@
     <string name="show_more">Show more</string>
     <string name="show_less">Show less</string>
     <string name="no_news">There are no news available</string>
+    <string name="no_analysis">Unable to retrieve technical analysis</string>
+    <string name="last_dividend">Last Dividend</string>
+    <string name="inception_date">Inception Date</string>
+    <string name="morningstar_rating">Morningstar Rating</string>
+    <string name="morningstar_risk">Morningstar Risk Rating</string>
+    <string name="holdings_turnover">Holdings Turnover</string>
+    <string name="fund_category">Fund Category</string>
+    <string name="last_capital_gain">Last Cap Gain</string>
 </resources>

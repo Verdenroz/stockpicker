@@ -177,12 +177,14 @@ fun StockContent(
                             sectorPerformance = sectorPerformance
                         )
                     }
-                    item {
-                        SimilarStockFeed(
-                            symbol = quote.symbol,
-                            similarStocks = similarStocks,
-                            navController = navController
-                        )
+                    if (similarStocks.isNotEmpty()) {
+                        item {
+                            SimilarStockFeed(
+                                symbol = quote.symbol,
+                                similarStocks = similarStocks,
+                                navController = navController
+                            )
+                        }
                     }
                     item {
                         StockViewPager(

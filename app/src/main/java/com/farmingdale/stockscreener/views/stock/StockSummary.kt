@@ -48,40 +48,44 @@ fun StockSummary(quote: FullQuoteData) {
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         StockProfile(quote = quote)
-        StockDetailCell(
-            label = stringResource(id = R.string.open),
-            detailValue = { SimpleDetailText(text = quote.open.toString()) },
-        )
-        StockDetailCell(
-            label = stringResource(id = R.string.days_range),
-            detailValue = {
-                PriceRangeLine(
-                    low = quote.low,
-                    high = quote.high,
-                    current = quote.price
-                )
-            },
-
+        quote.open?.let {
+            StockDetailCell(
+                label = stringResource(id = R.string.open),
+                detailValue = { SimpleDetailText(text = quote.open.toString()) },
             )
-        StockDetailCell(
-            label = stringResource(id = R.string.fifty_two_week_range),
-            detailValue = {
-                PriceRangeLine(
-                    low = quote.yearLow,
-                    high = quote.yearHigh,
-                    current = quote.price
-                )
-            },
-
+        }
+        if (quote.low != null && quote.high != null)
+            StockDetailCell(
+                label = stringResource(id = R.string.days_range),
+                detailValue = {
+                    PriceRangeLine(
+                        low = quote.low,
+                        high = quote.high,
+                        current = quote.price
+                    )
+                },
             )
-        StockDetailCell(
-            label = stringResource(id = R.string.volume),
-            detailValue = { SimpleDetailText(text = formatVolume(quote.volume)) },
-        )
-        StockDetailCell(
-            label = stringResource(id = R.string.avg_volume),
-            detailValue = { SimpleDetailText(text = formatVolume(quote.avgVolume)) },
-        )
+        if (quote.yearLow != null && quote.yearHigh != null)
+            StockDetailCell(
+                label = stringResource(id = R.string.fifty_two_week_range),
+                detailValue = {
+                    PriceRangeLine(
+                        low = quote.yearLow,
+                        high = quote.yearHigh,
+                        current = quote.price
+                    )
+                },
+            )
+        if (quote.volume != null)
+            StockDetailCell(
+                label = stringResource(id = R.string.volume),
+                detailValue = { SimpleDetailText(text = formatVolume(quote.volume.replace(",", "").toLong())) },
+            )
+        if (quote.avgVolume != null)
+            StockDetailCell(
+                label = stringResource(id = R.string.avg_volume),
+                detailValue = { SimpleDetailText(text = formatVolume(quote.avgVolume.replace(",", "").toLong())) },
+            )
 
         quote.marketCap?.let {
             StockDetailCell(
@@ -137,6 +141,13 @@ fun StockSummary(quote: FullQuoteData) {
             )
         }
 
+        quote.lastDividend?.let {
+            StockDetailCell(
+                label = stringResource(id = R.string.last_dividend),
+                detailValue = { SimpleDetailText(text = it) },
+            )
+        }
+
         quote.exDividend?.let {
             StockDetailCell(
                 label = stringResource(id = R.string.ex_dividend),
@@ -144,9 +155,51 @@ fun StockSummary(quote: FullQuoteData) {
             )
         }
 
+        quote.lastCapitalGain?.let {
+            StockDetailCell(
+                label = stringResource(id = R.string.last_capital_gain),
+                detailValue = { SimpleDetailText(text = it) },
+            )
+        }
+
+        quote.holdingsTurnover?.let {
+            StockDetailCell(
+                label = stringResource(id = R.string.holdings_turnover),
+                detailValue = { SimpleDetailText(text = it) },
+            )
+        }
+
+        quote.category?.let {
+            StockDetailCell(
+                label = stringResource(id = R.string.fund_category),
+                detailValue = { SimpleDetailText(text = it) },
+            )
+        }
+
+        quote.morningstarRating?.let {
+            StockDetailCell(
+                label = stringResource(id = R.string.morningstar_rating),
+                detailValue = { SimpleDetailText(text = it) },
+            )
+        }
+
+        quote.morningstarRisk?.let {
+            StockDetailCell(
+                label = stringResource(id = R.string.morningstar_risk),
+                detailValue = { SimpleDetailText(text = it) },
+            )
+        }
+
         quote.earningsDate?.let {
             StockDetailCell(
                 label = stringResource(id = R.string.earnings_date),
+                detailValue = { SimpleDetailText(text = it) },
+            )
+        }
+
+        quote.inceptionDate?.let {
+            StockDetailCell(
+                label = stringResource(id = R.string.inception_date),
                 detailValue = { SimpleDetailText(text = it) },
             )
         }
@@ -335,7 +388,7 @@ fun PreviewStockSummary(
         high = 143.45,
         low = 110.45,
         open = 123.45,
-        volume = 12345678,
+        volume = "12345678",
         marketCap = "1.23T",
         pe = 12.34,
         eps = 1.23,
@@ -347,9 +400,16 @@ fun PreviewStockSummary(
         netAssets = null,
         nav = null,
         expenseRatio = null,
+        category = "Blend",
+        lastCapitalGain = "10.00",
+        morningstarRating = "★★",
+        morningstarRisk = "Low",
+        holdingsTurnover = "1.23%",
+        lastDividend = "0.05",
+        inceptionDate = "Jan 1, 2022",
         exDividend = "Jan 1, 2022",
         earningsDate = "Jan 1, 2022",
-        avgVolume = 12345678,
+        avgVolume = "12345678",
         sector = "Technology",
         industry = "Consumer Electronics",
         about = "Apple Inc. is an American multinational technology company that designs, manufactures, and markets consumer electronics, computer software, and online services. It is considered one of the Big Five companies in the U.S. information technology industry, along with Amazon, Google, Microsoft, and Facebook.",
