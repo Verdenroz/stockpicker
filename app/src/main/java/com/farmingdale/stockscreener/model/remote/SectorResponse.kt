@@ -5,18 +5,18 @@ import kotlinx.serialization.Serializable
 /**
  * Remote data class for sector information
  * @param sector the sector name
- * @param day_return the return for the day
- * @param ytd_return the return year to date
- * @param year_return the return for the year
- * @param three_year_return the return for the past three years
- * @param five_year_return the return for the past five years
+ * @param dayReturn the return for the day
+ * @param ytdReturn the return year to date
+ * @param yearReturn the return for the year
+ * @param threeYearReturn the return for the past three years
+ * @param fiveYearReturn the return for the past five years
  */
 @Serializable
 data class SectorResponse(
     val sector: String,
-    val day_return: String,
-    val ytd_return: String,
-    val year_return: String,
-    val three_year_return: String,
-    val five_year_return: String,
+    val dayReturn: String,
+    val ytdReturn: String,
+    val yearReturn: String,
+    val threeYearReturn: String,
+    val fiveYearReturn: String
 )

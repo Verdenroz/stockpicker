@@ -79,7 +79,7 @@ android {
 dependencies {
 
     implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.1")
     implementation("androidx.activity:activity-compose:1.9.0")
     implementation(platform("androidx.compose:compose-bom:2024.05.00"))
     implementation("androidx.compose.material:material:1.6.7")
@@ -102,7 +102,7 @@ dependencies {
     implementation("androidx.room:room-ktx:$room_version")
     ksp("androidx.room:room-compiler:$room_version")
     // ViewModel
-    val lifecycleVersion = "2.8.0"
+    val lifecycleVersion = "2.8.1"
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
     implementation("io.coil-kt:coil-compose:2.6.0")
@@ -113,11 +113,12 @@ dependencies {
     val navVersion = "2.7.7"
     implementation("androidx.navigation:navigation-compose:$navVersion")
     //Firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.0.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
     //Algolia
     implementation("com.algolia:instantsearch-android:3.3.0")
     implementation("com.algolia:instantsearch-compose:3.3.0")
 
+    implementation("org.slf4j:slf4j-nop:1.7.25")
 }

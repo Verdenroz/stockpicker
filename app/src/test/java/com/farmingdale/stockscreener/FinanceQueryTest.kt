@@ -49,10 +49,10 @@ class FinanceQueryTest {
 
     @Test
     fun getHistoricalData() {
-        val info = runBlocking {
-            api.getHistoricalData("AAPL", time = TimePeriod.THREE_MONTH, interval = Interval.DAILY)
+         runBlocking {
+            println(api.getHistoricalData("AAPL", time = TimePeriod.FIVE_DAY, interval = Interval.FIFTEEN_MINUTE))
+            println(api.getHistoricalData("AAPL", time = TimePeriod.ONE_MONTH, interval = Interval.DAILY))
         }
-        println(info)
     }
 
     @Test
@@ -117,5 +117,15 @@ class FinanceQueryTest {
             api.getSimilarSymbols("AAPL")
         }
         println(info)
+    }
+
+    @Test
+    fun getAnalysis(){
+        runBlocking {
+            println(api.getSummaryAnalysis("AAPL"))
+            println(api.getSummaryAnalysis("AAPL", Interval.FIFTEEN_MINUTE))
+            println(api.getSummaryAnalysis("GOOGL", Interval.MONTHLY))
+            println(api.getSummaryAnalysis("GOOGL", Interval.WEEKLY))
+        }
     }
 }

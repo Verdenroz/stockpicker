@@ -5,10 +5,10 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class HistoricalDataResponse(
-    val open: String,
-    val high: String,
-    val low: String,
-    val adj_close: String,
+    val open: Float,
+    val high: Float,
+    val low: Float,
+    val adjClose: Float,
     val volume: Long
 )
 

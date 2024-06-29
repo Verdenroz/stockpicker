@@ -1,10 +1,7 @@
 package com.farmingdale.stockscreener.views.home
 
 import android.content.Intent
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,38 +9,24 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.imageLoader
+import coil.ImageLoader
+import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.News
@@ -53,41 +36,30 @@ fun NewsFeed(
     news: List<News>?,
     refresh: () -> Unit,
 ) {
-    var isNewsSettingsOpen by rememberSaveable { mutableStateOf(false) }
-
     Column(
         modifier = Modifier
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.dp, vertical = 4.dp)
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(id = R.string.news),
-                style = MaterialTheme.typography.titleSmall
-            )
-            IconButton(onClick = { isNewsSettingsOpen = true }) {
-                Icon(
-                    Icons.Default.Settings,
-                    contentDescription = stringResource(id = R.string.news_settings)
-                )
-            }
-        }
+        Text(
+            text = stringResource(id = R.string.news),
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.fillMaxWidth()
+        )
         if (news.isNullOrEmpty()) {
             ErrorCard(refresh = refresh)
         } else {
             LazyRow(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
                 content = {
-                    news.forEach { article ->
-                        item {
-                            ContentCard(article)
-                        }
+                    items(
+                        items = news,
+                        key = { news -> news.title }
+                    ) { item ->
+                        ContentCard(article = item, refresh = refresh)
                     }
                 }
             )
@@ -100,86 +72,91 @@ fun NewsFeed(
 @Composable
 fun PreviewNewsFeed() {
     NewsFeed(
-        news = null,
+        news = listOf(
+            News(
+                title = "Title",
+                source = "Source",
+                time = "Time",
+                link = "Link",
+                img = "https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png"
+            ),
+            News(
+                title = "Title",
+                source = "Source",
+                time = "Time",
+                link = "Link",
+                img = "https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png"
+            ),
+        ),
         refresh = {}
     )
 }
 
 @Composable
 fun ContentCard(
-    article: News?
+    article: News?,
+    refresh: () -> Unit
 ) {
     val context = LocalContext.current
-    var image by remember { mutableStateOf<ImageBitmap?>(null) }
-    var loading by remember { mutableStateOf(true) }
-    var error by remember { mutableStateOf(false) }
-
-    LaunchedEffect(article!!.img) {
-        loading = true
-        error = false
-        val request = ImageRequest.Builder(context)
-            .data(article.img)
-            .build()
-        val result = (context.imageLoader.execute(request).drawable as? BitmapDrawable)?.bitmap
-        image = result?.asImageBitmap()
-        loading = false
-        error = image == null
+    if (article == null) {
+        return
     }
-
-    Row(
+    Card(
         modifier = Modifier
-            .background(MaterialTheme.colorScheme.surfaceContainer)
-            .size(300.dp, 150.dp)
-            .shadow(1.dp),
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
+            .sizeIn(
+                minWidth = 200.dp,
+                maxWidth = 300.dp,
+                maxHeight = 250.dp
+            )
+            .clickable {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(article.link))
+                context.startActivity(intent)
+            }
     ) {
-        Card(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .clickable {
-                    val articleUrl = article.link
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(articleUrl))
-                    context.startActivity(intent)
-                },
-            shape = RoundedCornerShape(10),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.Transparent
-            ),
+                .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
+            SubcomposeAsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(article.img)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = stringResource(id = R.string.news_image),
+                loading = {
+                    CircularProgressIndicator()
+                },
+                error = {
+                        ErrorCard(refresh = refresh)
+                },
+                imageLoader = ImageLoader(context),
+            )
+            Text(
+                text = article.title,
+                style = MaterialTheme.typography.titleSmall,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
                 modifier = Modifier
-                    .fillMaxSize(),
+                    .padding(top = 8.dp)
+                    .fillMaxWidth(.9f)
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(.75f),
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = article.title,
-                    style = MaterialTheme.typography.labelSmall,
-                    maxLines = 5,
-                    softWrap = true,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .fillMaxWidth(.4f)
-                        .padding(8.dp)
+                    text = article.source,
+                    style = MaterialTheme.typography.labelSmall
                 )
-                when {
-                    loading -> {
-                        CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterVertically))
-                    }
-
-                    error -> {
-                        Icon(Icons.Default.Warning, contentDescription = null)
-                    }
-
-                    else -> {
-                        Image(
-                            bitmap = image!!,
-                            contentDescription = null,
-                            modifier = Modifier.padding(horizontal = 8.dp)
-                        )
-                    }
-                }
+                Text(
+                    text = article.time,
+                    style = MaterialTheme.typography.labelSmall
+                )
             }
         }
     }

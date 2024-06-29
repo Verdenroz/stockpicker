@@ -32,6 +32,7 @@ import com.farmingdale.stockscreener.ui.theme.indexColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 @Composable
 fun MarketIndices(
@@ -45,25 +46,22 @@ fun MarketIndices(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(id = R.string.market_performance),
-                style = MaterialTheme.typography.titleSmall
-            )
+        Text(
+            text = stringResource(id = R.string.market_performance),
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.fillMaxWidth()
+        )
 
-        }
         if (indices.isNullOrEmpty()) {
             ErrorCard(refresh = refresh)
         } else {
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 content = {
-                    items(indices) { index ->
+                    items(
+                        items = indices,
+                        key = { index -> index.name }
+                    ) { index ->
                         MarketIndexCard(index = index)
                     }
                 }
@@ -105,7 +103,7 @@ fun MarketIndexCard(index: MarketIndex) {
                     color = indexColor
                 )
                 Text(
-                    text = index.value,
+                    text = String.format(Locale.US, "%.2f", index.value.toDouble()),
                     style = MaterialTheme.typography.titleSmall
                 )
                 Row(

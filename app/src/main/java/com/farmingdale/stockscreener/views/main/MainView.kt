@@ -20,14 +20,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.farmingdale.stockscreener.model.local.RegionFilter
 import com.farmingdale.stockscreener.model.local.SearchResult
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
+import com.farmingdale.stockscreener.model.local.TypeFilter
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
 import com.farmingdale.stockscreener.viewmodels.ImplMainViewModel
 import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
 import com.farmingdale.stockscreener.views.Screen
 import com.farmingdale.stockscreener.views.home.HomeView
 import com.farmingdale.stockscreener.views.watchlist.WatchListView
+import kotlinx.coroutines.delay
 
 @Composable
 fun MainView() {
@@ -35,13 +38,20 @@ fun MainView() {
     val query by mainViewModel.query.collectAsState()
     val searchResults by mainViewModel.searchResults.collectAsState()
     val watchList by mainViewModel.watchList.collectAsState()
+    val regionFilter by mainViewModel.regionFilter.collectAsState()
+    val typeFilters by mainViewModel.typeFilter.collectAsState()
     LaunchedEffect(key1 = query) {
+        delay(250)
         mainViewModel.search(query)
     }
     StockScreenerTheme {
         MainContent(
             searchResults = searchResults,
             watchList = watchList,
+            regionFilter = regionFilter,
+            typeFilters = typeFilters,
+            updateRegionFilter = { region -> mainViewModel.updateRegionFilter(region) },
+            toggleTypeFilter = { type, isChecked -> mainViewModel.toggleTypeFilter(type, isChecked) },
             updateQuery = { query -> mainViewModel.updateQuery(query) },
             addToWatchList = { symbol -> mainViewModel.addToWatchList(symbol) },
             deleteFromWatchList = { symbol -> mainViewModel.deleteFromWatchList(symbol) },
@@ -52,7 +62,11 @@ fun MainView() {
 @Composable
 fun MainContent(
     searchResults: List<SearchResult>?,
-    watchList: List<SimpleQuoteData>?,
+    watchList: List<SimpleQuoteData>,
+    regionFilter: RegionFilter,
+    typeFilters: List<TypeFilter>,
+    updateRegionFilter: (RegionFilter) -> Unit,
+    toggleTypeFilter: (TypeFilter, Boolean) -> Unit,
     updateQuery: (String) -> Unit,
     addToWatchList: (String) -> Unit,
     deleteFromWatchList: (String) -> Unit,
@@ -64,6 +78,10 @@ fun MainContent(
             SearchBar(
                 searchResults = searchResults,
                 watchList = watchList,
+                regionFilter = regionFilter,
+                typeFilters = typeFilters,
+                updateRegionFilter = updateRegionFilter,
+                toggleTypeFilter = toggleTypeFilter,
                 updateQuery = updateQuery,
                 addToWatchList = addToWatchList,
                 deleteFromWatchList = deleteFromWatchList,

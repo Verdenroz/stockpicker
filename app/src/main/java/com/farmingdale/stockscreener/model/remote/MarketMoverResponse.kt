@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
  * @param name Stock name
  * @param price Current stock price
  * @param change Change in stock price
- * @param percent_change Percent change in stock price
+ * @param percentChange Percent change in stock price
 
  */
 @Serializable
@@ -17,5 +17,5 @@ data class MarketMoverResponse(
     val name: String,
     val price: String,
     val change: String,
-    val percent_change: String
+    val percentChange: String
 )

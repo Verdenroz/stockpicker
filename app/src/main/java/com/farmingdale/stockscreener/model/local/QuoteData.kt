@@ -1,5 +1,7 @@
 package com.farmingdale.stockscreener.model.local
 
+import java.net.URL
+
 /**
  * Local data class for basic stock data used in the watchlist
  * @param symbol the stock symbol
@@ -41,12 +43,17 @@ data class SimpleQuoteData(
  * @param sector the sector the stock belongs to
  * @param industry the industry the stock belongs to
  * @param about a brief description of the company
+ * @param ytdReturn the year to date return
+ * @param yearReturn the one year return
+ * @param threeYearReturn the three year return
+ * @param fiveYearReturn the five year return
+ * @param logo the URL of the company logo
  */
 data class FullQuoteData(
     val symbol: String,
     val name: String,
     val price: Double,
-    val postMarketPrice: Double,
+    val postMarketPrice: Double?,
     val change: String,
     val percentChange: String,
     val open: Double,
@@ -61,9 +68,18 @@ data class FullQuoteData(
     val pe: Double?,
     val eps: Double?,
     val dividend: Double?,
-    val exDividend: Double?,
+    val yield: String?,
+    val netAssets: String?,
+    val nav: Double?,
+    val expenseRatio: String?,
+    val exDividend: String?,
     val earningsDate: String?,
     val sector: String?,
     val industry: String?,
-    val about: String?
+    val about: String?,
+    val ytdReturn: String?,
+    val yearReturn: String?,
+    val threeYearReturn: String?,
+    val fiveYearReturn: String?,
+    val logo: String?
 )

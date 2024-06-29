@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
@@ -22,6 +23,7 @@ import com.farmingdale.stockscreener.ui.theme.negativeBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
+import java.util.Locale
 
 @Composable
 fun WatchListView(
@@ -33,14 +35,12 @@ fun WatchListView(
         modifier = Modifier
             .fillMaxSize(),
         content = {
-            watchList?.forEach { quote ->
-                item {
-                    WatchListStock(
-                        quoteData = (quote),
-                        navController = navController,
-                        deleteFromWatchList = deleteFromWatchList,
-                    )
-                }
+            items(
+                items = watchList ?: emptyList(),
+                key = { watchList -> watchList.symbol }
+            ) { item ->
+                WatchListStock(item, navController, deleteFromWatchList
+            )
             }
         }
     )
@@ -77,7 +77,7 @@ fun WatchListStock(
         },
         trailingContent = {
             Text(
-                text = quoteData.price.toString(),
+                text = String.format(Locale.US, "%.2f", quoteData.price),
                 style = MaterialTheme.typography.labelLarge,
                 color = if (quoteData.change.contains('+')) positiveTextColor else negativeTextColor,
                 modifier = Modifier

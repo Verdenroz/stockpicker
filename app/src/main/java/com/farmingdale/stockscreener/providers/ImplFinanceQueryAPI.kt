@@ -1,23 +1,24 @@
 package com.farmingdale.stockscreener.providers
 
 import com.farmingdale.stockscreener.BuildConfig
+import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.HistoricalData
 import com.farmingdale.stockscreener.model.local.Interval
+import com.farmingdale.stockscreener.model.local.MarketIndex
+import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
-import com.farmingdale.stockscreener.model.local.TimeSeriesData
-import com.farmingdale.stockscreener.model.local.MarketIndex
-import com.farmingdale.stockscreener.model.local.MarketMover
-import com.farmingdale.stockscreener.model.remote.SectorResponse
-import com.farmingdale.stockscreener.model.remote.TimeSeriesResponse
+import com.farmingdale.stockscreener.model.remote.AnalysisResponse
 import com.farmingdale.stockscreener.model.remote.FullQuoteResponse
-import com.farmingdale.stockscreener.model.remote.SimpleQuoteResponse
 import com.farmingdale.stockscreener.model.remote.IndexResponse
 import com.farmingdale.stockscreener.model.remote.MarketMoverResponse
 import com.farmingdale.stockscreener.model.remote.NewsResponse
+import com.farmingdale.stockscreener.model.remote.SectorResponse
+import com.farmingdale.stockscreener.model.remote.SimpleQuoteResponse
+import com.farmingdale.stockscreener.model.remote.TimeSeriesResponse
 import com.farmingdale.stockscreener.providers.base.FinanceQueryAPI
 import com.farmingdale.stockscreener.utils.FINANCE_QUERY_API_URL
 import com.farmingdale.stockscreener.utils.executeAsync
@@ -30,6 +31,9 @@ import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.InputStream
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalSerializationApi::class)
 class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
@@ -73,26 +77,35 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 symbol = it.symbol,
                 name = it.name,
                 price = it.price,
-                postMarketPrice = it.after_hours_price,
+                postMarketPrice = it.afterHoursPrice,
                 change = it.change,
-                percentChange = it.percent_change,
+                percentChange = it.percentChange,
                 open = it.open,
                 high = it.high,
                 low = it.low,
-                yearHigh = it.year_high,
-                yearLow = it.year_low,
+                yearHigh = it.yearHigh,
+                yearLow = it.yearLow,
                 volume = it.volume,
-                avgVolume = it.avg_volume,
-                marketCap = it.market_cap,
+                avgVolume = it.avgVolume,
+                marketCap = it.marketCap,
                 beta = it.beta,
                 eps = it.eps,
                 pe = it.pe,
                 dividend = it.dividend,
-                exDividend = it.ex_dividend,
-                earningsDate = it.earnings_date,
+                yield = it.yield,
+                netAssets = it.netAssets,
+                nav = it.nav,
+                expenseRatio = it.expenseRatio,
+                exDividend = it.exDividend,
+                earningsDate = it.earningsDate,
                 sector = it.sector,
                 industry = it.industry,
-                about = it.about
+                about = it.about,
+                ytdReturn = it.ytdReturn,
+                yearReturn = it.yearReturn,
+                threeYearReturn = it.threeYearReturn,
+                fiveYearReturn = it.fiveYearReturn,
+                logo = it.logo
             )
         }.first()
     }
@@ -118,7 +131,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 name = it.name,
                 price = it.price,
                 change = it.change,
-                percentChange = it.percent_change
+                percentChange = it.percentChange
             )
         }.first()
     }
@@ -127,7 +140,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
         val symbolList = symbols.joinToString(",")
         val stream = getByteStream(
             FINANCE_QUERY_API_URL.newBuilder().apply {
-                addPathSegments("quotes")
+                addPathSegments("simple-quotes")
                 addQueryParameter("symbols", symbolList)
             }.build()
         )
@@ -145,7 +158,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 name = it.name,
                 price = it.price,
                 change = it.change,
-                percentChange = it.percent_change
+                percentChange = it.percentChange
             )
         }
 
@@ -155,7 +168,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
         symbol: String,
         time: TimePeriod,
         interval: Interval
-    ): TimeSeriesData {
+    ): Map<String, HistoricalData> {
         val stream = getByteStream(
             FINANCE_QUERY_API_URL.newBuilder().apply {
                 addPathSegments("historical")
@@ -173,17 +186,30 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
             throw RuntimeException("Failed to parse JSON response", e)
         }
 
-        return TimeSeriesData(
-            data = timeSeriesResponse.data.mapValues {
-                HistoricalData(
-                    open = it.value.open,
-                    high = it.value.high,
-                    low = it.value.low,
-                    close = it.value.adj_close,
-                    volume = it.value.volume
-                )
+
+        // Map each date and HistoricalData from TimeSeriesResponse
+        return timeSeriesResponse.data.mapKeys { entry ->
+            val dateTimeString = entry.key
+            val formatterWithoutTime = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+            val formatter24Hour = DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm:ss")
+            val formatterWithTime = DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a")
+
+            val dateTime = if (dateTimeString.contains(" ")) {
+                LocalDateTime.parse(dateTimeString, formatter24Hour)
+            } else {
+                LocalDate.parse(dateTimeString, formatterWithoutTime).atStartOfDay()
             }
-        )
+
+            dateTime.format(formatterWithTime)
+        }.mapValues { entry ->
+            HistoricalData(
+                open = entry.value.open,
+                high = entry.value.high,
+                low = entry.value.low,
+                close = entry.value.adjClose,
+                volume = entry.value.volume
+            )
+        }
     }
 
     override suspend fun getIndices(): List<MarketIndex> {
@@ -205,7 +231,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 name = it.name,
                 value = it.value,
                 change = it.change,
-                percentChange = it.percent_change
+                percentChange = it.percentChange
             )
         }
     }
@@ -227,11 +253,11 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
         return sectorResponseList.map {
             MarketSector(
                 sector = it.sector,
-                dayReturn = it.day_return,
-                ytdReturn = it.ytd_return,
-                yearReturn = it.year_return,
-                threeYearReturn = it.three_year_return,
-                fiveYearReturn = it.five_year_return
+                dayReturn = it.dayReturn,
+                ytdReturn = it.ytdReturn,
+                yearReturn = it.yearReturn,
+                threeYearReturn = it.threeYearReturn,
+                fiveYearReturn = it.fiveYearReturn
             )
         }
     }
@@ -256,7 +282,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 name = it.name,
                 price = it.price,
                 change = it.change,
-                percentChange = it.percent_change
+                percentChange = it.percentChange
             )
         }
     }
@@ -283,7 +309,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 name = it.name,
                 price = it.price,
                 change = it.change,
-                percentChange = it.percent_change
+                percentChange = it.percentChange
             )
         }
     }
@@ -310,7 +336,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 name = it.name,
                 price = it.price,
                 change = it.change,
-                percentChange = it.percent_change
+                percentChange = it.percentChange
             )
         }
     }
@@ -331,7 +357,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
             throw RuntimeException("Failed to parse JSON response", e)
         }
 
-        return newsList.map {
+        return newsList.shuffled().map {
             News(
                 title = it.title,
                 link = it.link,
@@ -393,7 +419,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 name = it.name,
                 price = it.price,
                 change = it.change,
-                percentChange = it.percent_change
+                percentChange = it.percentChange
             )
         }
     }
@@ -402,7 +428,50 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getSummaryAnalysis(symbol: String) {
-        TODO("Not yet implemented")
+    override suspend fun getSummaryAnalysis(symbol: String, interval: Interval): Analysis {
+        val stream = getByteStream(
+            FINANCE_QUERY_API_URL.newBuilder().apply {
+                addPathSegments("analysis")
+                addQueryParameter("symbol", symbol)
+                addQueryParameter("interval", interval.value)
+            }.build()
+        )
+
+        val analysisResponse: AnalysisResponse
+
+        try {
+            analysisResponse = parser.decodeFromStream(AnalysisResponse.serializer(), stream)
+        } catch (e: SerializationException) {
+            throw RuntimeException("Failed to parse JSON response", e)
+        }
+
+        return Analysis(
+            sma10 = analysisResponse.sma10,
+            sma20 = analysisResponse.sma20,
+            sma50 = analysisResponse.sma50,
+            sma100 = analysisResponse.sma100,
+            sma200 = analysisResponse.sma200,
+            ema10 = analysisResponse.ema10,
+            ema20 = analysisResponse.ema20,
+            ema50 = analysisResponse.ema50,
+            ema100 = analysisResponse.ema100,
+            ema200 = analysisResponse.ema200,
+            wma10 = analysisResponse.wma10,
+            wma20 = analysisResponse.wma20,
+            wma50 = analysisResponse.wma50,
+            wma100 = analysisResponse.wma100,
+            wma200 = analysisResponse.wma200,
+            vwma20 = analysisResponse.vwma20,
+            rsi14 = analysisResponse.rsi14,
+            srsi14 = analysisResponse.srsi14,
+            cci20 = analysisResponse.cci20,
+            adx14 = analysisResponse.adx14,
+            macd = analysisResponse.macd.toMacd(),
+            stoch = analysisResponse.stoch,
+            aroon = analysisResponse.aroon.toAroon(),
+            bBands = analysisResponse.bBands.toBBands(),
+            superTrend = analysisResponse.superTrend.toSuperTrend(),
+            ichimokuCloud = analysisResponse.ichimokuCloud.toIchimokuCloud()
+        )
     }
 }
