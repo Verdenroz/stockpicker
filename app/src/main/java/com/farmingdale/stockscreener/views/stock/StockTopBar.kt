@@ -24,10 +24,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
@@ -35,8 +37,8 @@ import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
 
 @Composable
 fun StockTopBar(
+    navController: NavController,
     symbol: String,
-    quote: FullQuoteData?,
     watchList: List<SimpleQuoteData>,
     addToWatchList: (String) -> Unit,
     deleteFromWatchList: (String) -> Unit,
@@ -52,7 +54,9 @@ fun StockTopBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
-                onClick = { /*TODO*/ },
+                onClick = {
+                    navController.popBackStack()
+                },
                 modifier = Modifier.align(Alignment.CenterVertically)
             ) {
                 Icon(
@@ -61,40 +65,31 @@ fun StockTopBar(
                     contentDescription = stringResource(id = R.string.back),
                 )
             }
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 8.dp)
-            ) {
-                quote?.let {
-                    Text(
-                        text = it.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
-                Text(
-                    text = symbol,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(25))
-                        .background(MaterialTheme.colorScheme.onPrimaryContainer)
-                        .padding(4.dp)
-                )
-            }
+            Text(
+                text = symbol,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onPrimary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(25))
+                    .background(MaterialTheme.colorScheme.onPrimaryContainer)
+                    .padding(4.dp)
+            )
+
             if (watchList.any { it.symbol == symbol }) {
-                IconButton(onClick = { deleteFromWatchList(symbol) }) {
+                IconButton(
+                    onClick = { deleteFromWatchList(symbol) },
+                ) {
                     Icon(
                         Icons.Default.Clear,
                         contentDescription = stringResource(id = R.string.remove_description)
                     )
                 }
             } else {
-                IconButton(onClick = { addToWatchList(symbol) }) {
+                IconButton(
+                    onClick = { addToWatchList(symbol) },
+                ) {
                     Icon(
                         Icons.Default.AddCircle,
                         contentDescription = stringResource(id = R.string.add_description)
@@ -112,31 +107,38 @@ fun StockTopBar(
 @Preview
 @Composable
 fun PreviewStockTopBar(
-    quote: FullQuoteData? = FullQuoteData(
+    quote: FullQuoteData = FullQuoteData(
         name = "Apple Inc.",
         symbol = "AAPL",
-        price = 180.11,
+        price = 113.2,
         postMarketPrice = 179.74,
         change = "+1.23",
         percentChange = "+1.5%",
-        high = 123.45,
-        low = 123.45,
+        high = 143.45,
+        low = 110.45,
         open = 123.45,
-        volume = 12345678,
+        volume = "12345678",
         marketCap = "1.23T",
         pe = 12.34,
         eps = 1.23,
         beta = 1.23,
-        yearHigh = 123.45,
-        yearLow = 123.45,
-        dividend = 1.23,
+        yearHigh = 163.45,
+        yearLow = 100.45,
+        dividend = "1.23",
         yield = "1.23%",
         netAssets = null,
         nav = null,
         expenseRatio = null,
-        exDividend = "2022-01-01",
-        earningsDate = "2022-01-01",
-        avgVolume = 12345678,
+        category = "Blend",
+        lastCapitalGain = "10.00",
+        morningstarRating = "★★",
+        morningstarRisk = "Low",
+        holdingsTurnover = "1.23%",
+        lastDividend = "0.05",
+        inceptionDate = "Jan 1, 2022",
+        exDividend = "Jan 1, 2022",
+        earningsDate = "Jan 1, 2022",
+        avgVolume = "12345678",
         sector = "Technology",
         industry = "Consumer Electronics",
         about = "Apple Inc. is an American multinational technology company that designs, manufactures, and markets consumer electronics, computer software, and online services. It is considered one of the Big Five companies in the U.S. information technology industry, along with Amazon, Google, Microsoft, and Facebook.",
@@ -150,8 +152,8 @@ fun PreviewStockTopBar(
     StockScreenerTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
             StockTopBar(
-                symbol = quote?.symbol.orEmpty(),
-                quote = quote,
+                navController = rememberNavController(),
+                symbol = quote.symbol,
                 watchList = emptyList(),
                 addToWatchList = {},
                 deleteFromWatchList = {}

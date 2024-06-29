@@ -2,6 +2,7 @@ package com.farmingdale.stockscreener.views.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,6 +34,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.ui.theme.negativeBackgroundColor
@@ -46,6 +49,7 @@ import java.util.Locale
 @Composable
 fun MarketMovers(
     listState: LazyListState,
+    navController: NavController,
     actives: List<MarketMover>?,
     losers: List<MarketMover>?,
     gainers: List<MarketMover>?,
@@ -103,6 +107,7 @@ fun MarketMovers(
                 0 -> {
                     MarketMoversList(
                         stocks = actives,
+                        navController = navController,
                         refresh = refresh
                     )
                 }
@@ -110,6 +115,7 @@ fun MarketMovers(
                 1 -> {
                     MarketMoversList(
                         stocks = gainers,
+                        navController = navController,
                         refresh = refresh
                     )
                 }
@@ -117,6 +123,7 @@ fun MarketMovers(
                 2 -> {
                     MarketMoversList(
                         stocks = losers,
+                        navController = navController,
                         refresh = refresh
                     )
                 }
@@ -135,6 +142,7 @@ fun PreviewMarketMovers() {
         ),
         losers = null,
         gainers = null,
+        navController = rememberNavController(),
         refresh = {}
     )
 }
@@ -142,6 +150,7 @@ fun PreviewMarketMovers() {
 @Composable
 fun MarketMoversList(
     stocks: List<MarketMover>?,
+    navController: NavController,
     refresh: () -> Unit
 ) {
     Column(
@@ -160,7 +169,10 @@ fun MarketMoversList(
                     items = stocks,
                     key = { stock -> stock.symbol }
                 ) { stock ->
-                    MarketMoverStock(stock = stock)
+                    MarketMoverStock(
+                        stock = stock,
+                        navController = navController
+                    )
                 }
             }
         }
@@ -170,10 +182,16 @@ fun MarketMoversList(
 }
 
 @Composable
-fun MarketMoverStock(stock: MarketMover) {
+fun MarketMoverStock(
+    stock: MarketMover,
+    navController: NavController
+) {
     Row(
         modifier = Modifier
             .padding(top = 8.dp)
+            .clickable {
+                navController.navigate("stock/${stock.symbol}")
+            }
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {

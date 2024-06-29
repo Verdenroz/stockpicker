@@ -33,8 +33,8 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
     private val financeQueryRepo = FinanceQueryRepository.get()
     private val watchlistRepo = WatchlistRepository.get(application)
 
-    private val _quote = MutableStateFlow<FullQuoteData?>(null)
-    override val quote: StateFlow<FullQuoteData?> = _quote.asStateFlow()
+    override val quote: StateFlow<FullQuoteData?> = financeQueryRepo.getFullQuote(symbol)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), null)
 
     private val _timeSeries = MutableStateFlow<Map<String, HistoricalData>>(emptyMap())
     override val timeSeries: StateFlow<Map<String, HistoricalData>> = _timeSeries.asStateFlow()
@@ -181,10 +181,6 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
     init {
         if (symbol.isNotEmpty()) {
             viewModelScope.launch(Dispatchers.IO) {
-                // Start loading the quote immediately
-                financeQueryRepo.getFullQuote(symbol).collect {
-                    _quote.value = it
-                }
                 // Load all time series data in parallel
                 val deferredTimeSeriesYTD =
                     async { loadTimeSeries(symbol, TimePeriod.YEAR_TO_DATE, Interval.DAILY) }
@@ -211,6 +207,7 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
                 // Set the default time series data (data should already be loaded)
                 val deferredTimeSeries =
                     async { getTimeSeries(symbol, TimePeriod.YEAR_TO_DATE, Interval.DAILY) }
+
                 //Set the default analysis data (data should already be loaded)
                 val deferredAnalysis = async { getAnalysis(symbol, Interval.DAILY) }
 
@@ -276,26 +273,6 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
             financeQueryRepo.getAnalysis(symbol, interval).collect {
                 _analysis.value = it
             }
-        }
-    }
-
-    private fun refreshWatchList() {
-        viewModelScope.launch(Dispatchers.IO) {
-            watchlistRepo.refreshWatchList()
-        }
-    }
-
-    override fun addToWatchList(symbol: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            watchlistRepo.addToWatchList(symbol)
-            refreshWatchList()
-        }
-    }
-
-    override fun deleteFromWatchList(symbol: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            watchlistRepo.deleteFromWatchList(symbol)
-            refreshWatchList()
         }
     }
 

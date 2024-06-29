@@ -15,6 +15,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 
@@ -22,13 +24,14 @@ import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 @Composable
 fun SimilarStockFeed(
     symbol: String,
-    similarStocks: List<SimpleQuoteData>
+    similarStocks: List<SimpleQuoteData>,
+    navController: NavController
 ) {
     Column(
         modifier = Modifier
             .padding(horizontal = 8.dp)
             .fillMaxWidth()
-    ){
+    ) {
         Text(
             text = stringResource(id = R.string.similar_stocks) + ": $symbol",
             style = MaterialTheme.typography.titleMedium,
@@ -44,7 +47,10 @@ fun SimilarStockFeed(
                 items = similarStocks,
                 key = { stock -> stock.symbol }
             ) {
-                StockCard(quote = it)
+                StockCard(
+                    quote = it,
+                    navController = navController
+                )
             }
         }
     }
@@ -53,7 +59,7 @@ fun SimilarStockFeed(
 
 @Preview
 @Composable
-fun PreviewSimilarStockFeed(){
+fun PreviewSimilarStockFeed() {
     SimilarStockFeed(
         symbol = "AAPL",
         similarStocks = listOf(
@@ -78,6 +84,7 @@ fun PreviewSimilarStockFeed(){
                 change = "+0.12",
                 percentChange = "+0.12%",
             ),
-        )
+        ),
+        navController = rememberNavController()
     )
 }

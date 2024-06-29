@@ -27,10 +27,10 @@ import java.util.Locale
 
 @Composable
 fun WatchListView(
+    navController: NavHostController,
     watchList: List<SimpleQuoteData>?,
     deleteFromWatchList: (String) -> Unit
 ) {
-    val navController = rememberNavController()
     LazyColumn(
         modifier = Modifier
             .fillMaxSize(),

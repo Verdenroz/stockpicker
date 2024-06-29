@@ -1,6 +1,7 @@
 package com.farmingdale.stockscreener.views.stock
 
 import android.app.Application
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +32,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
@@ -47,7 +50,10 @@ import com.farmingdale.stockscreener.viewmodels.base.StockViewModel
 
 @Composable
 fun StockView(
-    symbol: String
+    symbol: String,
+    navController: NavController,
+    addToWatchList: (String) -> Unit,
+    deleteFromWatchList: (String) -> Unit
 ) {
     val application = LocalContext.current.applicationContext as Application
     val stockViewModel: StockViewModel = viewModel<ImplStockViewModel>(
@@ -71,6 +77,7 @@ fun StockView(
     val watchList by stockViewModel.watchList.collectAsState()
     StockScreenerTheme {
         StockContent(
+            navController = navController,
             symbol = symbol,
             quote = quote,
             timeSeries = timeSeries,
@@ -85,14 +92,17 @@ fun StockView(
             overallSummary = overallSummary,
             watchList = watchList,
             updateTimeSeries = stockViewModel::getTimeSeries,
-            addToWatchList = stockViewModel::addToWatchList,
-            deleteFromWatchList = stockViewModel::deleteFromWatchList
+            updateAnalysisInterval = stockViewModel::getAnalysis,
+            addToWatchList = addToWatchList,
+            deleteFromWatchList = deleteFromWatchList
         )
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StockContent(
+    navController: NavController,
     symbol: String,
     quote: FullQuoteData?,
     timeSeries: Map<String, HistoricalData> = emptyMap(),
@@ -107,6 +117,7 @@ fun StockContent(
     overallSummary: Double,
     watchList: List<SimpleQuoteData> = emptyList(),
     updateTimeSeries: (String, TimePeriod, Interval) -> Unit,
+    updateAnalysisInterval: (String, Interval) -> Unit,
     addToWatchList: (String) -> Unit,
     deleteFromWatchList: (String) -> Unit
 ) {
@@ -121,8 +132,8 @@ fun StockContent(
     Scaffold(
         topBar = {
             StockTopBar(
+                navController = navController,
                 symbol = symbol,
-                quote = quote,
                 watchList = watchList,
                 addToWatchList = addToWatchList,
                 deleteFromWatchList = deleteFromWatchList
@@ -142,7 +153,7 @@ fun StockContent(
                         .background(bg),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    item {
+                    stickyHeader {
                         StockHeadline(quote = quote, bg = bg)
                     }
                     item {
@@ -153,6 +164,7 @@ fun StockContent(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .heightIn(min = 200.dp, max = 400.dp),
+                                listState = listState,
                                 symbol = quote.symbol,
                                 timeSeries = timeSeries.entries.toList().asReversed()
                                     .associate { it.key to it.value },
@@ -168,11 +180,14 @@ fun StockContent(
                             sectorPerformance = sectorPerformance
                         )
                     }
-                    item {
-                        SimilarStockFeed(
-                            symbol = quote.symbol,
-                            similarStocks = similarStocks
-                        )
+                    if (similarStocks.isNotEmpty()) {
+                        item {
+                            SimilarStockFeed(
+                                symbol = quote.symbol,
+                                similarStocks = similarStocks,
+                                navController = navController
+                            )
+                        }
                     }
                     item {
                         StockViewPager(
@@ -184,13 +199,12 @@ fun StockContent(
                             oscillatorsSummary = oscillatorsSummary,
                             trendsSummary = trendsSummary,
                             overallSummary = overallSummary,
-                            listState = listState
+                            updateAnalysisInterval = updateAnalysisInterval
                         )
                     }
                 }
             }
-        }
-        else {
+        } else {
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
@@ -206,5 +220,10 @@ fun StockContent(
 @Preview
 @Composable
 fun PreviewStockView() {
-    StockView("AAPL")
+    StockView(
+        symbol = "AAPL",
+        navController = rememberNavController(),
+        addToWatchList = {},
+        deleteFromWatchList = {}
+    )
 }

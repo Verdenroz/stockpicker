@@ -181,7 +181,7 @@ fun SummaryAnalysisSection(
             actions = trendsSignalsCount,
             scrollTo = {
                 scope.launch {
-                    listState.animateScrollToItem(3)
+                    listState.animateScrollToItem(15)
                 }
             }
         )
@@ -201,7 +201,7 @@ fun SummaryAnalysisSection(
             actions = oscillatorsSignalsCount,
             scrollTo = {
                 scope.launch {
-                    listState.animateScrollToItem(2)
+                    listState.animateScrollToItem(5)
                 }
             }
         )

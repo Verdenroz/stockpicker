@@ -1,5 +1,6 @@
 package com.farmingdale.stockscreener.views.stock
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,16 +16,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.ui.theme.indexColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 
 @Composable
-fun StockCard(quote: SimpleQuoteData) {
+fun StockCard(
+    quote: SimpleQuoteData,
+    navController: NavController
+) {
     Card(
         modifier = Modifier
             .size(width = 125.dp, height = 75.dp)
+            .clickable {
+                navController.navigate("stock/${quote.symbol}")
+            }
     ) {
         Column(
             modifier = Modifier
@@ -74,10 +83,12 @@ fun PreviewStockCard() {
             percentChange = "+10%"
         )
         StockCard(
-            quote = dummyQuote
+            quote = dummyQuote,
+            navController = rememberNavController()
         )
         StockCard(
-            quote = dummyQuote
+            quote = dummyQuote,
+            navController = rememberNavController()
         )
     }
 }
