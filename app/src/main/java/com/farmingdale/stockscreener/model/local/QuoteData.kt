@@ -76,7 +76,7 @@ data class FullQuoteData(
     val beta: Double?,
     val pe: Double?,
     val eps: Double?,
-    val dividend: Double?,
+    val dividend: String?,
     val yield: String?,
     val netAssets: String?,
     val nav: Double?,

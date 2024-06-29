@@ -63,7 +63,7 @@ data class FullQuoteResponse(
     val beta: Double? = null,
     val pe: Double? = null,
     val eps: Double? = null,
-    val dividend: Double? = null,
+    val dividend: String? = null,
     val yield: String? = null,
     val netAssets: String? = null,
     val nav: Double? = null,

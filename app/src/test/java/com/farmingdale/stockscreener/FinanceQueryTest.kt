@@ -29,6 +29,7 @@ class FinanceQueryTest {
             println(api.getQuote("AAPL"))
             println(api.getQuote("TQQQ"))
             println(api.getQuote("GTLOX"))
+            println(api.getQuote("005930.KS"))
         }
     }
 

@@ -174,7 +174,7 @@ fun PreviewStockHeadline(
         beta = 1.23,
         yearHigh = 163.45,
         yearLow = 100.45,
-        dividend = 1.23,
+        dividend = "1.23",
         yield = "1.23%",
         netAssets = null,
         nav = null,
