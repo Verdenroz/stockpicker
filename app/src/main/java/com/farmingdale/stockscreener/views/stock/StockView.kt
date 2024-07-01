@@ -9,11 +9,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -45,6 +49,7 @@ import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
 import com.farmingdale.stockscreener.model.local.indicators.AnalysisIndicators
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
+import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.viewmodels.ImplStockViewModel
 import com.farmingdale.stockscreener.viewmodels.base.StockViewModel
 
@@ -104,13 +109,13 @@ fun StockView(
 fun StockContent(
     navController: NavController,
     symbol: String,
-    quote: FullQuoteData?,
-    timeSeries: Map<String, HistoricalData> = emptyMap(),
-    similarStocks: List<SimpleQuoteData> = emptyList(),
-    sectorPerformance: MarketSector? = null,
-    news: List<News> = emptyList(),
-    analysis: Analysis? = null,
-    signals: Map<AnalysisIndicators, String> = emptyMap(),
+    quote: Resource<FullQuoteData>,
+    timeSeries: Resource<Map<String, HistoricalData>>,
+    similarStocks: Resource<List<SimpleQuoteData>>,
+    sectorPerformance: Resource<MarketSector?>,
+    news: Resource<List<News>>,
+    analysis: Resource<Analysis>,
+    signals: Map<AnalysisIndicators, String>,
     movingAverageSummary: Double,
     oscillatorsSummary: Double,
     trendsSummary: Double,
@@ -140,80 +145,184 @@ fun StockContent(
             )
         }
     ) { padding ->
-        val listState = rememberLazyListState()
-        if (quote != null) {
-            Box(
-                modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection()),
-            ) {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                        .background(bg),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+        when (quote) {
+            is Resource.Loading -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    stickyHeader {
-                        StockHeadline(quote = quote, bg = bg)
-                    }
-                    item {
-                        if (timeSeries.isEmpty()) {
-                            LinearProgressIndicator(Modifier.fillMaxWidth())
-                        } else {
-                            StockChart(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .heightIn(min = 200.dp, max = 400.dp),
-                                listState = listState,
-                                symbol = quote.symbol,
-                                timeSeries = timeSeries.entries.toList().asReversed()
-                                    .associate { it.key to it.value },
-                                positiveChart = timeSeries.values.first().close > timeSeries.values.last().close,
-                                backgroundColor = bg,
-                                updateTimeSeries = updateTimeSeries,
-                            )
+                    CircularProgressIndicator()
+                    Text(text = stringResource(id = R.string.loading_quote))
+                }
+            }
+
+            is Resource.Error -> {
+                StockError(
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
+            is Resource.Success -> {
+                val listState = rememberLazyListState()
+                if (quote.data == null) {
+                    StockError()
+                } else {
+                    Box(
+                        modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection()),
+                    ) {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(padding)
+                                .background(bg),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            stickyHeader {
+                                StockHeadline(quote = quote.data, bg = bg)
+                            }
+                            item {
+                                when (timeSeries) {
+                                    is Resource.Loading -> {
+                                        LinearProgressIndicator(Modifier.fillMaxWidth())
+                                    }
+
+                                    is Resource.Error -> {
+                                        StockError(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(400.dp)
+                                        )
+                                    }
+
+                                    is Resource.Success -> {
+                                        if (timeSeries.data.isNullOrEmpty()) {
+                                            StockError(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(400.dp)
+                                            )
+                                        } else {
+                                            StockChart(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .heightIn(min = 200.dp, max = 400.dp),
+                                                listState = listState,
+                                                symbol = quote.data.symbol,
+                                                timeSeries = timeSeries.data.entries.toList()
+                                                    .asReversed()
+                                                    .associate { it.key to it.value },
+                                                positiveChart = timeSeries.data.values.first().close > timeSeries.data.values.last().close,
+                                                backgroundColor = bg,
+                                                updateTimeSeries = updateTimeSeries,
+                                            )
+                                        }
+                                    }
+                                }
+
+                            }
+                            when (sectorPerformance) {
+                                is Resource.Loading -> {
+                                    item {
+                                        LinearProgressIndicator(Modifier.fillMaxWidth())
+                                    }
+                                }
+
+                                is Resource.Error -> {
+                                    item {
+                                        StockError(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(150.dp)
+                                        )
+                                    }
+                                }
+
+                                is Resource.Success -> {
+                                    quote.data.ytdReturn?.let {
+                                        item {
+                                            StockPerformance(
+                                                quote = quote.data,
+                                                sectorPerformance = sectorPerformance.data
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            when (similarStocks) {
+                                is Resource.Loading -> {
+                                    item {
+                                        LinearProgressIndicator(Modifier.fillMaxWidth())
+                                    }
+                                }
+
+                                is Resource.Error -> {
+                                    item {
+                                        StockError(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(150.dp)
+                                        )
+                                    }
+                                }
+
+                                is Resource.Success -> {
+                                    if (similarStocks.data.isNullOrEmpty()) {
+                                        item {
+                                            StockError(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(150.dp)
+                                            )
+                                        }
+                                    } else {
+                                        item {
+                                            SimilarStockFeed(
+                                                symbol = quote.data.symbol,
+                                                similarStocks = similarStocks.data,
+                                                navController = navController
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            item {
+                                StockViewPager(
+                                    quote = quote.data,
+                                    news = news,
+                                    analysis = analysis,
+                                    signals = signals,
+                                    movingAverageSummary = movingAverageSummary,
+                                    oscillatorsSummary = oscillatorsSummary,
+                                    trendsSummary = trendsSummary,
+                                    overallSummary = overallSummary,
+                                    updateAnalysisInterval = updateAnalysisInterval
+                                )
+                            }
                         }
-                    }
-                    item {
-                        StockPerformance(
-                            quote = quote,
-                            sectorPerformance = sectorPerformance
-                        )
-                    }
-                    if (similarStocks.isNotEmpty()) {
-                        item {
-                            SimilarStockFeed(
-                                symbol = quote.symbol,
-                                similarStocks = similarStocks,
-                                navController = navController
-                            )
-                        }
-                    }
-                    item {
-                        StockViewPager(
-                            quote = quote,
-                            news = news,
-                            analysis = analysis,
-                            signals = signals,
-                            movingAverageSummary = movingAverageSummary,
-                            oscillatorsSummary = oscillatorsSummary,
-                            trendsSummary = trendsSummary,
-                            overallSummary = overallSummary,
-                            updateAnalysisInterval = updateAnalysisInterval
-                        )
                     }
                 }
             }
-        } else {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                CircularProgressIndicator()
-                Text(text = stringResource(id = R.string.loading_quote))
-            }
         }
+    }
+}
+
+@Composable
+fun StockError(
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = Icons.Default.Warning,
+            contentDescription = stringResource(id = R.string.error)
+        )
+        Text(text = stringResource(id = R.string.error_loading_data))
     }
 }
 

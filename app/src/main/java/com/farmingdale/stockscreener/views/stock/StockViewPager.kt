@@ -1,15 +1,19 @@
 package com.farmingdale.stockscreener.views.stock
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
@@ -17,9 +21,11 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.Analysis
@@ -27,6 +33,7 @@ import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.Interval
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.indicators.AnalysisIndicators
+import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.views.stock.analysis.StockAnalysis
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -35,8 +42,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun StockViewPager(
     quote: FullQuoteData,
-    news: List<News>,
-    analysis: Analysis?,
+    news: Resource<List<News>>,
+    analysis: Resource<Analysis>,
     signals: Map<AnalysisIndicators, String>,
     movingAverageSummary: Double,
     oscillatorsSummary: Double,
@@ -51,7 +58,9 @@ fun StockViewPager(
         modifier = Modifier
             .requiredHeightIn(
                 min = 300.dp,
-                max = if (news.size < 5 && state.currentPage == 1 || (analysis == null && state.currentPage == 2)) 300.dp else 900.dp
+                max = if ((news.data?.size
+                        ?: 0) < 5 && state.currentPage == 1 || (analysis.data == null && state.currentPage == 2)
+                ) 300.dp else 900.dp
             )
             .fillMaxWidth(),
         topBar = {
@@ -72,20 +81,106 @@ fun StockViewPager(
                 }
 
                 1 -> {
-                    StockNewsFeed(news = news)
+                    when (news) {
+                        is Resource.Error -> {
+                            StockError(
+                                modifier = Modifier
+                                    .height(300.dp)
+                                    .fillMaxWidth(),
+                            )
+                        }
+
+                        is Resource.Loading -> {
+                            Box(
+                                modifier = Modifier
+                                    .height(300.dp)
+                                    .fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        }
+
+                        is Resource.Success -> {
+                            if (news.data.isNullOrEmpty()) {
+                                Box(
+                                    modifier = Modifier
+                                        .height(300.dp)
+                                        .background(MaterialTheme.colorScheme.surfaceContainer),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = stringResource(id = R.string.no_news),
+                                        style = MaterialTheme.typography.titleSmall,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier
+                                            .padding(16.dp)
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(100))
+                                            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                                    )
+                                }
+                            } else {
+                                StockNewsFeed(news = news.data)
+                            }
+                        }
+                    }
                 }
 
                 2 -> {
-                    StockAnalysis(
-                        symbol = quote.symbol,
-                        analysis = analysis,
-                        signals = signals,
-                        movingAverageSummary = movingAverageSummary,
-                        oscillatorSummary = oscillatorsSummary,
-                        trendSummary = trendsSummary,
-                        overallSummary = overallSummary,
-                        updateInterval = updateAnalysisInterval
-                    )
+                    when (analysis) {
+                        is Resource.Error -> {
+                            StockError(
+                                modifier = Modifier
+                                    .height(300.dp)
+                                    .fillMaxWidth(),
+                            )
+                        }
+
+                        is Resource.Loading -> {
+                            Box(
+                                modifier = Modifier
+                                    .height(300.dp)
+                                    .fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        }
+
+                        is Resource.Success -> {
+                            if (analysis.data == null) {
+                                Box(
+                                    modifier = Modifier
+                                        .height(300.dp)
+                                        .background(MaterialTheme.colorScheme.surfaceContainer),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = stringResource(id = R.string.no_analysis),
+                                        style = MaterialTheme.typography.titleSmall,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier
+                                            .padding(16.dp)
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(100))
+                                            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                                    )
+                                }
+                            } else {
+                                StockAnalysis(
+                                    symbol = quote.symbol,
+                                    analysis = analysis.data,
+                                    signals = signals,
+                                    movingAverageSummary = movingAverageSummary,
+                                    oscillatorSummary = oscillatorsSummary,
+                                    trendSummary = trendsSummary,
+                                    overallSummary = overallSummary,
+                                    updateInterval = updateAnalysisInterval
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -125,66 +220,5 @@ fun StockPagerTabs(
                 }
             )
         }
-    }
-}
-
-
-@Preview
-@Composable
-fun PreviewStockViewPager(
-    quote: FullQuoteData = FullQuoteData(
-        name = "Apple Inc.",
-        symbol = "AAPL",
-        price = 113.2,
-        postMarketPrice = 179.74,
-        change = "+1.23",
-        percentChange = "+1.5%",
-        high = 143.45,
-        low = 110.45,
-        open = 123.45,
-        volume = "12345678",
-        marketCap = "1.23T",
-        pe = 12.34,
-        eps = 1.23,
-        beta = 1.23,
-        yearHigh = 163.45,
-        yearLow = 100.45,
-        dividend = "1.23",
-        yield = "1.23%",
-        netAssets = null,
-        nav = null,
-        expenseRatio = null,
-        category = "Blend",
-        lastCapitalGain = "10.00",
-        morningstarRating = "★★",
-        morningstarRisk = "Low",
-        holdingsTurnover = "1.23%",
-        lastDividend = "0.05",
-        inceptionDate = "Jan 1, 2022",
-        exDividend = "Jan 1, 2022",
-        earningsDate = "Jan 1, 2022",
-        avgVolume = "12345678",
-        sector = "Technology",
-        industry = "Consumer Electronics",
-        about = "Apple Inc. is an American multinational technology company that designs, manufactures, and markets consumer electronics, computer software, and online services. It is considered one of the Big Five companies in the U.S. information technology industry, along with Amazon, Google, Microsoft, and Facebook.",
-        ytdReturn = "1.23%",
-        yearReturn = "1.23%",
-        threeYearReturn = "1.23%",
-        fiveYearReturn = "1.23%",
-        logo = "https://logo.clearbit.com/apple.com"
-    )
-) {
-    Surface {
-        StockViewPager(
-            quote = quote,
-            news = emptyList(),
-            analysis = null,
-            signals = emptyMap(),
-            movingAverageSummary = 0.0,
-            oscillatorsSummary = 0.0,
-            trendsSummary = 0.0,
-            overallSummary = 0.0,
-            updateAnalysisInterval = { _, _ -> }
-        )
     }
 }

@@ -3,16 +3,13 @@ package com.farmingdale.stockscreener.views.stock.analysis
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
@@ -26,11 +23,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -51,7 +46,7 @@ import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 @Composable
 fun StockAnalysis(
     symbol: String,
-    analysis: Analysis?,
+    analysis: Analysis,
     signals: Map<AnalysisIndicators, String>,
     movingAverageSummary: Double,
     oscillatorSummary: Double,
@@ -59,105 +54,85 @@ fun StockAnalysis(
     overallSummary: Double,
     updateInterval: (String, Interval) -> Unit
 ) {
-    if (analysis == null) {
-        Box(
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surfaceContainer),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        AnalysisIntervalBar(
+            modifier = Modifier.fillMaxWidth(),
+            symbol = symbol,
+            updateInterval = updateInterval
+        )
+        val listState = rememberLazyListState()
+        LazyColumn(
+            state = listState,
             modifier = Modifier
-                .height(300.dp)
-                .background(MaterialTheme.colorScheme.surfaceContainer),
-            contentAlignment = Alignment.Center
+                .padding(horizontal = 8.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Text(
-                text = stringResource(id = R.string.no_analysis),
-                style = MaterialTheme.typography.titleSmall,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(100))
-                    .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-            )
-        }
-    } else {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surfaceContainer),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            AnalysisIntervalBar(
-                modifier = Modifier.fillMaxWidth(),
-                symbol = symbol,
-                updateInterval = updateInterval
-            )
-            val listState = rememberLazyListState()
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .padding(horizontal = 8.dp)
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                item(key = "summary") {
-                    SummaryAnalysisSection(
-                        movingAverageSummary = movingAverageSummary,
-                        oscillatorsSummary = oscillatorSummary,
-                        trendsSummary = trendSummary,
-                        overallSummary = overallSummary,
-                        signals = signals,
-                        listState = listState
-                    )
-                }
-                stickyHeader {
-                    Text(
-                        text = stringResource(id = R.string.moving_averages),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 1.25.sp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surfaceContainer)
-                    )
-                }
-                item(key = "moving_average") {
-                    MovingAverageSection(
-                        analysis = analysis,
-                        signals = signals
-                    )
-                }
-                stickyHeader {
-                    Text(
-                        text = stringResource(id = R.string.oscillators),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 1.25.sp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surfaceContainer)
-                    )
-                }
-                item(key = "oscillators") {
-                    OscillatorsSection(
-                        analysis = analysis,
-                        signals = signals
-                    )
-                }
-                stickyHeader {
-                    Text(
-                        text = stringResource(id = R.string.trends),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 1.25.sp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surfaceContainer)
-                    )
-                }
-                item(key = "trends") {
-                    TrendsSection(
-                        analysis = analysis,
-                        signals = signals,
-                    )
-                }
+            item(key = "summary") {
+                SummaryAnalysisSection(
+                    movingAverageSummary = movingAverageSummary,
+                    oscillatorsSummary = oscillatorSummary,
+                    trendsSummary = trendSummary,
+                    overallSummary = overallSummary,
+                    signals = signals,
+                    listState = listState
+                )
+            }
+            stickyHeader {
+                Text(
+                    text = stringResource(id = R.string.moving_averages),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = 1.25.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                )
+            }
+            item(key = "moving_average") {
+                MovingAverageSection(
+                    analysis = analysis,
+                    signals = signals
+                )
+            }
+            stickyHeader {
+                Text(
+                    text = stringResource(id = R.string.oscillators),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = 1.25.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                )
+            }
+            item(key = "oscillators") {
+                OscillatorsSection(
+                    analysis = analysis,
+                    signals = signals
+                )
+            }
+            stickyHeader {
+                Text(
+                    text = stringResource(id = R.string.trends),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = 1.25.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                )
+            }
+            item(key = "trends") {
+                TrendsSection(
+                    analysis = analysis,
+                    signals = signals,
+                )
             }
         }
     }

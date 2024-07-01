@@ -79,12 +79,27 @@ fun StockSummary(quote: FullQuoteData) {
         if (quote.volume != null)
             StockDetailCell(
                 label = stringResource(id = R.string.volume),
-                detailValue = { SimpleDetailText(text = formatVolume(quote.volume.replace(",", "").toLong())) },
+                detailValue = {
+                    SimpleDetailText(
+                        text = formatVolume(
+                            quote.volume.replace(",", "").toLong()
+                        )
+                    )
+                },
             )
         if (quote.avgVolume != null)
             StockDetailCell(
                 label = stringResource(id = R.string.avg_volume),
-                detailValue = { SimpleDetailText(text = formatVolume(quote.avgVolume.replace(",", "").toLong())) },
+                detailValue = {
+                    SimpleDetailText(
+                        text = formatVolume(
+                            quote.avgVolume.replace(
+                                ",",
+                                ""
+                            ).toLong()
+                        )
+                    )
+                },
             )
 
         quote.marketCap?.let {
@@ -137,7 +152,7 @@ fun StockSummary(quote: FullQuoteData) {
         quote.dividend?.let {
             StockDetailCell(
                 label = stringResource(id = R.string.dividend_yield),
-                detailValue = { SimpleDetailText(text = it.toString() + " (" + quote.yield + ")") },
+                detailValue = { SimpleDetailText(text = it + " (" + quote.yield + ")") },
             )
         }
 

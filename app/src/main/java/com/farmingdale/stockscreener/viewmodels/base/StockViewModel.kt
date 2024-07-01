@@ -11,21 +11,22 @@ import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
 import com.farmingdale.stockscreener.model.local.indicators.AnalysisIndicators
+import com.farmingdale.stockscreener.utils.Resource
 import kotlinx.coroutines.flow.StateFlow
 
 abstract class StockViewModel(application: Application) : AndroidViewModel(application) {
 
-    abstract val quote: StateFlow<FullQuoteData?>
+    abstract val quote: StateFlow<Resource<FullQuoteData>>
 
-    abstract val timeSeries: StateFlow<Map<String, HistoricalData>>
+    abstract val timeSeries: StateFlow<Resource<Map<String, HistoricalData>>>
 
-    abstract val similarStocks: StateFlow<List<SimpleQuoteData>>
+    abstract val similarStocks: StateFlow<Resource<List<SimpleQuoteData>>>
 
-    abstract val sectorPerformance: StateFlow<MarketSector?>
+    abstract val sectorPerformance: StateFlow<Resource<MarketSector?>>
 
-    abstract val news: StateFlow<List<News>>
+    abstract val news: StateFlow<Resource<List<News>>>
 
-    abstract val analysis: StateFlow<Analysis?>
+    abstract val analysis: StateFlow<Resource<Analysis>>
 
     abstract val signals: StateFlow<Map<AnalysisIndicators, String>>
 

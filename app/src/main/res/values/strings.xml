@@ -136,4 +136,6 @@
     <string name="holdings_turnover">Holdings Turnover</string>
     <string name="fund_category">Fund Category</string>
     <string name="last_capital_gain">Last Cap Gain</string>
+    <string name="error">Error</string>
+    <string name="error_loading_data">Unable to retrieve data</string>
 </resources>

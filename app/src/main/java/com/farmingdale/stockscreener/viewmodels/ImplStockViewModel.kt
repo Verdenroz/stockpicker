@@ -17,6 +17,7 @@ import com.farmingdale.stockscreener.repos.ImplFinanceQueryRepository.Companion.
 import com.farmingdale.stockscreener.repos.ImplWatchlistRepository.Companion.get
 import com.farmingdale.stockscreener.repos.base.FinanceQueryRepository
 import com.farmingdale.stockscreener.repos.base.WatchlistRepository
+import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.viewmodels.base.StockViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -33,75 +34,80 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
     private val financeQueryRepo = FinanceQueryRepository.get()
     private val watchlistRepo = WatchlistRepository.get(application)
 
-    override val quote: StateFlow<FullQuoteData?> = financeQueryRepo.getFullQuote(symbol)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), null)
+    override val quote: StateFlow<Resource<FullQuoteData>> = financeQueryRepo.getFullQuote(symbol)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000L, 15000L),
+            Resource.Loading(true)
+        )
 
-    private val _timeSeries = MutableStateFlow<Map<String, HistoricalData>>(emptyMap())
-    override val timeSeries: StateFlow<Map<String, HistoricalData>> = _timeSeries.asStateFlow()
+    private val _timeSeries =
+        MutableStateFlow<Resource<Map<String, HistoricalData>>>(Resource.Loading(true))
+    override val timeSeries: StateFlow<Resource<Map<String, HistoricalData>>> =
+        _timeSeries.asStateFlow()
 
-    override val similarStocks: StateFlow<List<SimpleQuoteData>> =
+    override val similarStocks: StateFlow<Resource<List<SimpleQuoteData>>> =
         financeQueryRepo.getSimilarStocks(symbol)
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), emptyList())
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000L, 15000L),
+                Resource.Loading(true)
+            )
 
-    override val sectorPerformance: StateFlow<MarketSector?> =
-        combine(
-            financeQueryRepo.sectors,
-            quote
-        ) { sectors, fullQuoteData ->
-            sectors.firstOrNull { it.sector == fullQuoteData?.sector }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), null)
+    override val sectorPerformance: StateFlow<Resource<MarketSector?>> = financeQueryRepo.getSectorBySymbol(symbol)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), Resource.Loading(true))
 
-    override val news: StateFlow<List<News>> =
+    override val news: StateFlow<Resource<List<News>>> =
         financeQueryRepo.getNewsForSymbol(symbol)
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), emptyList())
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), Resource.Loading(true))
 
-    private val _analysis = MutableStateFlow<Analysis?>(null)
-    override val analysis: StateFlow<Analysis?> = _analysis.asStateFlow()
+    private val _analysis = MutableStateFlow<Resource<Analysis>>(Resource.Loading(true))
+    override val analysis: StateFlow<Resource<Analysis>> = _analysis.asStateFlow()
 
     override val signals: StateFlow<Map<AnalysisIndicators, String>> = combine(
         quote,
         analysis
     ) { quote, analysis ->
         val context = getApplication<Application>().applicationContext
-        val currentPrice = quote?.price ?: 0.0
+        val currentPrice = quote.data?.price ?: 0.0
         val signals = mutableMapOf<AnalysisIndicators, String>()
 
         val indicators = AnalysisIndicators.entries
-        if (analysis != null) {
+        if (analysis.data != null) {
             for (indicator in indicators) {
                 val value = when (indicator) {
-                    AnalysisIndicators.SMA10 -> analysis.sma10
-                    AnalysisIndicators.SMA20 -> analysis.sma20
-                    AnalysisIndicators.SMA50 -> analysis.sma50
-                    AnalysisIndicators.SMA100 -> analysis.sma100
-                    AnalysisIndicators.SMA200 -> analysis.sma200
-                    AnalysisIndicators.EMA10 -> analysis.ema10
-                    AnalysisIndicators.EMA20 -> analysis.ema20
-                    AnalysisIndicators.EMA50 -> analysis.ema50
-                    AnalysisIndicators.EMA100 -> analysis.ema100
-                    AnalysisIndicators.EMA200 -> analysis.ema200
-                    AnalysisIndicators.WMA10 -> analysis.wma10
-                    AnalysisIndicators.WMA20 -> analysis.wma20
-                    AnalysisIndicators.WMA50 -> analysis.wma50
-                    AnalysisIndicators.WMA100 -> analysis.wma100
-                    AnalysisIndicators.WMA200 -> analysis.wma200
-                    AnalysisIndicators.VWMA20 -> analysis.vwma20
-                    AnalysisIndicators.RSI -> analysis.rsi14
-                    AnalysisIndicators.SRSI -> analysis.srsi14
-                    AnalysisIndicators.CCI -> analysis.cci20
-                    AnalysisIndicators.ADX -> analysis.adx14
-                    AnalysisIndicators.MACD -> analysis.macd.macd
-                    AnalysisIndicators.STOCH -> analysis.stoch
-                    AnalysisIndicators.AROON -> analysis.aroon.aroonUp
-                    AnalysisIndicators.BBANDS -> analysis.bBands.upperBand
-                    AnalysisIndicators.SUPERTREND -> analysis.superTrend.superTrend
-                    AnalysisIndicators.ICHIMOKUCLOUD -> analysis.ichimokuCloud.leadingSpanA
+                    AnalysisIndicators.SMA10 -> analysis.data.sma10
+                    AnalysisIndicators.SMA20 -> analysis.data.sma20
+                    AnalysisIndicators.SMA50 -> analysis.data.sma50
+                    AnalysisIndicators.SMA100 -> analysis.data.sma100
+                    AnalysisIndicators.SMA200 -> analysis.data.sma200
+                    AnalysisIndicators.EMA10 -> analysis.data.ema10
+                    AnalysisIndicators.EMA20 -> analysis.data.ema20
+                    AnalysisIndicators.EMA50 -> analysis.data.ema50
+                    AnalysisIndicators.EMA100 -> analysis.data.ema100
+                    AnalysisIndicators.EMA200 -> analysis.data.ema200
+                    AnalysisIndicators.WMA10 -> analysis.data.wma10
+                    AnalysisIndicators.WMA20 -> analysis.data.wma20
+                    AnalysisIndicators.WMA50 -> analysis.data.wma50
+                    AnalysisIndicators.WMA100 -> analysis.data.wma100
+                    AnalysisIndicators.WMA200 -> analysis.data.wma200
+                    AnalysisIndicators.VWMA20 -> analysis.data.vwma20
+                    AnalysisIndicators.RSI -> analysis.data.rsi14
+                    AnalysisIndicators.SRSI -> analysis.data.srsi14
+                    AnalysisIndicators.CCI -> analysis.data.cci20
+                    AnalysisIndicators.ADX -> analysis.data.adx14
+                    AnalysisIndicators.MACD -> analysis.data.macd.macd
+                    AnalysisIndicators.STOCH -> analysis.data.stoch
+                    AnalysisIndicators.AROON -> analysis.data.aroon.aroonUp
+                    AnalysisIndicators.BBANDS -> analysis.data.bBands.upperBand
+                    AnalysisIndicators.SUPERTREND -> analysis.data.superTrend.superTrend
+                    AnalysisIndicators.ICHIMOKUCLOUD -> analysis.data.ichimokuCloud.leadingSpanA
                 }
                 val base = when (indicator) {
-                    AnalysisIndicators.MACD -> analysis.macd.signal
-                    AnalysisIndicators.AROON -> analysis.aroon.aroonDown
-                    AnalysisIndicators.BBANDS -> analysis.bBands.lowerBand
-                    AnalysisIndicators.ICHIMOKUCLOUD -> analysis.ichimokuCloud.leadingSpanB
+                    AnalysisIndicators.MACD -> analysis.data.macd.signal
+                    AnalysisIndicators.AROON -> analysis.data.aroon.aroonDown
+                    AnalysisIndicators.BBANDS -> analysis.data.bBands.lowerBand
+                    AnalysisIndicators.ICHIMOKUCLOUD -> analysis.data.ichimokuCloud.leadingSpanB
                     else -> null
                 }
                 signals[indicator] = createSignal(
@@ -174,9 +180,9 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
             emptyList()
         )
 
-    private val timeSeriesMap = mutableMapOf<TimePeriod, Map<String, HistoricalData>>()
+    private val timeSeriesMap = mutableMapOf<TimePeriod, Resource<Map<String, HistoricalData>>>()
 
-    private val analysisMap = mutableMapOf<Interval, Analysis>()
+    private val analysisMap = mutableMapOf<Interval, Resource<Analysis>>()
 
     init {
         if (symbol.isNotEmpty()) {
@@ -204,13 +210,6 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
                 val deferredAnalysis1W = async { loadAnalysis(symbol, Interval.WEEKLY) }
                 val deferredAnalysis1M = async { loadAnalysis(symbol, Interval.MONTHLY) }
 
-                // Set the default time series data (data should already be loaded)
-                val deferredTimeSeries =
-                    async { getTimeSeries(symbol, TimePeriod.YEAR_TO_DATE, Interval.DAILY) }
-
-                //Set the default analysis data (data should already be loaded)
-                val deferredAnalysis = async { getAnalysis(symbol, Interval.DAILY) }
-
                 deferredTimeSeries1D.await()
                 deferredTimeSeries5D.await()
                 deferredTimeSeries1M.await()
@@ -218,7 +217,6 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
                 deferredTimeSeries1Y.await()
                 deferredTimeSeriesYTD.await()
                 deferredTimeSeries5Y.await()
-                deferredTimeSeries.await()
 
                 deferredAnalysis15M.await()
                 deferredAnalysis30M.await()
@@ -226,8 +224,15 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
                 deferredAnalysis1D.await()
                 deferredAnalysis1W.await()
                 deferredAnalysis1M.await()
-                deferredAnalysis.await()
 
+                // Set the default time series data (data should already be loaded)
+                val deferredTimeSeries =
+                    async { getTimeSeries(symbol, TimePeriod.YEAR_TO_DATE, Interval.DAILY) }
+                //Set the default analysis data (data should already be loaded)
+                val deferredAnalysis = async { getAnalysis(symbol, Interval.DAILY) }
+
+                deferredAnalysis.await()
+                deferredTimeSeries.await()
             }
         }
     }
@@ -266,7 +271,7 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
         viewModelScope.launch(Dispatchers.IO) {
             // Check if the analysis data has already been loaded
             if (analysisMap.containsKey(interval)) {
-                _analysis.value = analysisMap[interval]
+                _analysis.value = analysisMap[interval]!!
                 return@launch
             }
             // If not, get the data from the repository
@@ -291,6 +296,7 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
                     else -> context.getString(R.string.neutral)
                 }
             }
+
             in AnalysisIndicators.OSCILLATORS -> {
                 when (type) {
                     AnalysisIndicators.RSI -> {
@@ -300,6 +306,7 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
                             else -> context.getString(R.string.neutral)
                         }
                     }
+
                     AnalysisIndicators.SRSI, AnalysisIndicators.STOCH -> {
                         when {
                             value < 20 -> context.getString(R.string.buy)
@@ -307,6 +314,7 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
                             else -> context.getString(R.string.neutral)
                         }
                     }
+
                     AnalysisIndicators.CCI -> {
                         when {
                             value < -100 -> context.getString(R.string.buy)
@@ -314,6 +322,7 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
                             else -> context.getString(R.string.neutral)
                         }
                     }
+
                     AnalysisIndicators.ADX -> {
                         when {
                             value <= 25 -> context.getString(R.string.weak_trend)
@@ -323,15 +332,18 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
                             else -> context.getString(R.string.neutral)
                         }
                     }
+
                     AnalysisIndicators.MACD -> {
                         when {
                             value > base -> context.getString(R.string.buy)
                             else -> context.getString(R.string.sell)
                         }
                     }
+
                     else -> context.getString(R.string.neutral)
                 }
             }
+
             in AnalysisIndicators.TRENDS -> {
                 when (type) {
                     AnalysisIndicators.AROON, AnalysisIndicators.ICHIMOKUCLOUD -> {
@@ -340,6 +352,7 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
                             else -> context.getString(R.string.sell)
                         }
                     }
+
                     AnalysisIndicators.BBANDS -> {
                         when {
                             currentPrice > value -> context.getString(R.string.buy)
@@ -347,15 +360,18 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
                             else -> context.getString(R.string.neutral)
                         }
                     }
+
                     AnalysisIndicators.SUPERTREND -> {
                         when {
                             currentPrice > value -> context.getString(R.string.buy)
                             else -> context.getString(R.string.sell)
                         }
                     }
+
                     else -> context.getString(R.string.neutral)
                 }
             }
+
             else -> context.getString(R.string.neutral)
         }
     }
