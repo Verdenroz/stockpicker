@@ -99,7 +99,7 @@ abstract class FinanceQueryRepository {
     /**
      * Gets the [MarketSector] performance of the symbol if available
      */
-    abstract fun getSectorBySymbol(symbol: String): Flow<Resource<MarketSector>>
+    abstract fun getSectorBySymbol(symbol: String): Flow<Resource<MarketSector?>>
 
     /**
      * Get historical data for a symbol as a map of dates to [HistoricalData]

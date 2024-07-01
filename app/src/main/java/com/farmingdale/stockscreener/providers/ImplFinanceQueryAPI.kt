@@ -20,6 +20,7 @@ import com.farmingdale.stockscreener.model.remote.SectorResponse
 import com.farmingdale.stockscreener.model.remote.SimpleQuoteResponse
 import com.farmingdale.stockscreener.model.remote.TimeSeriesResponse
 import com.farmingdale.stockscreener.providers.base.FinanceQueryAPI
+import com.farmingdale.stockscreener.utils.Error
 import com.farmingdale.stockscreener.utils.FINANCE_QUERY_API_URL
 import com.farmingdale.stockscreener.utils.executeAsync
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -31,6 +32,8 @@ import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.InputStream
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -53,8 +56,26 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
             .addHeader("x-api-key", BuildConfig.financeQueryAPIKey)
             .build()
         val call = client.newCall(request)
-        val response = call.executeAsync()
-        return response.body!!.byteStream()
+        try {
+            val response = call.executeAsync()
+            when (response.code) {
+                400 -> throw Error.ClientError("Bad Request", code = 400)
+                401 -> throw Error.ClientError("Unauthorized", code = 401)
+                403 -> throw Error.ClientError("Forbidden", code = 403)
+                404 -> throw Error.ClientError("Not Found", code = 404)
+                500 -> throw Error.ServerError("Internal Server Error", code = 500)
+                502 -> throw Error.ServerError("Bad Gateway", code = 502)
+                503 -> throw Error.ServerError("Service Unavailable", code = 503)
+                504 -> throw Error.ServerError("Gateway Timeout", code = 504)
+            }
+            return response.body!!.byteStream()
+        } catch (e: UnknownHostException) {
+            throw Error.NetworkError("No internet connection", e)
+        } catch (e: SocketTimeoutException) {
+            throw Error.NetworkError("Connection timed out", e)
+        } catch (e: Exception) {
+            throw Error.NetworkError("Network request failed", e)
+        }
     }
 
     override suspend fun getQuote(symbol: String): FullQuoteData {
@@ -70,7 +91,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
             quoteResponseList =
                 parser.decodeFromStream(ListSerializer(FullQuoteResponse.serializer()), stream)
         } catch (e: SerializationException) {
-            throw RuntimeException("Failed to parse JSON response", e)
+            throw Error.SerializationError("Failed to parse JSON response", e)
         }
         return quoteResponseList.map {
             FullQuoteData(
@@ -130,7 +151,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
             quoteResponseList =
                 parser.decodeFromStream(ListSerializer(SimpleQuoteResponse.serializer()), stream)
         } catch (e: SerializationException) {
-            throw RuntimeException("Failed to parse JSON response", e)
+            throw Error.SerializationError("Failed to parse JSON response", e)
         }
         return quoteResponseList.map {
             SimpleQuoteData(
@@ -157,7 +178,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
             quoteResponseList =
                 parser.decodeFromStream(ListSerializer(SimpleQuoteResponse.serializer()), stream)
         } catch (e: SerializationException) {
-            throw RuntimeException("Failed to parse JSON response", e)
+            throw Error.SerializationError("Failed to parse JSON response", e)
         }
         return quoteResponseList.map {
             SimpleQuoteData(
@@ -168,7 +189,6 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 percentChange = it.percentChange
             )
         }
-
     }
 
     override suspend fun getHistoricalData(
@@ -190,9 +210,8 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
         try {
             timeSeriesResponse = parser.decodeFromStream(TimeSeriesResponse.serializer(), stream)
         } catch (e: SerializationException) {
-            throw RuntimeException("Failed to parse JSON response", e)
+            throw Error.SerializationError("Failed to parse JSON response", e)
         }
-
 
         // Map each date and HistoricalData from TimeSeriesResponse
         return timeSeriesResponse.data.mapKeys { entry ->
@@ -231,7 +250,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
             indexResponseList =
                 parser.decodeFromStream(ListSerializer(IndexResponse.serializer()), stream)
         } catch (e: SerializationException) {
-            throw RuntimeException("Failed to parse JSON response", e)
+            throw Error.SerializationError("Failed to parse JSON response", e)
         }
         return indexResponseList.map {
             MarketIndex(
@@ -255,7 +274,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
             sectorResponseList =
                 parser.decodeFromStream(ListSerializer(SectorResponse.serializer()), stream)
         } catch (e: SerializationException) {
-            throw RuntimeException("Failed to parse JSON response", e)
+            throw Error.SerializationError("Failed to parse JSON response", e)
         }
         return sectorResponseList.map {
             MarketSector(
@@ -283,7 +302,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
             sectorResponseList =
                 parser.decodeFromStream(ListSerializer(SectorResponse.serializer()), stream)
         } catch (e: SerializationException) {
-            throw RuntimeException("Failed to parse JSON response", e)
+            throw Error.SerializationError("Failed to parse JSON response", e)
         }
         return sectorResponseList.map {
             MarketSector(
@@ -309,7 +328,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
             marketMoverList =
                 parser.decodeFromStream(ListSerializer(MarketMoverResponse.serializer()), stream)
         } catch (e: SerializationException) {
-            throw RuntimeException("Failed to parse JSON response", e)
+            throw Error.SerializationError("Failed to parse JSON response", e)
         }
         return marketMoverList.map {
             MarketMover(
@@ -335,7 +354,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
             marketMoverList =
                 parser.decodeFromStream(ListSerializer(MarketMoverResponse.serializer()), stream)
         } catch (e: SerializationException) {
-            throw RuntimeException("Failed to parse JSON response", e)
+            throw Error.SerializationError("Failed to parse JSON response", e)
         }
 
         return marketMoverList.map {
@@ -362,7 +381,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
             marketMoverList =
                 parser.decodeFromStream(ListSerializer(MarketMoverResponse.serializer()), stream)
         } catch (e: SerializationException) {
-            throw RuntimeException("Failed to parse JSON response", e)
+            throw Error.SerializationError("Failed to parse JSON response", e)
         }
 
         return marketMoverList.map {
@@ -389,7 +408,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
             newsList =
                 parser.decodeFromStream(ListSerializer(NewsResponse.serializer()), stream)
         } catch (e: SerializationException) {
-            throw RuntimeException("Failed to parse JSON response", e)
+            throw Error.SerializationError("Failed to parse JSON response", e)
         }
 
         return newsList.shuffled().map {
@@ -417,7 +436,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
             newsList =
                 parser.decodeFromStream(ListSerializer(NewsResponse.serializer()), stream)
         } catch (e: SerializationException) {
-            throw RuntimeException("Failed to parse JSON response", e)
+            throw Error.SerializationError("Failed to parse JSON response", e)
         }
 
         return newsList.map {
@@ -445,7 +464,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
             quoteResponseList =
                 parser.decodeFromStream(ListSerializer(SimpleQuoteResponse.serializer()), stream)
         } catch (e: SerializationException) {
-            throw RuntimeException("Failed to parse JSON response", e)
+            throw Error.SerializationError("Failed to parse JSON response", e)
         }
 
         return quoteResponseList.map {
@@ -477,7 +496,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
         try {
             analysisResponse = parser.decodeFromStream(AnalysisResponse.serializer(), stream)
         } catch (e: SerializationException) {
-            throw RuntimeException("Failed to parse JSON response", e)
+            throw Error.SerializationError("Failed to parse JSON response", e)
         }
 
         return Analysis(

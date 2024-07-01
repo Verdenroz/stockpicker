@@ -13,6 +13,7 @@ import com.farmingdale.stockscreener.model.local.TimePeriod
 import com.farmingdale.stockscreener.providers.ImplFinanceQueryAPI
 import com.farmingdale.stockscreener.providers.okHttpClient
 import com.farmingdale.stockscreener.repos.base.FinanceQueryRepository
+import com.farmingdale.stockscreener.utils.Error
 import com.farmingdale.stockscreener.utils.Resource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,22 +27,23 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerializationException
 
 class ImplFinanceQueryRepository : FinanceQueryRepository() {
     private val api = ImplFinanceQueryAPI(okHttpClient)
-    private val _indicesChannel = Channel<Resource<List<MarketIndex>>>(Channel.CONFLATED)
-    private val _activesChannel = Channel<Resource<List<MarketMover>>>(Channel.CONFLATED)
-    private val _losersChannel = Channel<Resource<List<MarketMover>>>(Channel.CONFLATED)
-    private val _gainersChannel = Channel<Resource<List<MarketMover>>>(Channel.CONFLATED)
-    private val _headlinesChannel = Channel<Resource<List<News>>>(Channel.CONFLATED)
-    private val _sectorsChannel = Channel<Resource<List<MarketSector>>>(Channel.CONFLATED)
+    private val indicesChannel = Channel<Resource<List<MarketIndex>>>(Channel.CONFLATED)
+    private val activesChannel = Channel<Resource<List<MarketMover>>>(Channel.CONFLATED)
+    private val losersChannel = Channel<Resource<List<MarketMover>>>(Channel.CONFLATED)
+    private val gainersChannel = Channel<Resource<List<MarketMover>>>(Channel.CONFLATED)
+    private val headlinesChannel = Channel<Resource<List<News>>>(Channel.CONFLATED)
+    private val sectorsChannel = Channel<Resource<List<MarketSector>>>(Channel.CONFLATED)
 
-    override val indices: Flow<Resource<List<MarketIndex>>> = _indicesChannel.receiveAsFlow()
-    override val actives: Flow<Resource<List<MarketMover>>> = _activesChannel.receiveAsFlow()
-    override val losers: Flow<Resource<List<MarketMover>>> = _losersChannel.receiveAsFlow()
-    override val gainers: Flow<Resource<List<MarketMover>>> = _gainersChannel.receiveAsFlow()
-    override val headlines: Flow<Resource<List<News>>> = _headlinesChannel.receiveAsFlow()
-    override val sectors: Flow<Resource<List<MarketSector>>> = _sectorsChannel.receiveAsFlow()
+    override val indices: Flow<Resource<List<MarketIndex>>> = indicesChannel.receiveAsFlow()
+    override val actives: Flow<Resource<List<MarketMover>>> = activesChannel.receiveAsFlow()
+    override val losers: Flow<Resource<List<MarketMover>>> = losersChannel.receiveAsFlow()
+    override val gainers: Flow<Resource<List<MarketMover>>> = gainersChannel.receiveAsFlow()
+    override val headlines: Flow<Resource<List<News>>> = headlinesChannel.receiveAsFlow()
+    override val sectors: Flow<Resource<List<MarketSector>>> = sectorsChannel.receiveAsFlow()
 
 
     init {
@@ -74,38 +76,70 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
     }
 
     override suspend fun refreshMarketData() = coroutineScope {
-        try {
-            val indicesDeferred = async(Dispatchers.IO) { api.getIndices() }
-            val activesDeferred = async(Dispatchers.IO) { api.getActives() }
-            val losersDeferred = async(Dispatchers.IO) { api.getLosers() }
-            val gainersDeferred = async(Dispatchers.IO) { api.getGainers() }
+        val indicesDeferred = async(Dispatchers.IO) { refreshIndices() }
+        val activesDeferred = async(Dispatchers.IO) { refreshActives() }
+        val losersDeferred = async(Dispatchers.IO) { refreshLosers() }
+        val gainersDeferred = async(Dispatchers.IO) { refreshGainers() }
 
-            _indicesChannel.send(Resource.Success(indicesDeferred.await()))
-            _activesChannel.send(Resource.Success(activesDeferred.await()))
-            _losersChannel.send(Resource.Success(losersDeferred.await()))
-            _gainersChannel.send(Resource.Success(gainersDeferred.await()))
-        } catch (e: Exception) {
-            _indicesChannel.send(Resource.Error(message = e.message ?: "An error occurred"))
+        indicesDeferred.await()
+        activesDeferred.await()
+        losersDeferred.await()
+        gainersDeferred.await()
+    }
+
+    private suspend fun refreshIndices() = coroutineScope {
+        try {
+            val indices = api.getIndices()
+            indicesChannel.send(Resource.Success(indices))
+        } catch (e: Error) {
+           indicesChannel.send(Resource.Error(message = e.message ?: "An error occurred"))
+        }
+    }
+
+    private suspend fun refreshActives() = coroutineScope {
+        try {
+            val actives = api.getActives()
+            activesChannel.send(Resource.Success(actives))
+        } catch (e: Error) {
+            activesChannel.send(Resource.Error(message = e.message ?: "An error occurred"))
+        }
+    }
+
+    private suspend fun refreshLosers() = coroutineScope {
+        try {
+            val losers = api.getLosers()
+            losersChannel.send(Resource.Success(losers))
+        } catch (e: Error) {
+            losersChannel.send(Resource.Error(message = e.message ?: "An error occurred"))
+        }
+    }
+
+    private suspend fun refreshGainers() = coroutineScope {
+        try {
+            val gainers = api.getGainers()
+            gainersChannel.send(Resource.Success(gainers))
+        } catch (e: Error) {
+            gainersChannel.send(Resource.Error(message = e.message ?: "An error occurred"))
         }
     }
 
     override suspend fun refreshNews() {
         try {
             withContext(Dispatchers.IO) {
-                _headlinesChannel.send(Resource.Success(api.getNews()))
+                headlinesChannel.send(Resource.Success(api.getNews()))
             }
-        } catch (e: Exception) {
-            _headlinesChannel.send(Resource.Error(message = e.message ?: "An error occurred"))
+        } catch (e: Error) {
+            headlinesChannel.send(Resource.Error(message = e.message ?: "An error occurred"))
         }
     }
 
     override suspend fun refreshSectors() {
         try {
             withContext(Dispatchers.IO) {
-                _sectorsChannel.send(Resource.Success(api.getSectors()))
+                sectorsChannel.send(Resource.Success(api.getSectors()))
             }
-        } catch (e: Exception) {
-            _sectorsChannel.send(Resource.Error(message = e.message ?: "An error occurred"))
+        } catch (e: Error) {
+            sectorsChannel.send(Resource.Error(message = e.message ?: "An error occurred"))
         }
     }
 
@@ -113,7 +147,7 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
         try {
             val quote = api.getQuote(symbol)
             emit(Resource.Success(quote))
-        } catch (e: Exception) {
+        } catch (e: Error) {
             emit(Resource.Error(message = e.message ?: "An error occurred"))
         }
     }.flowOn(Dispatchers.IO)
@@ -122,26 +156,53 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
         try {
             val simpleQuote = api.getSimpleQuote(symbol)
             emit(Resource.Success(simpleQuote))
-        } catch (e: Exception) {
+        } catch (e: Error) {
             emit(Resource.Error(message = e.message ?: "An error occurred"))
         }
     }.flowOn(Dispatchers.IO)
 
-    override suspend fun getBulkQuote(symbols: List<String>): Flow<Resource<List<SimpleQuoteData>>> = flow {
-        try {
-            val quotes = api.getBulkQuote(symbols)
-            emit(Resource.Success(quotes))
-        } catch (e: Exception) {
-            emit(Resource.Error(message = e.message ?: "An error occurred"))
-        }
-    }.flowOn(Dispatchers.IO)
+    override suspend fun getBulkQuote(symbols: List<String>): Flow<Resource<List<SimpleQuoteData>>> =
+        flow {
+            try {
+                val quotes = api.getBulkQuote(symbols)
+                emit(Resource.Success(quotes))
+            } catch (e: Error) {
+                emit(Resource.Error(message = e.message ?: "An error occurred"))
+            }
+        }.flowOn(Dispatchers.IO)
 
     override fun getNewsForSymbol(symbol: String): Flow<Resource<List<News>>> = flow {
         try {
             val news = api.getNewsForSymbol(symbol)
             emit(Resource.Success(news))
-        } catch (e: Exception) {
-            emit(Resource.Error(message = e.message ?: "An error occurred"))
+        } catch (e: Error) {
+            when (e) {
+                is Error.NetworkError -> emit(
+                    Resource.Error(
+                        message = e.message ?: "Unable to load data"
+                    )
+                )
+
+                is Error.ServerError -> emit(
+                    Resource.Error(
+                        message = e.message ?: "An error occurred"
+                    )
+                )
+
+                is Error.ClientError -> {
+                    if (e.code == 404) {
+                        emit(Resource.Success(emptyList()))
+                    } else {
+                        emit(Resource.Error(message = e.message ?: "An error occurred"))
+                    }
+                }
+
+                is Error.SerializationError -> emit(
+                    Resource.Error(
+                        message = e.message ?: "Unable to parse data"
+                    )
+                )
+            }
         }
     }.flowOn(Dispatchers.IO)
 
@@ -149,17 +210,43 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
         try {
             val similarStocks = api.getSimilarSymbols(symbol)
             emit(Resource.Success(similarStocks))
-        } catch (e: Exception) {
+        } catch (e: Error) {
             emit(Resource.Error(message = e.message ?: "An error occurred"))
         }
     }.flowOn(Dispatchers.IO)
 
-    override fun getSectorBySymbol(symbol: String): Flow<Resource<MarketSector>> = flow {
+    override fun getSectorBySymbol(symbol: String): Flow<Resource<MarketSector?>> = flow {
         try {
             val sector = api.getSectorBySymbol(symbol)
             emit(Resource.Success(sector))
-        } catch (e: Exception) {
-             emit(Resource.Error(message = e.message ?: "An error occurred"))
+        } catch (e: Error) {
+            when (e) {
+                is Error.NetworkError -> emit(
+                    Resource.Error(
+                        message = e.message ?: "Unable to load data"
+                    )
+                )
+
+                is Error.ServerError -> emit(
+                    Resource.Error(
+                        message = e.message ?: "An error occurred"
+                    )
+                )
+
+                is Error.ClientError -> {
+                    if (e.code == 404) {
+                        emit(Resource.Success(null))
+                    } else {
+                        emit(Resource.Error(message = e.message ?: "An error occurred"))
+                    }
+                }
+
+                is Error.SerializationError -> emit(
+                    Resource.Error(
+                        message = e.message ?: "Unable to parse data"
+                    )
+                )
+            }
         }
     }
 
@@ -171,7 +258,7 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
         try {
             val timeSeries = api.getHistoricalData(symbol, timePeriod, interval)
             emit(Resource.Success(timeSeries))
-        } catch (e: Exception) {
+        } catch (e: Error) {
             emit(Resource.Error(message = e.message ?: "An error occurred"))
         }
     }.flowOn(Dispatchers.IO)
@@ -180,7 +267,7 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
         try {
             val analysis = api.getSummaryAnalysis(symbol, interval)
             emit(Resource.Success(analysis))
-        } catch (e: Exception) {
+        } catch (e: Error) {
             emit(Resource.Error(message = e.message ?: "An error occurred"))
         }
     }.flowOn(Dispatchers.IO)
