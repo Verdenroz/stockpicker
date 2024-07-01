@@ -1,6 +1,5 @@
 package com.farmingdale.stockscreener.repos
 
-import android.util.Log
 import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.HistoricalData
@@ -14,126 +13,144 @@ import com.farmingdale.stockscreener.model.local.TimePeriod
 import com.farmingdale.stockscreener.providers.ImplFinanceQueryAPI
 import com.farmingdale.stockscreener.providers.okHttpClient
 import com.farmingdale.stockscreener.repos.base.FinanceQueryRepository
+import com.farmingdale.stockscreener.utils.Resource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class ImplFinanceQueryRepository : FinanceQueryRepository() {
     private val api = ImplFinanceQueryAPI(okHttpClient)
-    private val _indicesFlow = MutableStateFlow<List<MarketIndex>?>(null)
-    private val _activesFlow = MutableStateFlow<List<MarketMover>?>(null)
-    private val _losersFlow = MutableStateFlow<List<MarketMover>?>(null)
-    private val _gainersFlow = MutableStateFlow<List<MarketMover>?>(null)
-    private val _headlinesFlow = MutableStateFlow<List<News>?>(null)
-    private val _sectorsFlow = MutableStateFlow<List<MarketSector>>(emptyList())
+    private val _indicesChannel = Channel<Resource<List<MarketIndex>>>(Channel.CONFLATED)
+    private val _activesChannel = Channel<Resource<List<MarketMover>>>(Channel.CONFLATED)
+    private val _losersChannel = Channel<Resource<List<MarketMover>>>(Channel.CONFLATED)
+    private val _gainersChannel = Channel<Resource<List<MarketMover>>>(Channel.CONFLATED)
+    private val _headlinesChannel = Channel<Resource<List<News>>>(Channel.CONFLATED)
+    private val _sectorsChannel = Channel<Resource<List<MarketSector>>>(Channel.CONFLATED)
 
-    override val indices: Flow<List<MarketIndex>?> = _indicesFlow.asStateFlow()
-    override val actives: Flow<List<MarketMover>?> = _activesFlow.asStateFlow()
-    override val losers: Flow<List<MarketMover>?> = _losersFlow.asStateFlow()
-    override val gainers: Flow<List<MarketMover>?> = _gainersFlow.asStateFlow()
-    override val headlines: Flow<List<News>?> = _headlinesFlow.asStateFlow()
-    override val sectors: Flow<List<MarketSector>> = _sectorsFlow.asStateFlow()
+    override val indices: Flow<Resource<List<MarketIndex>>> = _indicesChannel.receiveAsFlow()
+    override val actives: Flow<Resource<List<MarketMover>>> = _activesChannel.receiveAsFlow()
+    override val losers: Flow<Resource<List<MarketMover>>> = _losersChannel.receiveAsFlow()
+    override val gainers: Flow<Resource<List<MarketMover>>> = _gainersChannel.receiveAsFlow()
+    override val headlines: Flow<Resource<List<News>>> = _headlinesChannel.receiveAsFlow()
+    override val sectors: Flow<Resource<List<MarketSector>>> = _sectorsChannel.receiveAsFlow()
+
 
     init {
-        refreshMarketDataPeriodically()
-        refreshHeadlinesPeriodically()
-        refreshSectorsPeriodically()
+        CoroutineScope(Dispatchers.IO).launch {
+            refreshMarketDataPeriodically()
+            refreshHeadlinesPeriodically()
+            refreshSectorsPeriodically()
+        }
     }
 
-    private fun refreshMarketDataPeriodically() = flow<Unit> {
+    private fun refreshMarketDataPeriodically() = CoroutineScope(Dispatchers.IO).launch {
         while (true) {
             refreshMarketData()
             delay(refreshInterval)
         }
-    }.flowOn(Dispatchers.IO).launchIn(CoroutineScope(Dispatchers.IO))
+    }
 
-    private fun refreshHeadlinesPeriodically() = flow<Unit> {
+    private fun refreshHeadlinesPeriodically() = CoroutineScope(Dispatchers.IO).launch {
         while (true) {
             refreshNews()
             delay(NEWS_REFRESH_INTERVAL)
         }
-    }.flowOn(Dispatchers.IO).launchIn(CoroutineScope(Dispatchers.IO))
+    }
 
-
-    private fun refreshSectorsPeriodically() = flow<Unit> {
+    private fun refreshSectorsPeriodically() = CoroutineScope(Dispatchers.IO).launch {
         while (true) {
             refreshSectors()
             delay(SECTOR_REFRESH_INTERVAL)
         }
-    }.flowOn(Dispatchers.IO).launchIn(CoroutineScope(Dispatchers.IO))
-
+    }
 
     override suspend fun refreshMarketData() = coroutineScope {
-        val indicesDeferred = async(Dispatchers.IO) { api.getIndices() }
-        val activesDeferred = async(Dispatchers.IO) { api.getActives() }
-        val losersDeferred = async(Dispatchers.IO) { api.getLosers() }
-        val gainersDeferred = async(Dispatchers.IO) { api.getGainers() }
+        try {
+            val indicesDeferred = async(Dispatchers.IO) { api.getIndices() }
+            val activesDeferred = async(Dispatchers.IO) { api.getActives() }
+            val losersDeferred = async(Dispatchers.IO) { api.getLosers() }
+            val gainersDeferred = async(Dispatchers.IO) { api.getGainers() }
 
-        _indicesFlow.emit(indicesDeferred.await())
-        _activesFlow.emit(activesDeferred.await())
-        _losersFlow.emit(losersDeferred.await())
-        _gainersFlow.emit(gainersDeferred.await())
+            _indicesChannel.send(Resource.Success(indicesDeferred.await()))
+            _activesChannel.send(Resource.Success(activesDeferred.await()))
+            _losersChannel.send(Resource.Success(losersDeferred.await()))
+            _gainersChannel.send(Resource.Success(gainersDeferred.await()))
+        } catch (e: Exception) {
+            _indicesChannel.send(Resource.Error(message = e.message ?: "An error occurred"))
+        }
     }
 
     override suspend fun refreshNews() {
-        withContext(Dispatchers.IO) {
-            _headlinesFlow.emit(api.getNews())
+        try {
+            withContext(Dispatchers.IO) {
+                _headlinesChannel.send(Resource.Success(api.getNews()))
+            }
+        } catch (e: Exception) {
+            _headlinesChannel.send(Resource.Error(message = e.message ?: "An error occurred"))
         }
     }
 
     override suspend fun refreshSectors() {
-        withContext(Dispatchers.IO) {
-            _sectorsFlow.emit(api.getSectors())
+        try {
+            withContext(Dispatchers.IO) {
+                _sectorsChannel.send(Resource.Success(api.getSectors()))
+            }
+        } catch (e: Exception) {
+            _sectorsChannel.send(Resource.Error(message = e.message ?: "An error occurred"))
         }
     }
 
-    override fun getFullQuote(symbol: String): Flow<FullQuoteData> = flow {
+    override fun getFullQuote(symbol: String): Flow<Resource<FullQuoteData>> = flow {
         try {
-            emit(api.getQuote(symbol))
+            val quote = api.getQuote(symbol)
+            emit(Resource.Success(quote))
         } catch (e: Exception) {
-            e.printStackTrace()
+            emit(Resource.Error(message = e.message ?: "An error occurred"))
         }
     }.flowOn(Dispatchers.IO)
 
-    override suspend fun getSimpleQuote(symbol: String): Flow<SimpleQuoteData> = flow {
+    override suspend fun getSimpleQuote(symbol: String): Flow<Resource<SimpleQuoteData>> = flow {
         try {
-            emit(api.getSimpleQuote(symbol))
+            val simpleQuote = api.getSimpleQuote(symbol)
+            emit(Resource.Success(simpleQuote))
         } catch (e: Exception) {
-            e.printStackTrace()
+            emit(Resource.Error(message = e.message ?: "An error occurred"))
         }
     }.flowOn(Dispatchers.IO)
 
-    override suspend fun getBulkQuote(symbols: List<String>): Flow<List<SimpleQuoteData>> = flow {
+    override suspend fun getBulkQuote(symbols: List<String>): Flow<Resource<List<SimpleQuoteData>>> = flow {
         try {
-            emit(api.getBulkQuote(symbols))
+            val quotes = api.getBulkQuote(symbols)
+            emit(Resource.Success(quotes))
         } catch (e: Exception) {
-            e.printStackTrace()
+            emit(Resource.Error(message = e.message ?: "An error occurred"))
         }
     }.flowOn(Dispatchers.IO)
 
-    override fun getNewsForSymbol(symbol: String): Flow<List<News>> = flow {
+    override fun getNewsForSymbol(symbol: String): Flow<Resource<List<News>>> = flow {
         try {
-            emit(api.getNewsForSymbol(symbol))
+            val news = api.getNewsForSymbol(symbol)
+            emit(Resource.Success(news))
         } catch (e: Exception) {
-            e.printStackTrace()
+            emit(Resource.Error(message = e.message ?: "An error occurred"))
         }
     }.flowOn(Dispatchers.IO)
 
-    override fun getSimilarStocks(symbol: String): Flow<List<SimpleQuoteData>> = flow {
+    override fun getSimilarStocks(symbol: String): Flow<Resource<List<SimpleQuoteData>>> = flow {
         try {
-            emit(api.getSimilarSymbols(symbol))
+            val similarStocks = api.getSimilarSymbols(symbol)
+            emit(Resource.Success(similarStocks))
         } catch (e: Exception) {
-            e.printStackTrace()
+            emit(Resource.Error(message = e.message ?: "An error occurred"))
         }
     }.flowOn(Dispatchers.IO)
 
@@ -141,27 +158,23 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
         symbol: String,
         timePeriod: TimePeriod,
         interval: Interval,
-    ): Flow<Map<String, HistoricalData>> = flow {
+    ): Flow<Resource<Map<String, HistoricalData>>> = flow {
         try {
-            emit(api.getHistoricalData(symbol, timePeriod, interval))
+            val timeSeries = api.getHistoricalData(symbol, timePeriod, interval)
+            emit(Resource.Success(timeSeries))
         } catch (e: Exception) {
-            e.printStackTrace()
+            emit(Resource.Error(message = e.message ?: "An error occurred"))
         }
     }.flowOn(Dispatchers.IO)
 
-    override fun getAnalysis(symbol: String, interval: Interval): Flow<Analysis> = flow {
+    override fun getAnalysis(symbol: String, interval: Interval): Flow<Resource<Analysis>> = flow {
         try {
-            emit(api.getSummaryAnalysis(symbol, interval))
+            val analysis = api.getSummaryAnalysis(symbol, interval)
+            emit(Resource.Success(analysis))
         } catch (e: Exception) {
-            e.printStackTrace()
+            emit(Resource.Error(message = e.message ?: "An error occurred"))
         }
     }.flowOn(Dispatchers.IO)
-
-    override fun getSectorPerformance(sector: String): Flow<MarketSector> = flow {
-        sectors.map { marketSectors ->
-            Log.d("ImplFinanceQueryRepository", "Market sectors: $marketSectors")
-            marketSectors.filter { it.sector == sector } }.flowOn(Dispatchers.IO)
-    }
 
     companion object {
         private var repo: ImplFinanceQueryRepository? = null

@@ -10,6 +10,7 @@ import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
+import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.utils.isMarketOpen
 import kotlinx.coroutines.flow.Flow
 
@@ -28,32 +29,32 @@ abstract class FinanceQueryRepository {
     /**
      *  Market indices as list of [MarketIndex]
      */
-    abstract val indices: Flow<List<MarketIndex>?>
+    abstract val indices: Flow<Resource<List<MarketIndex>>>
 
     /**
      * Active stocks as list of [MarketMover]
      */
-    abstract val actives: Flow<List<MarketMover>?>
+    abstract val actives: Flow<Resource<List<MarketMover>>>
 
     /**
      * Losers as list of [MarketMover]
      */
-    abstract val losers: Flow<List<MarketMover>?>
+    abstract val losers: Flow<Resource<List<MarketMover>>>
 
     /**
      * Gainers as list of [MarketMover]
      */
-    abstract val gainers: Flow<List<MarketMover>?>
+    abstract val gainers: Flow<Resource<List<MarketMover>>>
 
     /**
      * Latest news headlines as list of [News]
      */
-    abstract val headlines: Flow<List<News>?>
+    abstract val headlines: Flow<Resource<List<News>>>
 
     /**
      * Sectors as list of [MarketSector]
      */
-    abstract val sectors: Flow<List<MarketSector>>
+    abstract val sectors: Flow<Resource<List<MarketSector>>>
 
     /**
      * Refresh [indices], [actives], [losers], [gainers]
@@ -73,27 +74,27 @@ abstract class FinanceQueryRepository {
     /**
      * Get full quote data for a stock with all available information as [FullQuoteData]
      */
-    abstract fun getFullQuote(symbol: String): Flow<FullQuoteData>
+    abstract fun getFullQuote(symbol: String): Flow<Resource<FullQuoteData>>
 
     /**
      * Get simple quote data for a stock with basic information as [SimpleQuoteData]
      */
-    abstract suspend fun getSimpleQuote(symbol: String): Flow<SimpleQuoteData>
+    abstract suspend fun getSimpleQuote(symbol: String): Flow<Resource<SimpleQuoteData>>
 
     /**
      * Get simple quote data for a list of symbols as a list of [SimpleQuoteData]
      */
-    abstract suspend fun getBulkQuote(symbols: List<String>): Flow<List<SimpleQuoteData>>
+    abstract suspend fun getBulkQuote(symbols: List<String>): Flow<Resource<List<SimpleQuoteData>>>
 
     /**
      * Get news for a symbol as a list of [News]
      */
-    abstract fun getNewsForSymbol(symbol: String): Flow<List<News>>
+    abstract fun getNewsForSymbol(symbol: String): Flow<Resource<List<News>>>
 
     /**
      * Find similar stocks for a symbol as a list of [SimpleQuoteData]
      */
-    abstract fun getSimilarStocks(symbol: String): Flow<List<SimpleQuoteData>>
+    abstract fun getSimilarStocks(symbol: String): Flow<Resource<List<SimpleQuoteData>>>
 
     /**
      * Get historical data for a symbol as a map of dates to [HistoricalData]
@@ -102,17 +103,12 @@ abstract class FinanceQueryRepository {
         symbol: String,
         timePeriod: TimePeriod,
         interval: Interval
-    ): Flow<Map<String, HistoricalData>>
+    ): Flow<Resource<Map<String, HistoricalData>>>
 
     /**
      * Get summary analysis for a symbol as [Analysis] given an [Interval]
      */
-    abstract fun getAnalysis(symbol: String, interval: Interval): Flow<Analysis>
-
-    /**
-     * Get a specific sector's performance as [MarketSector]
-     */
-    abstract fun getSectorPerformance(sector: String): Flow<MarketSector>
+    abstract fun getAnalysis(symbol: String, interval: Interval): Flow<Resource<Analysis>>
 
     companion object {
         const val NEWS_REFRESH_INTERVAL = 60000L
