@@ -25,6 +25,7 @@ import com.farmingdale.stockscreener.model.local.MarketIndex
 import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.model.local.News
+import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.viewmodels.ImplHomeViewModel
 import com.farmingdale.stockscreener.viewmodels.base.HomeViewModel
 import kotlinx.coroutines.delay
@@ -57,12 +58,12 @@ fun HomeView(
 @Composable
 fun HomeContent(
     navController: NavController,
-    sectors: List<MarketSector>?,
-    news: List<News>?,
-    indices: List<MarketIndex>?,
-    actives: List<MarketMover>?,
-    losers: List<MarketMover>?,
-    gainers: List<MarketMover>?,
+    sectors: Resource<List<MarketSector>>,
+    news: Resource<List<News>>,
+    indices: Resource<List<MarketIndex>>,
+    actives: Resource<List<MarketMover>>,
+    losers: Resource<List<MarketMover>>,
+    gainers: Resource<List<MarketMover>>,
     refresh: () -> Unit,
 ) {
     val pullRefreshState = rememberPullToRefreshState()
@@ -126,12 +127,12 @@ fun HomeContent(
 fun PreviewHomeContent() {
     HomeContent(
         navController = rememberNavController(),
-        sectors = null,
-        news = null,
-        indices = null,
-        actives = null,
-        losers = null,
-        gainers = null,
+        sectors = Resource.Success(emptyList()),
+        news = Resource.Success(emptyList()),
+        indices = Resource.Success(emptyList()),
+        actives = Resource.Success(emptyList()),
+        losers = Resource.Success(emptyList()),
+        gainers = Resource.Success(emptyList()),
         refresh = {},
     )
 }

@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -42,6 +43,7 @@ import com.farmingdale.stockscreener.ui.theme.negativeBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
+import com.farmingdale.stockscreener.utils.Resource
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -50,9 +52,9 @@ import java.util.Locale
 fun MarketMovers(
     listState: LazyListState,
     navController: NavController,
-    actives: List<MarketMover>?,
-    losers: List<MarketMover>?,
-    gainers: List<MarketMover>?,
+    actives: Resource<List<MarketMover>>,
+    losers: Resource<List<MarketMover>>,
+    gainers: Resource<List<MarketMover>>,
     refresh: () -> Unit,
 ) {
     val state = rememberPagerState(pageCount = { 3 })
@@ -132,53 +134,57 @@ fun MarketMovers(
     }
 }
 
-@Preview
-@Composable
-fun PreviewMarketMovers() {
-    MarketMovers(
-        listState = LazyListState(),
-        actives = listOf(
-            MarketMover("AAPL", "Apple Inc.", "100.00", "+10.00", "+10.00%"),
-        ),
-        losers = null,
-        gainers = null,
-        navController = rememberNavController(),
-        refresh = {}
-    )
-}
-
 @Composable
 fun MarketMoversList(
-    stocks: List<MarketMover>?,
+    stocks: Resource<List<MarketMover>>,
     navController: NavController,
     refresh: () -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        if (stocks.isNullOrEmpty()) {
-            ErrorCard(refresh = refresh)
-        } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.fillMaxWidth()
+    when (stocks) {
+        is Resource.Loading -> {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(
-                    items = stocks,
-                    key = { stock -> stock.symbol }
-                ) { stock ->
-                    MarketMoverStock(
-                        stock = stock,
-                        navController = navController
-                    )
-                }
+                CircularProgressIndicator()
             }
         }
 
-    }
+        is Resource.Error -> {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ErrorCard(refresh = refresh)
+            }
+        }
 
+        is Resource.Success -> {
+            if (stocks.data.isNullOrEmpty()) {
+                ErrorCard(refresh = refresh)
+            } else {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(
+                            items = stocks.data,
+                            key = { stock -> stock.symbol }
+                        ) { stock ->
+                            MarketMoverStock(stock = stock, navController = navController)
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -250,4 +256,19 @@ fun MarketMoverStock(
                 .padding(4.dp)
         )
     }
+}
+
+@Preview
+@Composable
+fun PreviewMarketMoverStock() {
+    MarketMoverStock(
+        stock = MarketMover(
+            symbol = "AAPL",
+            name = "Apple Inc.",
+            price = "100.0",
+            change = "+100.0",
+            percentChange = "+100%"
+        ),
+        navController = rememberNavController()
+    )
 }

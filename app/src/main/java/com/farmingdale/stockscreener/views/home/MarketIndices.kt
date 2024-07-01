@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
@@ -31,12 +32,13 @@ import com.farmingdale.stockscreener.model.local.MarketIndex
 import com.farmingdale.stockscreener.ui.theme.indexColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
+import com.farmingdale.stockscreener.utils.Resource
 import kotlinx.coroutines.launch
 import java.util.Locale
 
 @Composable
 fun MarketIndices(
-    indices: List<MarketIndex>?,
+    indices: Resource<List<MarketIndex>>,
     refresh: () -> Unit,
 ) {
     Column(
@@ -51,21 +53,31 @@ fun MarketIndices(
             style = MaterialTheme.typography.titleSmall,
             modifier = Modifier.fillMaxWidth()
         )
+        when (indices) {
+            is Resource.Loading -> {
+                CircularProgressIndicator()
+            }
 
-        if (indices.isNullOrEmpty()) {
-            ErrorCard(refresh = refresh)
-        } else {
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                content = {
-                    items(
-                        items = indices,
-                        key = { index -> index.name }
-                    ) { index ->
-                        MarketIndexCard(index = index)
+            is Resource.Error -> {
+                ErrorCard(refresh = refresh)
+            }
+
+            is Resource.Success -> {
+                if (indices.data.isNullOrEmpty()) {
+                    ErrorCard(refresh = refresh)
+                } else {
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(
+                            items = indices.data,
+                            key = { index -> index.name }
+                        ) { index ->
+                            MarketIndexCard(index = index)
+                        }
                     }
                 }
-            )
+            }
         }
     }
 }

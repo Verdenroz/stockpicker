@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
@@ -32,11 +33,12 @@ import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.ui.theme.indexColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
+import com.farmingdale.stockscreener.utils.Resource
 import kotlinx.coroutines.launch
 
 @Composable
 fun MarketSectors(
-    sectors: List<MarketSector>?,
+    sectors: Resource<List<MarketSector>>,
     refresh: () -> Unit,
 ) {
     Column(
@@ -51,20 +53,28 @@ fun MarketSectors(
             style = MaterialTheme.typography.titleSmall,
             modifier = Modifier.fillMaxWidth()
         )
-        if (sectors.isNullOrEmpty()) {
-            ErrorCard(refresh = refresh)
-        } else {
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                content = {
-                    items(
-                        items = sectors,
-                        key = { sector -> sector.sector }
-                    ) { sector ->
-                        MarketSectorCard(sector = sector)
+        when (sectors) {
+            is Resource.Loading -> {
+                CircularProgressIndicator()
+            }
+
+            is Resource.Error -> {
+                ErrorCard(refresh = refresh)
+            }
+
+            is Resource.Success -> {
+                if (sectors.data.isNullOrEmpty()) {
+                    ErrorCard(refresh = refresh)
+                } else {
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(sectors.data) { sector ->
+                            MarketSectorCard(sector = sector)
+                        }
                     }
                 }
-            )
+            }
         }
     }
 }

@@ -30,10 +30,11 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.News
+import com.farmingdale.stockscreener.utils.Resource
 
 @Composable
 fun NewsFeed(
-    news: List<News>?,
+    news: Resource<List<News>>,
     refresh: () -> Unit,
 ) {
     Column(
@@ -47,49 +48,32 @@ fun NewsFeed(
             style = MaterialTheme.typography.titleSmall,
             modifier = Modifier.fillMaxWidth()
         )
-        if (news.isNullOrEmpty()) {
-            ErrorCard(refresh = refresh)
-        } else {
-            LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                content = {
-                    items(
-                        items = news,
-                        key = { news -> news.title }
-                    ) { item ->
-                        ContentCard(article = item, refresh = refresh)
+        when (news) {
+            is Resource.Loading -> {
+                CircularProgressIndicator()
+            }
+
+            is Resource.Error -> {
+                ErrorCard(refresh = refresh)
+            }
+
+            is Resource.Success -> {
+                if (news.data.isNullOrEmpty()) {
+                    ErrorCard(refresh = refresh)
+                } else {
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        items(news.data) { article ->
+                            ContentCard(article = article, refresh = refresh)
+                        }
                     }
                 }
-            )
+            }
         }
     }
-
-}
-
-@Preview
-@Composable
-fun PreviewNewsFeed() {
-    NewsFeed(
-        news = listOf(
-            News(
-                title = "Title",
-                source = "Source",
-                time = "Time",
-                link = "Link",
-                img = "https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png"
-            ),
-            News(
-                title = "Title",
-                source = "Source",
-                time = "Time",
-                link = "Link",
-                img = "https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png"
-            ),
-        ),
-        refresh = {}
-    )
 }
 
 @Composable
@@ -130,7 +114,7 @@ fun ContentCard(
                     CircularProgressIndicator()
                 },
                 error = {
-                        ErrorCard(refresh = refresh)
+                    ErrorCard(refresh = refresh)
                 },
                 imageLoader = ImageLoader(context),
             )
@@ -160,4 +144,19 @@ fun ContentCard(
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun PreviewContentCard(){
+    ContentCard(
+        article = News(
+            title = "Title",
+            source = "Source",
+            time = "Time",
+            img = "https://www.google.com",
+            link = "https://www.google.com"
+        ),
+        refresh = {}
+    )
 }
