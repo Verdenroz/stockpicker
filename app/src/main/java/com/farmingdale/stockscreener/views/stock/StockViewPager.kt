@@ -1,17 +1,12 @@
 package com.farmingdale.stockscreener.views.stock
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -21,11 +16,8 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.Analysis
@@ -81,106 +73,20 @@ fun StockViewPager(
                 }
 
                 1 -> {
-                    when (news) {
-                        is Resource.Error -> {
-                            StockError(
-                                modifier = Modifier
-                                    .height(300.dp)
-                                    .fillMaxWidth(),
-                            )
-                        }
-
-                        is Resource.Loading -> {
-                            Box(
-                                modifier = Modifier
-                                    .height(300.dp)
-                                    .fillMaxWidth(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }
-
-                        is Resource.Success -> {
-                            if (news.data.isNullOrEmpty()) {
-                                Box(
-                                    modifier = Modifier
-                                        .height(300.dp)
-                                        .background(MaterialTheme.colorScheme.surfaceContainer),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = stringResource(id = R.string.no_news),
-                                        style = MaterialTheme.typography.titleSmall,
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier
-                                            .padding(16.dp)
-                                            .fillMaxWidth()
-                                            .clip(RoundedCornerShape(100))
-                                            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                                    )
-                                }
-                            } else {
-                                StockNewsFeed(news = news.data)
-                            }
-                        }
-                    }
+                    StockNewsFeed(news = news)
                 }
 
                 2 -> {
-                    when (analysis) {
-                        is Resource.Error -> {
-                            StockError(
-                                modifier = Modifier
-                                    .height(300.dp)
-                                    .fillMaxWidth(),
-                            )
-                        }
-
-                        is Resource.Loading -> {
-                            Box(
-                                modifier = Modifier
-                                    .height(300.dp)
-                                    .fillMaxWidth(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }
-
-                        is Resource.Success -> {
-                            if (analysis.data == null) {
-                                Box(
-                                    modifier = Modifier
-                                        .height(300.dp)
-                                        .background(MaterialTheme.colorScheme.surfaceContainer),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = stringResource(id = R.string.no_analysis),
-                                        style = MaterialTheme.typography.titleSmall,
-                                        textAlign = TextAlign.Center,
-                                        modifier = Modifier
-                                            .padding(16.dp)
-                                            .fillMaxWidth()
-                                            .clip(RoundedCornerShape(100))
-                                            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
-                                    )
-                                }
-                            } else {
-                                StockAnalysis(
-                                    symbol = quote.symbol,
-                                    analysis = analysis.data,
-                                    signals = signals,
-                                    movingAverageSummary = movingAverageSummary,
-                                    oscillatorSummary = oscillatorsSummary,
-                                    trendSummary = trendsSummary,
-                                    overallSummary = overallSummary,
-                                    updateInterval = updateAnalysisInterval
-                                )
-                            }
-                        }
-                    }
+                    StockAnalysis(
+                        symbol = quote.symbol,
+                        analysis = analysis,
+                        signals = signals,
+                        movingAverageSummary = movingAverageSummary,
+                        oscillatorSummary = oscillatorsSummary,
+                        trendSummary = trendsSummary,
+                        overallSummary = overallSummary,
+                        updateInterval = updateAnalysisInterval
+                    )
                 }
             }
         }

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,7 +17,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -182,112 +180,40 @@ fun StockContent(
                             stickyHeader {
                                 StockHeadline(quote = quote.data, bg = bg)
                             }
+
+                            timeSeries.data?.let {
+                                item {
+                                    StockChart(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .heightIn(min = 200.dp, max = 400.dp),
+                                        listState = listState,
+                                        symbol = quote.data.symbol,
+                                        timeSeries = timeSeries,
+                                        positiveChart = timeSeries.data.values.first().close > timeSeries.data.values.last().close,
+                                        backgroundColor = bg,
+                                        updateTimeSeries = updateTimeSeries,
+                                    )
+                                }
+                            }
+
+                            quote.data.ytdReturn?.let {
+                                item {
+                                    StockPerformance(
+                                        quote = quote.data,
+                                        sectorPerformance = sectorPerformance
+                                    )
+                                }
+                            }
+
                             item {
-                                when (timeSeries) {
-                                    is Resource.Loading -> {
-                                        LinearProgressIndicator(Modifier.fillMaxWidth())
-                                    }
-
-                                    is Resource.Error -> {
-                                        StockError(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .height(400.dp)
-                                        )
-                                    }
-
-                                    is Resource.Success -> {
-                                        if (timeSeries.data.isNullOrEmpty()) {
-                                            StockError(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .height(400.dp)
-                                            )
-                                        } else {
-                                            StockChart(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .heightIn(min = 200.dp, max = 400.dp),
-                                                listState = listState,
-                                                symbol = quote.data.symbol,
-                                                timeSeries = timeSeries.data.entries.toList()
-                                                    .asReversed()
-                                                    .associate { it.key to it.value },
-                                                positiveChart = timeSeries.data.values.first().close > timeSeries.data.values.last().close,
-                                                backgroundColor = bg,
-                                                updateTimeSeries = updateTimeSeries,
-                                            )
-                                        }
-                                    }
-                                }
-
-                            }
-                            when (sectorPerformance) {
-                                is Resource.Loading -> {
-                                    item {
-                                        LinearProgressIndicator(Modifier.fillMaxWidth())
-                                    }
-                                }
-
-                                is Resource.Error -> {
-                                    item {
-                                        StockError(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .height(150.dp)
-                                        )
-                                    }
-                                }
-
-                                is Resource.Success -> {
-                                    quote.data.ytdReturn?.let {
-                                        item {
-                                            StockPerformance(
-                                                quote = quote.data,
-                                                sectorPerformance = sectorPerformance.data
-                                            )
-                                        }
-                                    }
-                                }
+                                SimilarStockFeed(
+                                    symbol = quote.data.symbol,
+                                    similarStocks = similarStocks,
+                                    navController = navController
+                                )
                             }
 
-                            when (similarStocks) {
-                                is Resource.Loading -> {
-                                    item {
-                                        LinearProgressIndicator(Modifier.fillMaxWidth())
-                                    }
-                                }
-
-                                is Resource.Error -> {
-                                    item {
-                                        StockError(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .height(150.dp)
-                                        )
-                                    }
-                                }
-
-                                is Resource.Success -> {
-                                    if (similarStocks.data.isNullOrEmpty()) {
-                                        item {
-                                            StockError(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .height(150.dp)
-                                            )
-                                        }
-                                    } else {
-                                        item {
-                                            SimilarStockFeed(
-                                                symbol = quote.data.symbol,
-                                                similarStocks = similarStocks.data,
-                                                navController = navController
-                                            )
-                                        }
-                                    }
-                                }
-                            }
                             item {
                                 StockViewPager(
                                     quote = quote.data,

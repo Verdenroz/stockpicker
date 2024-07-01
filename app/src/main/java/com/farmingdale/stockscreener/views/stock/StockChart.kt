@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -52,6 +54,7 @@ import com.farmingdale.stockscreener.ui.theme.negativeBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
+import com.farmingdale.stockscreener.utils.Resource
 import kotlinx.coroutines.launch
 import java.lang.Math.round
 import java.text.SimpleDateFormat
@@ -67,152 +70,182 @@ fun StockChart(
     modifier: Modifier = Modifier,
     listState: LazyListState,
     symbol: String,
-    timeSeries: Map<String, HistoricalData> = emptyMap(),
+    timeSeries: Resource<Map<String, HistoricalData>>,
     positiveChart: Boolean = true,
     isDarkTheme: Boolean = isSystemInDarkTheme(),
     updateTimeSeries: (String, TimePeriod, Interval) -> Unit,
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
 ) {
-    val guidelineColor = MaterialTheme.colorScheme.outline
+    when (timeSeries) {
+        is Resource.Loading -> {
+            LinearProgressIndicator(Modifier.fillMaxWidth())
+        }
 
-    val upperValue = remember(timeSeries) {
-        timeSeries.values.maxOf { it.close }.plus(1)
-    }
-    val lowerValue = remember(timeSeries) {
-        timeSeries.values.minOf { it.close }.minus(1)
-    }
+        is Resource.Error -> {
+            StockError(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(400.dp)
+            )
+        }
 
-    val density = LocalDensity.current
-    val scope = rememberCoroutineScope()
-
-    val selectedData = rememberSaveable { mutableStateOf<Pair<String, HistoricalData>?>(null) }
-    Text(
-        text = selectedData.value.let {
-            it?.let { (_, historicalData) ->
-                "${historicalData.close}"
-            } ?: ""
-        },
-        style = MaterialTheme.typography.titleLarge,
-        fontWeight = FontWeight.Black,
-        textAlign = TextAlign.Center,
-        modifier = Modifier.fillMaxWidth()
-    )
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 32.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = selectedData.value.let {
-                it?.let { (date, _) ->
-                    date
-                } ?: ""
-            },
-            style = MaterialTheme.typography.labelLarge,
-            letterSpacing = 1.25.sp,
-        )
-        Text(
-            text = selectedData.value.let {
-                it?.let { (_, historicalData) ->
-                    stringResource(R.string.volume) + " ${formatVolume(historicalData.volume)}"
-                } ?: ""
-            },
-            style = MaterialTheme.typography.labelLarge,
-            letterSpacing = 1.25.sp,
-        )
-    }
-
-    Column(
-        modifier = Modifier
-            .padding(start = 16.dp, end = 16.dp, top = 32.dp)
-            .background(backgroundColor)
-    ) {
-        Box(modifier = modifier
-            .pointerInput(timeSeries) {
-                detectTapGestures(
-                    onPress = { offset ->
-                        val spacePerHour = (size.width - SPACING) / timeSeries.size
-                        val index = ((offset.x - SPACING) / spacePerHour).toInt()
-
-                        if (index in timeSeries.entries.indices) {
-                            selectedData.value = timeSeries.entries
-                                .elementAt(index)
-                                .toPair()
-                        } else {
-                            selectedData.value = null
-                        }
-                        scope.launch { listState.animateScrollToItem(0) }
-                    },
-                    onDoubleTap = {
-                        selectedData.value = null
-                    },
-                    onTap = {
-                        selectedData.value = null
-                    }
+        is Resource.Success -> {
+            if (timeSeries.data.isNullOrEmpty()) {
+                StockError(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(400.dp)
                 )
-            }
-            .pointerInput(timeSeries) {
-                detectDragGestures(
-                    onDrag = { change, _ ->
-                        val spacePerHour = (size.width - SPACING) / timeSeries.size
-                        // Calculate the index of the selected data based on the x-coordinate of the drag
-                        val index = ((change.position.x - SPACING) / spacePerHour).toInt()
-                        if (index in timeSeries.entries.indices
-                        ) {
-                            // Update the selected data
-                            selectedData.value = timeSeries.entries
-                                .elementAt(index)
-                                .toPair()
-                        } else {
-                            // Clear the selected data if the drag is outside the data range
-                            selectedData.value = null
-                        }
-                        scope.launch { listState.animateScrollToItem(0) }
-                    },
-                    onDragEnd = {
-                        // Clear the selected data when the drag ends
-                        selectedData.value = null
-                    }
-                )
-            }
-            .drawWithCache {
-                val topShader =
-                    if (positiveChart) positiveTextColor.copy(alpha = .5f) else negativeTextColor.copy(
-                        alpha = .5f
-                    )
-                val bottomShader =
-                    if (positiveChart) positiveBackgroundColor else negativeBackgroundColor
-                val textColor =
-                    if (isDarkTheme) android.graphics.Color.WHITE else android.graphics.Color.BLACK
-                val textPaint = Paint().apply {
-                    color = textColor
-                    textAlign = Paint.Align.CENTER
-                    textSize = density.run { 12.sp.toPx() }
-                    typeface = android.graphics.Typeface.DEFAULT_BOLD
+            } else {
+                val data = timeSeries.data.entries.toList()
+                    .asReversed()
+                    .associate { it.key to it.value }
+
+                val guidelineColor = MaterialTheme.colorScheme.outline
+
+                val upperValue = remember(data) {
+                    data.values.maxOf { it.close }.plus(1)
                 }
-                onDrawBehind {
-                    drawChart(
-                        timeSeries = timeSeries,
-                        size = size,
-                        lowerValue = lowerValue,
-                        upperValue = upperValue,
-                        topShader = topShader,
-                        bottomShader = bottomShader,
-                        guidelineColor = guidelineColor,
-                        textPaint = textPaint,
-                        density = density,
-                        selectedData = selectedData
+                val lowerValue = remember(data) {
+                    data.values.minOf { it.close }.minus(1)
+                }
+
+                val density = LocalDensity.current
+                val scope = rememberCoroutineScope()
+
+                val selectedData =
+                    rememberSaveable { mutableStateOf<Pair<String, HistoricalData>?>(null) }
+                Text(
+                    text = selectedData.value.let {
+                        it?.let { (_, historicalData) ->
+                            "${historicalData.close}"
+                        } ?: ""
+                    },
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Black,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 32.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = selectedData.value.let {
+                            it?.let { (date, _) ->
+                                date
+                            } ?: ""
+                        },
+                        style = MaterialTheme.typography.labelLarge,
+                        letterSpacing = 1.25.sp,
+                    )
+                    Text(
+                        text = selectedData.value.let {
+                            it?.let { (_, historicalData) ->
+                                stringResource(R.string.volume) + " ${formatVolume(historicalData.volume)}"
+                            } ?: ""
+                        },
+                        style = MaterialTheme.typography.labelLarge,
+                        letterSpacing = 1.25.sp,
                     )
                 }
-            }
-        )
 
-        TimePeriodBar(
-            modifier = Modifier.fillMaxWidth(),
-            symbol = symbol,
-            updateTimeSeries = updateTimeSeries
-        )
+                Column(
+                    modifier = Modifier
+                        .padding(start = 16.dp, end = 16.dp, top = 32.dp)
+                        .background(backgroundColor)
+                ) {
+                    Box(modifier = modifier
+                        .pointerInput(data) {
+                            detectTapGestures(
+                                onPress = { offset ->
+                                    val spacePerHour = (size.width - SPACING) / data.size
+                                    val index = ((offset.x - SPACING) / spacePerHour).toInt()
+
+                                    if (index in data.entries.indices) {
+                                        selectedData.value = data.entries
+                                            .elementAt(index)
+                                            .toPair()
+                                    } else {
+                                        selectedData.value = null
+                                    }
+                                    scope.launch { listState.animateScrollToItem(0) }
+                                },
+                                onDoubleTap = {
+                                    selectedData.value = null
+                                },
+                                onTap = {
+                                    selectedData.value = null
+                                }
+                            )
+                        }
+                        .pointerInput(data) {
+                            detectDragGestures(
+                                onDrag = { change, _ ->
+                                    val spacePerHour = (size.width - SPACING) / data.size
+                                    // Calculate the index of the selected data based on the x-coordinate of the drag
+                                    val index =
+                                        ((change.position.x - SPACING) / spacePerHour).toInt()
+                                    if (index in data.entries.indices
+                                    ) {
+                                        // Update the selected data
+                                        selectedData.value = data.entries
+                                            .elementAt(index)
+                                            .toPair()
+                                    } else {
+                                        // Clear the selected data if the drag is outside the data range
+                                        selectedData.value = null
+                                    }
+                                    scope.launch { listState.animateScrollToItem(0) }
+                                },
+                                onDragEnd = {
+                                    // Clear the selected data when the drag ends
+                                    selectedData.value = null
+                                }
+                            )
+                        }
+                        .drawWithCache {
+                            val topShader =
+                                if (positiveChart) positiveTextColor.copy(alpha = .5f) else negativeTextColor.copy(
+                                    alpha = .5f
+                                )
+                            val bottomShader =
+                                if (positiveChart) positiveBackgroundColor else negativeBackgroundColor
+                            val textColor =
+                                if (isDarkTheme) android.graphics.Color.WHITE else android.graphics.Color.BLACK
+                            val textPaint = Paint().apply {
+                                color = textColor
+                                textAlign = Paint.Align.CENTER
+                                textSize = density.run { 12.sp.toPx() }
+                                typeface = android.graphics.Typeface.DEFAULT_BOLD
+                            }
+                            onDrawBehind {
+                                drawChart(
+                                    timeSeries = data,
+                                    size = size,
+                                    lowerValue = lowerValue,
+                                    upperValue = upperValue,
+                                    topShader = topShader,
+                                    bottomShader = bottomShader,
+                                    guidelineColor = guidelineColor,
+                                    textPaint = textPaint,
+                                    density = density,
+                                    selectedData = selectedData
+                                )
+                            }
+                        }
+                    )
+
+                    TimePeriodBar(
+                        modifier = Modifier.fillMaxWidth(),
+                        symbol = symbol,
+                        updateTimeSeries = updateTimeSeries
+                    )
+                }
+            }
+        }
     }
 }
 
