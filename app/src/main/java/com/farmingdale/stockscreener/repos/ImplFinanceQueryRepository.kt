@@ -154,6 +154,15 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
         }
     }.flowOn(Dispatchers.IO)
 
+    override fun getSectorBySymbol(symbol: String): Flow<Resource<MarketSector>> = flow {
+        try {
+            val sector = api.getSectorBySymbol(symbol)
+            emit(Resource.Success(sector))
+        } catch (e: Exception) {
+             emit(Resource.Error(message = e.message ?: "An error occurred"))
+        }
+    }
+
     override suspend fun getTimeSeries(
         symbol: String,
         timePeriod: TimePeriod,

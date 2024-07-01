@@ -97,6 +97,11 @@ abstract class FinanceQueryRepository {
     abstract fun getSimilarStocks(symbol: String): Flow<Resource<List<SimpleQuoteData>>>
 
     /**
+     * Gets the [MarketSector] performance of the symbol if available
+     */
+    abstract fun getSectorBySymbol(symbol: String): Flow<Resource<MarketSector>>
+
+    /**
      * Get historical data for a symbol as a map of dates to [HistoricalData]
      */
     abstract suspend fun getTimeSeries(

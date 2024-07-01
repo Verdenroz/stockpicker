@@ -74,6 +74,14 @@ class FinanceQueryTest {
     }
 
     @Test
+    fun getSectorBySymbol() {
+        val info = runBlocking {
+            api.getSectorBySymbol("AAPL")
+        }
+        println(info)
+    }
+
+    @Test
     fun getGainers() {
         val info = runBlocking {
             api.getGainers()

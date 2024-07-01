@@ -269,6 +269,34 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
         }
     }
 
+    override suspend fun getSectorBySymbol(symbol: String): MarketSector {
+        val stream = getByteStream(
+            FINANCE_QUERY_API_URL.newBuilder().apply {
+                addPathSegments("sectors")
+                addQueryParameter("symbol", symbol)
+            }.build()
+        )
+
+        val sectorResponseList: List<SectorResponse>
+
+        try {
+            sectorResponseList =
+                parser.decodeFromStream(ListSerializer(SectorResponse.serializer()), stream)
+        } catch (e: SerializationException) {
+            throw RuntimeException("Failed to parse JSON response", e)
+        }
+        return sectorResponseList.map {
+            MarketSector(
+                sector = it.sector,
+                dayReturn = it.dayReturn,
+                ytdReturn = it.ytdReturn,
+                yearReturn = it.yearReturn,
+                threeYearReturn = it.threeYearReturn,
+                fiveYearReturn = it.fiveYearReturn
+            )
+        }.first()
+    }
+
     override suspend fun getActives(): List<MarketMover> {
         val stream = getByteStream(
             FINANCE_QUERY_API_URL.newBuilder().apply {

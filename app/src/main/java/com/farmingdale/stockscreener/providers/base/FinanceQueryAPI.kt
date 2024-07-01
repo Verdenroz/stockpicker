@@ -59,6 +59,12 @@ interface FinanceQueryAPI {
     suspend fun getSectors(): List<MarketSector>
 
     /**
+     * Get a specific market sector by symbol
+     * @return [MarketSector]
+     */
+    suspend fun getSectorBySymbol(symbol: String): MarketSector
+
+    /**
      * Get active stocks in the US
      * @return a list of [MarketMover]
      */
