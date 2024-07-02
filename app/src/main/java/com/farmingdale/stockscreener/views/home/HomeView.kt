@@ -13,6 +13,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -26,7 +28,6 @@ import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.utils.DataError
-import com.farmingdale.stockscreener.utils.Error
 import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.viewmodels.ImplHomeViewModel
 import com.farmingdale.stockscreener.viewmodels.base.HomeViewModel
@@ -37,12 +38,25 @@ fun HomeView(
     navController: NavController
 ) {
     val homeViewModel: HomeViewModel = viewModel<ImplHomeViewModel>()
-    val sectors by homeViewModel.sectors.collectAsState<Resource<List<MarketSector>, DataError.Network>>()
-    val news by homeViewModel.news.collectAsState<Resource<List<News>, DataError.Network>>()
-    val indices by homeViewModel.indices.collectAsState<Resource<List<MarketIndex>, DataError.Network>>()
-    val actives by homeViewModel.actives.collectAsState<Resource<List<MarketMover>, DataError.Network>>()
-    val losers by homeViewModel.losers.collectAsState<Resource<List<MarketMover>, DataError.Network>>()
-    val gainers by homeViewModel.gainers.collectAsState<Resource<List<MarketMover>, DataError.Network>>()
+    val sectors by homeViewModel.sectors.collectAsState()
+    val news by homeViewModel.news.collectAsState()
+    val indices by homeViewModel.indices.collectAsState()
+    val actives by homeViewModel.actives.collectAsState()
+    val losers by homeViewModel.losers.collectAsState()
+    val gainers by homeViewModel.gainers.collectAsState()
+    val isNetworkConnected by homeViewModel.isNetworkConnected.collectAsState()
+
+    val initialCompositionCompleted = remember { mutableStateOf(false) }
+
+    LaunchedEffect(isNetworkConnected) {
+        // Only refresh if the network is connected and after the initial composition
+        if (isNetworkConnected && initialCompositionCompleted.value) {
+            homeViewModel.refresh()
+        }
+        // Mark the initial composition as completed after the first LaunchedEffect call
+        initialCompositionCompleted.value = true
+    }
+
 
     HomeContent(
         navController = navController,

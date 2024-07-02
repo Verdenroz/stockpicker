@@ -11,6 +11,8 @@ import com.farmingdale.stockscreener.repos.ImplWatchlistRepository.Companion.get
 import com.farmingdale.stockscreener.repos.base.FinanceQueryRepository
 import com.farmingdale.stockscreener.repos.base.WatchlistRepository
 import com.farmingdale.stockscreener.utils.DataError
+import com.farmingdale.stockscreener.utils.NetworkConnectionManager
+import com.farmingdale.stockscreener.utils.NetworkConnectionManagerImpl.Companion.get
 import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.viewmodels.base.HomeViewModel
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +25,13 @@ import kotlinx.coroutines.launch
 class ImplHomeViewModel(application: Application) : HomeViewModel(application) {
     private val financeQueryRepo = FinanceQueryRepository.get()
     private val watchlistRepo = WatchlistRepository.get(application)
+    private val connectionManager = NetworkConnectionManager.get(application)
+
+    override val isNetworkConnected: StateFlow<Boolean> = connectionManager.isNetworkConnectedFlow.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(),
+        true
+    )
 
     override val news: StateFlow<Resource<List<News>, DataError.Network>> = financeQueryRepo.headlines.stateIn(
         viewModelScope,

@@ -17,6 +17,8 @@ import com.farmingdale.stockscreener.repos.ImplWatchlistRepository.Companion.get
 import com.farmingdale.stockscreener.repos.base.FinanceQueryRepository
 import com.farmingdale.stockscreener.repos.base.WatchlistRepository
 import com.farmingdale.stockscreener.utils.MarketStatusChecker
+import com.farmingdale.stockscreener.utils.NetworkConnectionManager
+import com.farmingdale.stockscreener.utils.NetworkConnectionManagerImpl.Companion.get
 import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.viewmodels.base.MainEvent
 import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
@@ -34,6 +36,13 @@ import kotlinx.coroutines.launch
 class ImplMainViewModel(application: Application) : MainViewModel(application) {
     private val watchlistRepo = WatchlistRepository.get(application)
     private val marketStatusChecker = MarketStatusChecker(watchlistRepo, FinanceQueryRepository.get())
+    private val connectionManager = NetworkConnectionManager.get(application)
+
+    override val isNetworkConnected: StateFlow<Boolean> = connectionManager.isNetworkConnectedFlow.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(),
+        true
+    )
 
     private val eventsChannel = Channel<MainEvent>()
     override val events: Flow<MainEvent> = eventsChannel.receiveAsFlow()
@@ -78,7 +87,7 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
     init {
         // Start checking the market status to update the refresh interval of the repositories
         marketStatusChecker.startChecking()
-
+        connectionManager.startListenNetworkState()
         searcher.response.subscribe { response ->
             _searchResults.value = response?.hits?.take(5)?.mapNotNull { hit ->
                 hit.deserialize(SearchResult.serializer()).takeIf { it.name.isNotBlank() }
@@ -90,6 +99,7 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
         super.onCleared()
         searcher.cancel()
         marketStatusChecker.stopChecking()
+        connectionManager.stopListenNetworkState()
     }
 
     override fun updateRegionFilter(region: RegionFilter) {

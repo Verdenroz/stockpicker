@@ -2,16 +2,19 @@ package com.farmingdale.stockscreener.viewmodels.base
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import com.farmingdale.stockscreener.model.local.News
-import com.farmingdale.stockscreener.model.local.SimpleQuoteData
-import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.model.local.MarketIndex
+import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.model.local.MarketSector
+import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
 import kotlinx.coroutines.flow.StateFlow
 
 abstract class HomeViewModel(application: Application) : AndroidViewModel(application) {
+    /**
+     * Check if the device is connected to the internet
+     */
+    abstract val isNetworkConnected: StateFlow<Boolean>
 
     /**
      * Current [News] headlines displayed on the home screen

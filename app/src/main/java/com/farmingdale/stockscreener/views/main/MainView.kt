@@ -50,6 +50,7 @@ fun MainView() {
     val watchList by mainViewModel.watchList.collectAsState()
     val regionFilter by mainViewModel.regionFilter.collectAsState()
     val typeFilters by mainViewModel.typeFilter.collectAsState()
+    val isNetworkConnected by mainViewModel.isNetworkConnected.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
@@ -70,6 +71,17 @@ fun MainView() {
                     )
                 }
             }
+        }
+    }
+
+    LaunchedEffect(isNetworkConnected) {
+        if (!isNetworkConnected) {
+            snackbarHostState.showSnackbar(
+                message = context.getString(R.string.no_internet),
+                duration = SnackbarDuration.Indefinite
+            )
+        } else {
+            snackbarHostState.currentSnackbarData?.dismiss()
         }
     }
 

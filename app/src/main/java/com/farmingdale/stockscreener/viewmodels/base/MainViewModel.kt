@@ -12,16 +12,23 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 abstract class MainViewModel(application: Application) : AndroidViewModel(application) {
+    /**
+     * A [StateFlow] that emits true if the device is connected to the internet, false otherwise
+     */
+    abstract val isNetworkConnected: StateFlow<Boolean>
 
+    /**
+     * A [Flow] of [MainEvent] that emits events to be handled by the UI
+     */
     abstract val events: Flow<MainEvent>
 
     /**
-     * The current region to filter search results by exchanges
+     * The current [RegionFilter] to filter search results by exchanges
      */
     abstract val regionFilter: StateFlow<RegionFilter>
 
     /**
-     * The current type to filter search results by stock type (stock, etf, trust)
+     * The current [TypeFilter] to filter search results by stock type (stock, etf, trust)
      */
     abstract val typeFilter: StateFlow<List<TypeFilter>>
 
@@ -45,8 +52,14 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
      */
     abstract val watchList: StateFlow<List<SimpleQuoteData>>
 
+    /**
+     * Update the current [region] filter
+     */
     abstract fun updateRegionFilter(region: RegionFilter)
 
+    /**
+     * Toggle the [type] filter on or off
+     */
     abstract fun toggleTypeFilter(type: TypeFilter, isChecked: Boolean)
 
     /**
