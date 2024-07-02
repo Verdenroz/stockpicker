@@ -47,6 +47,7 @@ import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
 import com.farmingdale.stockscreener.model.local.indicators.AnalysisIndicators
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
+import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.viewmodels.ImplStockViewModel
 import com.farmingdale.stockscreener.viewmodels.base.StockViewModel
@@ -66,12 +67,12 @@ fun StockView(
                 return ImplStockViewModel(symbol, application) as T
             }
         })
-    val quote by stockViewModel.quote.collectAsState()
-    val timeSeries by stockViewModel.timeSeries.collectAsState()
-    val similarStocks by stockViewModel.similarStocks.collectAsState()
-    val sectorPerformance by stockViewModel.sectorPerformance.collectAsState()
-    val news by stockViewModel.news.collectAsState()
-    val analysis by stockViewModel.analysis.collectAsState()
+    val quote by stockViewModel.quote.collectAsState<Resource<FullQuoteData, DataError.Network>>()
+    val timeSeries by stockViewModel.timeSeries.collectAsState<Resource<Map<String, HistoricalData>, DataError.Network>>()
+    val similarStocks by stockViewModel.similarStocks.collectAsState<Resource<List<SimpleQuoteData>, DataError.Network>>()
+    val sectorPerformance by stockViewModel.sectorPerformance.collectAsState<Resource<MarketSector?, DataError.Network>>()
+    val news by stockViewModel.news.collectAsState<Resource<List<News>, DataError.Network>>()
+    val analysis by stockViewModel.analysis.collectAsState<Resource<Analysis?, DataError.Network>>()
     val signals by stockViewModel.signals.collectAsState()
     val movingAverageSummary by stockViewModel.movingAveragesSummary.collectAsState()
     val oscillatorsSummary by stockViewModel.oscillatorsSummary.collectAsState()
@@ -107,12 +108,12 @@ fun StockView(
 fun StockContent(
     navController: NavController,
     symbol: String,
-    quote: Resource<FullQuoteData>,
-    timeSeries: Resource<Map<String, HistoricalData>>,
-    similarStocks: Resource<List<SimpleQuoteData>>,
-    sectorPerformance: Resource<MarketSector?>,
-    news: Resource<List<News>>,
-    analysis: Resource<Analysis>,
+    quote: Resource<FullQuoteData, DataError.Network>,
+    timeSeries: Resource<Map<String, HistoricalData>, DataError.Network>,
+    similarStocks: Resource<List<SimpleQuoteData>, DataError.Network>,
+    sectorPerformance: Resource<MarketSector?, DataError.Network>,
+    news: Resource<List<News>, DataError.Network>,
+    analysis: Resource<Analysis?, DataError.Network>,
     signals: Map<AnalysisIndicators, String>,
     movingAverageSummary: Double,
     oscillatorsSummary: Double,
@@ -163,70 +164,63 @@ fun StockContent(
 
             is Resource.Success -> {
                 val listState = rememberLazyListState()
-                if (quote.data == null) {
-                    StockError()
-                } else {
-                    Box(
-                        modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection()),
+                Box(
+                    modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection()),
+                ) {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(padding)
+                            .background(bg),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        LazyColumn(
-                            state = listState,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(padding)
-                                .background(bg),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            stickyHeader {
-                                StockHeadline(quote = quote.data, bg = bg)
-                            }
+                        stickyHeader {
+                            StockHeadline(quote = quote.data, bg = bg)
+                        }
 
-                            timeSeries.data?.let {
-                                item {
-                                    StockChart(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .heightIn(min = 200.dp, max = 400.dp),
-                                        listState = listState,
-                                        symbol = quote.data.symbol,
-                                        timeSeries = timeSeries,
-                                        positiveChart = timeSeries.data.values.first().close > timeSeries.data.values.last().close,
-                                        backgroundColor = bg,
-                                        updateTimeSeries = updateTimeSeries,
-                                    )
-                                }
-                            }
+                        item {
+                            StockChart(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 200.dp, max = 400.dp),
+                                listState = listState,
+                                symbol = quote.data.symbol,
+                                timeSeries = timeSeries,
+                                backgroundColor = bg,
+                                updateTimeSeries = updateTimeSeries,
+                            )
+                        }
 
-                            quote.data.ytdReturn?.let {
-                                item {
-                                    StockPerformance(
-                                        quote = quote.data,
-                                        sectorPerformance = sectorPerformance
-                                    )
-                                }
-                            }
-
+                        quote.data.ytdReturn?.let {
                             item {
-                                SimilarStockFeed(
-                                    symbol = quote.data.symbol,
-                                    similarStocks = similarStocks,
-                                    navController = navController
-                                )
-                            }
-
-                            item {
-                                StockViewPager(
+                                StockPerformance(
                                     quote = quote.data,
-                                    news = news,
-                                    analysis = analysis,
-                                    signals = signals,
-                                    movingAverageSummary = movingAverageSummary,
-                                    oscillatorsSummary = oscillatorsSummary,
-                                    trendsSummary = trendsSummary,
-                                    overallSummary = overallSummary,
-                                    updateAnalysisInterval = updateAnalysisInterval
+                                    sectorPerformance = sectorPerformance
                                 )
                             }
+                        }
+
+                        item {
+                            SimilarStockFeed(
+                                symbol = quote.data.symbol,
+                                similarStocks = similarStocks,
+                                navController = navController
+                            )
+                        }
+
+                        item {
+                            StockViewPager(
+                                quote = quote.data,
+                                news = news,
+                                analysis = analysis,
+                                signals = signals,
+                                movingAverageSummary = movingAverageSummary,
+                                oscillatorsSummary = oscillatorsSummary,
+                                trendsSummary = trendsSummary,
+                                overallSummary = overallSummary,
+                                updateAnalysisInterval = updateAnalysisInterval
+                            )
                         }
                     }
                 }

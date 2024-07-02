@@ -38,11 +38,12 @@ import coil.ImageLoader
 import coil.compose.SubcomposeAsyncImage
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.News
+import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
 
 @Composable
 fun StockNewsFeed(
-    news: Resource<List<News>>
+    news: Resource<List<News>, DataError.Network>
 ) {
 
     when (news) {
@@ -66,7 +67,7 @@ fun StockNewsFeed(
         }
 
         is Resource.Success -> {
-            if (news.data.isNullOrEmpty()) {
+            if (news.data.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .height(300.dp)

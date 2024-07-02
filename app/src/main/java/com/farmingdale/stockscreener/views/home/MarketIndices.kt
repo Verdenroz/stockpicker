@@ -32,13 +32,14 @@ import com.farmingdale.stockscreener.model.local.MarketIndex
 import com.farmingdale.stockscreener.ui.theme.indexColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
+import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
 import kotlinx.coroutines.launch
 import java.util.Locale
 
 @Composable
 fun MarketIndices(
-    indices: Resource<List<MarketIndex>>,
+    indices: Resource<List<MarketIndex>, DataError>,
     refresh: () -> Unit,
 ) {
     Column(
@@ -59,11 +60,23 @@ fun MarketIndices(
             }
 
             is Resource.Error -> {
-                ErrorCard(refresh = refresh)
+                var error = stringResource(id = R.string.error_loading_data)
+                when (indices.error) {
+                    DataError.Network.NO_INTERNET -> error = "No internet connection"
+                    DataError.Network.TIMEOUT -> error = "Timeout error"
+                    DataError.Network.BAD_REQUEST -> error = "Bad request"
+                    DataError.Network.DENIED -> error = "Access denied"
+                    DataError.Network.NOT_FOUND -> error = "Not found"
+                    DataError.Network.THROTTLED -> error = "Throttled"
+                    DataError.Network.SERVER_DOWN -> error = "Server down"
+                    DataError.Network.SERIALIZATION -> error = "Serialization error"
+                    DataError.Network.UNKNOWN -> error = "Unknown error"
+                }
+                ErrorCard(refresh = refresh, message = error)
             }
 
             is Resource.Success -> {
-                if (indices.data.isNullOrEmpty()) {
+                if (indices.data.isEmpty()) {
                     ErrorCard(refresh = refresh)
                 } else {
                     LazyRow(

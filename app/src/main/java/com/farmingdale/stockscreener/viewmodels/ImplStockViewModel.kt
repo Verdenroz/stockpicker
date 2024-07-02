@@ -18,8 +18,6 @@ import com.farmingdale.stockscreener.repos.ImplWatchlistRepository.Companion.get
 import com.farmingdale.stockscreener.repos.base.FinanceQueryRepository
 import com.farmingdale.stockscreener.repos.base.WatchlistRepository
 import com.farmingdale.stockscreener.utils.DataError
-import com.farmingdale.stockscreener.utils.NetworkConnectionManager
-import com.farmingdale.stockscreener.utils.NetworkConnectionManagerImpl.Companion.get
 import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.viewmodels.base.StockViewModel
 import kotlinx.coroutines.Dispatchers
@@ -34,9 +32,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class ImplStockViewModel(symbol: String, application: Application) : StockViewModel(application) {
-    private val networkConnectionManager = NetworkConnectionManager.get(application, viewModelScope)
-    private val financeQueryRepo = FinanceQueryRepository.get(networkConnectionManager)
-    private val watchlistRepo = WatchlistRepository.get(application, networkConnectionManager)
+    private val financeQueryRepo = FinanceQueryRepository.get()
+    private val watchlistRepo = WatchlistRepository.get(application)
 
     override val quote: StateFlow<Resource<FullQuoteData, DataError.Network>> = financeQueryRepo.getFullQuote(symbol)
         .stateIn(

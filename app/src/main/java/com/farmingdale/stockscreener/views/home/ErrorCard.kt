@@ -2,7 +2,6 @@ package com.farmingdale.stockscreener.views.home
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -26,38 +25,34 @@ import com.farmingdale.stockscreener.R
 
 @Composable
 fun ErrorCard(
+    modifier: Modifier = Modifier,
+    message: String = stringResource(id = R.string.error_loading_data),
     refresh: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .size(300.dp, 150.dp)
+    Card(
+        modifier = modifier
+            .clickable(onClick = refresh),
+        shape = RoundedCornerShape(10),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer
+        )
     ) {
-        Card(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable { refresh() },
-            shape = RoundedCornerShape(10),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.errorContainer
-            )
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    Icons.Default.Warning,
-                    contentDescription = stringResource(id = R.string.notLoaded)
-                )
-                Text(
-                    text = stringResource(id = R.string.notLoaded),
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onErrorContainer
-                )
-            }
+            Icon(
+                Icons.Default.Warning,
+                contentDescription = stringResource(id = R.string.notLoaded)
+            )
+            Text(
+                text = message,
+                modifier = Modifier.padding(16.dp),
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onErrorContainer
+            )
         }
     }
 }
@@ -66,6 +61,7 @@ fun ErrorCard(
 @Composable
 fun PreviewErrorCard() {
     ErrorCard(
+        modifier = Modifier.size(200.dp),
         refresh = {}
     )
 }

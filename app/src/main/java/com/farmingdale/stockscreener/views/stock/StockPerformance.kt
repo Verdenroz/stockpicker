@@ -25,12 +25,13 @@ import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
+import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
 
 @Composable
 fun StockPerformance(
     quote: FullQuoteData,
-    sectorPerformance: Resource<MarketSector?>
+    sectorPerformance: Resource<MarketSector?, DataError.Network>
 ) {
     when (sectorPerformance) {
         is Resource.Loading -> {

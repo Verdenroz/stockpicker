@@ -25,6 +25,7 @@ import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.Interval
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.indicators.AnalysisIndicators
+import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.views.stock.analysis.StockAnalysis
 import kotlinx.coroutines.CoroutineScope
@@ -34,8 +35,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun StockViewPager(
     quote: FullQuoteData,
-    news: Resource<List<News>>,
-    analysis: Resource<Analysis>,
+    news: Resource<List<News>, DataError.Network>,
+    analysis: Resource<Analysis?, DataError.Network>,
     signals: Map<AnalysisIndicators, String>,
     movingAverageSummary: Double,
     oscillatorsSummary: Double,
@@ -50,8 +51,9 @@ fun StockViewPager(
         modifier = Modifier
             .requiredHeightIn(
                 min = 300.dp,
-                max = if ((news.data?.size
-                        ?: 0) < 5 && state.currentPage == 1 || (analysis.data == null && state.currentPage == 2)
+                max = if (
+                    (news is Resource.Success && news.data.size < 5 && state.currentPage == 1) ||
+                    (analysis is Resource.Success && analysis.data == null && state.currentPage == 2)
                 ) 300.dp else 900.dp
             )
             .fillMaxWidth(),

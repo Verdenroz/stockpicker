@@ -54,6 +54,7 @@ import com.farmingdale.stockscreener.ui.theme.negativeBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
+import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
 import kotlinx.coroutines.launch
 import java.lang.Math.round
@@ -70,8 +71,7 @@ fun StockChart(
     modifier: Modifier = Modifier,
     listState: LazyListState,
     symbol: String,
-    timeSeries: Resource<Map<String, HistoricalData>>,
-    positiveChart: Boolean = true,
+    timeSeries: Resource<Map<String, HistoricalData>, DataError.Network>,
     isDarkTheme: Boolean = isSystemInDarkTheme(),
     updateTimeSeries: (String, TimePeriod, Interval) -> Unit,
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
@@ -90,18 +90,25 @@ fun StockChart(
         }
 
         is Resource.Success -> {
-            if (timeSeries.data.isNullOrEmpty()) {
+            if (timeSeries.data.isEmpty()) {
                 StockError(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(400.dp)
                 )
             } else {
+                val density = LocalDensity.current
+                val scope = rememberCoroutineScope()
+
                 val data = timeSeries.data.entries.toList()
                     .asReversed()
                     .associate { it.key to it.value }
 
                 val guidelineColor = MaterialTheme.colorScheme.outline
+
+                val positiveChart = remember(data) {
+                    timeSeries.data.values.first().close > timeSeries.data.values.last().close
+                }
 
                 val upperValue = remember(data) {
                     data.values.maxOf { it.close }.plus(1)
@@ -110,11 +117,10 @@ fun StockChart(
                     data.values.minOf { it.close }.minus(1)
                 }
 
-                val density = LocalDensity.current
-                val scope = rememberCoroutineScope()
+                val selectedData = rememberSaveable {
+                    mutableStateOf<Pair<String, HistoricalData>?>(null)
+                }
 
-                val selectedData =
-                    rememberSaveable { mutableStateOf<Pair<String, HistoricalData>?>(null) }
                 Text(
                     text = selectedData.value.let {
                         it?.let { (_, historicalData) ->

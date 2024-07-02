@@ -30,11 +30,12 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.News
+import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
 
 @Composable
 fun NewsFeed(
-    news: Resource<List<News>>,
+    news: Resource<List<News>, DataError.Network>,
     refresh: () -> Unit,
 ) {
     Column(
@@ -58,7 +59,7 @@ fun NewsFeed(
             }
 
             is Resource.Success -> {
-                if (news.data.isNullOrEmpty()) {
+                if (news.data.isEmpty()) {
                     ErrorCard(refresh = refresh)
                 } else {
                     LazyRow(

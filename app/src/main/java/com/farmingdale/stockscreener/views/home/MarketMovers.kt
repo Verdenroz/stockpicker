@@ -43,6 +43,7 @@ import com.farmingdale.stockscreener.ui.theme.negativeBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
+import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -52,9 +53,9 @@ import java.util.Locale
 fun MarketMovers(
     listState: LazyListState,
     navController: NavController,
-    actives: Resource<List<MarketMover>>,
-    losers: Resource<List<MarketMover>>,
-    gainers: Resource<List<MarketMover>>,
+    actives: Resource<List<MarketMover>, DataError.Network>,
+    losers: Resource<List<MarketMover>, DataError.Network>,
+    gainers: Resource<List<MarketMover>, DataError.Network>,
     refresh: () -> Unit,
 ) {
     val state = rememberPagerState(pageCount = { 3 })
@@ -136,7 +137,7 @@ fun MarketMovers(
 
 @Composable
 fun MarketMoversList(
-    stocks: Resource<List<MarketMover>>,
+    stocks: Resource<List<MarketMover>, DataError.Network>,
     navController: NavController,
     refresh: () -> Unit
 ) {
@@ -162,7 +163,7 @@ fun MarketMoversList(
         }
 
         is Resource.Success -> {
-            if (stocks.data.isNullOrEmpty()) {
+            if (stocks.data.isEmpty()) {
                 ErrorCard(refresh = refresh)
             } else {
                 Column(

@@ -47,6 +47,7 @@ import com.farmingdale.stockscreener.model.local.indicators.Macd
 import com.farmingdale.stockscreener.model.local.indicators.SuperTrend
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
+import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.views.stock.StockError
 
@@ -54,7 +55,7 @@ import com.farmingdale.stockscreener.views.stock.StockError
 @Composable
 fun StockAnalysis(
     symbol: String,
-    analysis: Resource<Analysis>,
+    analysis: Resource<Analysis?, DataError.Network>,
     signals: Map<AnalysisIndicators, String>,
     movingAverageSummary: Double,
     oscillatorSummary: Double,

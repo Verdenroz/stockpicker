@@ -21,13 +21,14 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
+import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
 
 
 @Composable
 fun SimilarStockFeed(
     symbol: String,
-    similarStocks: Resource<List<SimpleQuoteData>>,
+    similarStocks: Resource<List<SimpleQuoteData>, DataError.Network>,
     navController: NavController
 ) {
 
@@ -45,7 +46,7 @@ fun SimilarStockFeed(
         }
 
         is Resource.Success -> {
-            if (similarStocks.data.isNullOrEmpty()) {
+            if (similarStocks.data.isEmpty()) {
                 StockError(
                     modifier = Modifier
                         .fillMaxWidth()

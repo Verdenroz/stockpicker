@@ -33,12 +33,13 @@ import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.ui.theme.indexColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
+import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
 import kotlinx.coroutines.launch
 
 @Composable
 fun MarketSectors(
-    sectors: Resource<List<MarketSector>>,
+    sectors: Resource<List<MarketSector>, DataError.Network>,
     refresh: () -> Unit,
 ) {
     Column(
@@ -63,7 +64,7 @@ fun MarketSectors(
             }
 
             is Resource.Success -> {
-                if (sectors.data.isNullOrEmpty()) {
+                if (sectors.data.isEmpty()) {
                     ErrorCard(refresh = refresh)
                 } else {
                     LazyRow(
