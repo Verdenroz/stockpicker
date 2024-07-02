@@ -17,19 +17,26 @@ import com.farmingdale.stockscreener.repos.ImplWatchlistRepository.Companion.get
 import com.farmingdale.stockscreener.repos.base.FinanceQueryRepository
 import com.farmingdale.stockscreener.repos.base.WatchlistRepository
 import com.farmingdale.stockscreener.utils.MarketStatusChecker
+import com.farmingdale.stockscreener.utils.Resource
+import com.farmingdale.stockscreener.viewmodels.base.MainEvent
 import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class ImplMainViewModel(application: Application) : MainViewModel(application) {
     private val watchlistRepo = WatchlistRepository.get(application)
-    private val marketStatusChecker =
-        MarketStatusChecker(watchlistRepo, FinanceQueryRepository.get())
+    private val marketStatusChecker = MarketStatusChecker(watchlistRepo, FinanceQueryRepository.get())
+
+    private val eventsChannel = Channel<MainEvent>()
+    override val events: Flow<MainEvent> = eventsChannel.receiveAsFlow()
 
     private val _regionFilter = MutableStateFlow(RegionFilter.US)
     override val regionFilter: StateFlow<RegionFilter> = _regionFilter.asStateFlow()
@@ -137,14 +144,28 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
 
     override fun refreshWatchList() {
         viewModelScope.launch(Dispatchers.IO) {
-            watchlistRepo.refreshWatchList()
+            when (val result = watchlistRepo.refreshWatchList()) {
+                is Resource.Error -> {
+                    eventsChannel.send(MainEvent.Error(result.error.asUiText()))
+                }
+                else -> {
+                    // Do nothing
+                }
+            }
         }
     }
 
     override fun addToWatchList(symbol: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            watchlistRepo.addToWatchList(symbol)
-            refreshWatchList()
+            when (val result = watchlistRepo.addToWatchList(symbol)) {
+                is Resource.Error -> {
+                    eventsChannel.send(MainEvent.Error(result.error.asUiText()))
+                }
+
+                else -> {
+                    refreshWatchList()
+                }
+            }
         }
     }
 

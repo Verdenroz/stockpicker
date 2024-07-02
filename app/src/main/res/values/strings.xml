@@ -138,4 +138,14 @@
     <string name="last_capital_gain">Last Cap Gain</string>
     <string name="error">Error</string>
     <string name="error_loading_data">Unable to retrieve data</string>
+    <string name="no_internet">No Internet</string>
+    <string name="timeout">Data timed out</string>
+    <string name="bad_request">Bad request</string>
+    <string name="denied">Denied access</string>
+    <string name="not_found">Data not found</string>
+    <string name="throttled">Too many requests</string>
+    <string name="server_down">Server cannot be reached</string>
+    <string name="serialization">Error parsing data</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="dismiss">Dismiss</string>
 </resources>

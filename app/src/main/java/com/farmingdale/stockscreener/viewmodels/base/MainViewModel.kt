@@ -7,9 +7,14 @@ import com.farmingdale.stockscreener.model.local.SearchResult
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TypeFilter
 import com.algolia.search.model.search.Query
+import com.farmingdale.stockscreener.utils.UiText
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 abstract class MainViewModel(application: Application) : AndroidViewModel(application) {
+
+    abstract val events: Flow<MainEvent>
+
     /**
      * The current region to filter search results by exchanges
      */
@@ -69,4 +74,8 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
      */
     abstract fun deleteFromWatchList(symbol: String)
 
+}
+
+sealed interface MainEvent {
+    data class Error(val message: UiText) : MainEvent
 }

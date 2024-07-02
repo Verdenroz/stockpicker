@@ -52,7 +52,7 @@ class ImplWatchlistRepository(
                 val updatedQuotes = api.getBulkQuote(symbols)
                 db.updateAll(updatedQuotes.map { it.toDB() })
             }
-            return Resource.Success(Unit)
+            Resource.Success(Unit)
         } catch (e: DataException) {
             when (e) {
                 is HttpException -> {
@@ -66,7 +66,6 @@ class ImplWatchlistRepository(
                         else -> Resource.Error(DataError.Network.UNKNOWN)
                     }
                 }
-
                 is NetworkException -> Resource.Error(DataError.Network.NO_INTERNET)
                 is UnknownException -> Resource.Error(DataError.Network.UNKNOWN)
             }

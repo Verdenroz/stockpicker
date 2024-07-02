@@ -7,12 +7,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -20,12 +26,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.RegionFilter
 import com.farmingdale.stockscreener.model.local.SearchResult
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TypeFilter
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
+import com.farmingdale.stockscreener.utils.UiText
 import com.farmingdale.stockscreener.viewmodels.ImplMainViewModel
+import com.farmingdale.stockscreener.viewmodels.base.MainEvent
 import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
 import com.farmingdale.stockscreener.views.Screen
 import com.farmingdale.stockscreener.views.home.HomeView
@@ -41,12 +50,32 @@ fun MainView() {
     val watchList by mainViewModel.watchList.collectAsState()
     val regionFilter by mainViewModel.regionFilter.collectAsState()
     val typeFilters by mainViewModel.typeFilter.collectAsState()
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
     LaunchedEffect(key1 = query) {
         delay(250)
         mainViewModel.search(query)
     }
+
+    LaunchedEffect(Unit) {
+        mainViewModel.events.collect { event ->
+            when (event) {
+                is MainEvent.Error -> {
+                    snackbarHostState.showSnackbar(
+                        message = event.message.asString(context),
+                        actionLabel = UiText.StringResource(R.string.dismiss).asString(context),
+                        duration = SnackbarDuration.Short
+                    )
+                }
+            }
+        }
+    }
+
     StockScreenerTheme {
         MainContent(
+            snackbarHost = snackbarHostState,
             searchResults = searchResults,
             watchList = watchList,
             regionFilter = regionFilter,
@@ -62,6 +91,7 @@ fun MainView() {
 
 @Composable
 fun MainContent(
+    snackbarHost: SnackbarHostState,
     searchResults: List<SearchResult>?,
     watchList: List<SimpleQuoteData>,
     regionFilter: RegionFilter,
@@ -76,6 +106,17 @@ fun MainContent(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     Scaffold(
+        snackbarHost = { SnackbarHost(
+            hostState = snackbarHost,
+            snackbar = { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    dismissActionContentColor = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        ) },
         topBar = {
             if (currentRoute != "stock/{symbol}") {
                 SearchBar(
