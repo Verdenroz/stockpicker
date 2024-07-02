@@ -7,40 +7,41 @@ import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.model.local.MarketIndex
 import com.farmingdale.stockscreener.model.local.MarketSector
+import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
 import kotlinx.coroutines.flow.StateFlow
 
-abstract class HomeViewModel(application: Application): AndroidViewModel(application) {
+abstract class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     /**
      * Current [News] headlines displayed on the home screen
      */
-    abstract val news: StateFlow<Resource<List<News>>>
+    abstract val news: StateFlow<Resource<List<News>, DataError.Network>>
 
     /**
      * The list of market indices as [MarketIndex]
      */
-    abstract val indices: StateFlow<Resource<List<MarketIndex>>>
+    abstract val indices: StateFlow<Resource<List<MarketIndex>, DataError.Network>>
 
     /**
      * List of market sectors as [MarketSector]
      */
-    abstract val sectors: StateFlow<Resource<List<MarketSector>>>
+    abstract val sectors: StateFlow<Resource<List<MarketSector>, DataError.Network>>
 
     /**
      * List of active stocks as [MarketMover]
      */
-    abstract val actives: StateFlow<Resource<List<MarketMover>>>
+    abstract val actives: StateFlow<Resource<List<MarketMover>, DataError.Network>>
 
     /**
      * List of losing stocks as [MarketMover]
      */
-    abstract val gainers: StateFlow<Resource<List<MarketMover>>>
+    abstract val gainers: StateFlow<Resource<List<MarketMover>, DataError.Network>>
 
     /**
      * List of gaining stocks as [MarketMover]
      */
-    abstract val losers: StateFlow<Resource<List<MarketMover>>>
+    abstract val losers: StateFlow<Resource<List<MarketMover>, DataError.Network>>
 
     /**
      * Refresh the home screen with new data

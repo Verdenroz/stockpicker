@@ -12,8 +12,11 @@ import com.farmingdale.stockscreener.model.local.RegionFilter
 import com.farmingdale.stockscreener.model.local.SearchResult
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TypeFilter
+import com.farmingdale.stockscreener.repos.ImplFinanceQueryRepository.Companion.get
 import com.farmingdale.stockscreener.repos.ImplWatchlistRepository.Companion.get
+import com.farmingdale.stockscreener.repos.base.FinanceQueryRepository
 import com.farmingdale.stockscreener.repos.base.WatchlistRepository
+import com.farmingdale.stockscreener.utils.MarketStatusChecker
 import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,11 +28,14 @@ import kotlinx.coroutines.launch
 
 class ImplMainViewModel(application: Application) : MainViewModel(application) {
     private val watchlistRepo = WatchlistRepository.get(application)
+    private val marketStatusChecker =
+        MarketStatusChecker(watchlistRepo, FinanceQueryRepository.get())
 
     private val _regionFilter = MutableStateFlow(RegionFilter.US)
     override val regionFilter: StateFlow<RegionFilter> = _regionFilter.asStateFlow()
 
-    private val _typeFilter = MutableStateFlow(listOf(TypeFilter.STOCK, TypeFilter.ETF, TypeFilter.TRUST))
+    private val _typeFilter =
+        MutableStateFlow(listOf(TypeFilter.STOCK, TypeFilter.ETF, TypeFilter.TRUST))
     override val typeFilter: StateFlow<List<TypeFilter>> = _typeFilter.asStateFlow()
 
     private val _query = MutableStateFlow("")
@@ -48,7 +54,11 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
     override val searchResults: StateFlow<List<SearchResult>?> = _searchResults.asStateFlow()
 
     override val watchList: StateFlow<List<SimpleQuoteData>> =
-        watchlistRepo.watchlist.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+        watchlistRepo.watchlist.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(),
+            emptyList()
+        )
 
     private val index = IndexName("stocks")
     private val searcher = HitsSearcher(
@@ -59,11 +69,20 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
     )
 
     init {
+        // Start checking the market status to update the refresh interval of the repositories
+        marketStatusChecker.startChecking()
+
         searcher.response.subscribe { response ->
             _searchResults.value = response?.hits?.take(5)?.mapNotNull { hit ->
                 hit.deserialize(SearchResult.serializer()).takeIf { it.name.isNotBlank() }
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        searcher.cancel()
+        marketStatusChecker.stopChecking()
     }
 
     override fun updateRegionFilter(region: RegionFilter) {
@@ -98,11 +117,6 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
         ))
 
         searcher.searchAsync()
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        searcher.cancel()
     }
 
     override fun updateQuery(query: String) {

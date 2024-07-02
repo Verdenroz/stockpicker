@@ -25,6 +25,8 @@ import com.farmingdale.stockscreener.model.local.MarketIndex
 import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.model.local.News
+import com.farmingdale.stockscreener.utils.DataError
+import com.farmingdale.stockscreener.utils.Error
 import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.viewmodels.ImplHomeViewModel
 import com.farmingdale.stockscreener.viewmodels.base.HomeViewModel
@@ -35,12 +37,12 @@ fun HomeView(
     navController: NavController
 ) {
     val homeViewModel: HomeViewModel = viewModel<ImplHomeViewModel>()
-    val sectors by homeViewModel.sectors.collectAsState()
-    val news by homeViewModel.news.collectAsState()
-    val indices by homeViewModel.indices.collectAsState()
-    val actives by homeViewModel.actives.collectAsState()
-    val losers by homeViewModel.losers.collectAsState()
-    val gainers by homeViewModel.gainers.collectAsState()
+    val sectors by homeViewModel.sectors.collectAsState<Resource<List<MarketSector>, DataError.Network>>()
+    val news by homeViewModel.news.collectAsState<Resource<List<News>, DataError.Network>>()
+    val indices by homeViewModel.indices.collectAsState<Resource<List<MarketIndex>, DataError.Network>>()
+    val actives by homeViewModel.actives.collectAsState<Resource<List<MarketMover>, DataError.Network>>()
+    val losers by homeViewModel.losers.collectAsState<Resource<List<MarketMover>, DataError.Network>>()
+    val gainers by homeViewModel.gainers.collectAsState<Resource<List<MarketMover>, DataError.Network>>()
 
     HomeContent(
         navController = navController,
@@ -58,12 +60,12 @@ fun HomeView(
 @Composable
 fun HomeContent(
     navController: NavController,
-    sectors: Resource<List<MarketSector>>,
-    news: Resource<List<News>>,
-    indices: Resource<List<MarketIndex>>,
-    actives: Resource<List<MarketMover>>,
-    losers: Resource<List<MarketMover>>,
-    gainers: Resource<List<MarketMover>>,
+    sectors: Resource<List<MarketSector>, DataError.Network>,
+    news: Resource<List<News>, DataError.Network>,
+    indices: Resource<List<MarketIndex>, DataError.Network>,
+    actives: Resource<List<MarketMover>, DataError.Network>,
+    losers: Resource<List<MarketMover>, DataError.Network>,
+    gainers: Resource<List<MarketMover>, DataError.Network>,
     refresh: () -> Unit,
 ) {
     val pullRefreshState = rememberPullToRefreshState()

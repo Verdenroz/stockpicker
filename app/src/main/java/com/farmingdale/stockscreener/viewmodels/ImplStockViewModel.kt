@@ -17,6 +17,9 @@ import com.farmingdale.stockscreener.repos.ImplFinanceQueryRepository.Companion.
 import com.farmingdale.stockscreener.repos.ImplWatchlistRepository.Companion.get
 import com.farmingdale.stockscreener.repos.base.FinanceQueryRepository
 import com.farmingdale.stockscreener.repos.base.WatchlistRepository
+import com.farmingdale.stockscreener.utils.DataError
+import com.farmingdale.stockscreener.utils.NetworkConnectionManager
+import com.farmingdale.stockscreener.utils.NetworkConnectionManagerImpl.Companion.get
 import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.viewmodels.base.StockViewModel
 import kotlinx.coroutines.Dispatchers
@@ -31,10 +34,11 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class ImplStockViewModel(symbol: String, application: Application) : StockViewModel(application) {
-    private val financeQueryRepo = FinanceQueryRepository.get()
-    private val watchlistRepo = WatchlistRepository.get(application)
+    private val networkConnectionManager = NetworkConnectionManager.get(application, viewModelScope)
+    private val financeQueryRepo = FinanceQueryRepository.get(networkConnectionManager)
+    private val watchlistRepo = WatchlistRepository.get(application, networkConnectionManager)
 
-    override val quote: StateFlow<Resource<FullQuoteData>> = financeQueryRepo.getFullQuote(symbol)
+    override val quote: StateFlow<Resource<FullQuoteData, DataError.Network>> = financeQueryRepo.getFullQuote(symbol)
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000L, 15000L),
@@ -42,11 +46,11 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
         )
 
     private val _timeSeries =
-        MutableStateFlow<Resource<Map<String, HistoricalData>>>(Resource.Loading(true))
-    override val timeSeries: StateFlow<Resource<Map<String, HistoricalData>>> =
+        MutableStateFlow<Resource<Map<String, HistoricalData>, DataError.Network>>(Resource.Loading(true))
+    override val timeSeries: StateFlow<Resource<Map<String, HistoricalData>, DataError.Network>> =
         _timeSeries.asStateFlow()
 
-    override val similarStocks: StateFlow<Resource<List<SimpleQuoteData>>> =
+    override val similarStocks: StateFlow<Resource<List<SimpleQuoteData>, DataError.Network>> =
         financeQueryRepo.getSimilarStocks(symbol)
             .stateIn(
                 viewModelScope,
@@ -54,69 +58,71 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
                 Resource.Loading(true)
             )
 
-    override val sectorPerformance: StateFlow<Resource<MarketSector?>> = financeQueryRepo.getSectorBySymbol(symbol)
+    override val sectorPerformance: StateFlow<Resource<MarketSector?, DataError.Network>> = financeQueryRepo.getSectorBySymbol(symbol)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), Resource.Loading(true))
 
-    override val news: StateFlow<Resource<List<News>>> =
+    override val news: StateFlow<Resource<List<News>, DataError.Network>> =
         financeQueryRepo.getNewsForSymbol(symbol)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), Resource.Loading(true))
 
-    private val _analysis = MutableStateFlow<Resource<Analysis>>(Resource.Loading(true))
-    override val analysis: StateFlow<Resource<Analysis>> = _analysis.asStateFlow()
+    private val _analysis = MutableStateFlow<Resource<Analysis?, DataError.Network>>(Resource.Loading(true))
+    override val analysis: StateFlow<Resource<Analysis?, DataError.Network>> = _analysis.asStateFlow()
 
     override val signals: StateFlow<Map<AnalysisIndicators, String>> = combine(
         quote,
         analysis
     ) { quote, analysis ->
-        val context = getApplication<Application>().applicationContext
-        val currentPrice = quote.data?.price ?: 0.0
         val signals = mutableMapOf<AnalysisIndicators, String>()
+        if (quote is Resource.Success && analysis is Resource.Success) {
+            val context = getApplication<Application>().applicationContext
+            val currentPrice = quote.data.price
 
-        val indicators = AnalysisIndicators.entries
-        if (analysis.data != null) {
-            for (indicator in indicators) {
-                val value = when (indicator) {
-                    AnalysisIndicators.SMA10 -> analysis.data.sma10
-                    AnalysisIndicators.SMA20 -> analysis.data.sma20
-                    AnalysisIndicators.SMA50 -> analysis.data.sma50
-                    AnalysisIndicators.SMA100 -> analysis.data.sma100
-                    AnalysisIndicators.SMA200 -> analysis.data.sma200
-                    AnalysisIndicators.EMA10 -> analysis.data.ema10
-                    AnalysisIndicators.EMA20 -> analysis.data.ema20
-                    AnalysisIndicators.EMA50 -> analysis.data.ema50
-                    AnalysisIndicators.EMA100 -> analysis.data.ema100
-                    AnalysisIndicators.EMA200 -> analysis.data.ema200
-                    AnalysisIndicators.WMA10 -> analysis.data.wma10
-                    AnalysisIndicators.WMA20 -> analysis.data.wma20
-                    AnalysisIndicators.WMA50 -> analysis.data.wma50
-                    AnalysisIndicators.WMA100 -> analysis.data.wma100
-                    AnalysisIndicators.WMA200 -> analysis.data.wma200
-                    AnalysisIndicators.VWMA20 -> analysis.data.vwma20
-                    AnalysisIndicators.RSI -> analysis.data.rsi14
-                    AnalysisIndicators.SRSI -> analysis.data.srsi14
-                    AnalysisIndicators.CCI -> analysis.data.cci20
-                    AnalysisIndicators.ADX -> analysis.data.adx14
-                    AnalysisIndicators.MACD -> analysis.data.macd.macd
-                    AnalysisIndicators.STOCH -> analysis.data.stoch
-                    AnalysisIndicators.AROON -> analysis.data.aroon.aroonUp
-                    AnalysisIndicators.BBANDS -> analysis.data.bBands.upperBand
-                    AnalysisIndicators.SUPERTREND -> analysis.data.superTrend.superTrend
-                    AnalysisIndicators.ICHIMOKUCLOUD -> analysis.data.ichimokuCloud.leadingSpanA
+            val indicators = AnalysisIndicators.entries
+            if (analysis.data != null) {
+                for (indicator in indicators) {
+                    val value = when (indicator) {
+                        AnalysisIndicators.SMA10 -> analysis.data.sma10
+                        AnalysisIndicators.SMA20 -> analysis.data.sma20
+                        AnalysisIndicators.SMA50 -> analysis.data.sma50
+                        AnalysisIndicators.SMA100 -> analysis.data.sma100
+                        AnalysisIndicators.SMA200 -> analysis.data.sma200
+                        AnalysisIndicators.EMA10 -> analysis.data.ema10
+                        AnalysisIndicators.EMA20 -> analysis.data.ema20
+                        AnalysisIndicators.EMA50 -> analysis.data.ema50
+                        AnalysisIndicators.EMA100 -> analysis.data.ema100
+                        AnalysisIndicators.EMA200 -> analysis.data.ema200
+                        AnalysisIndicators.WMA10 -> analysis.data.wma10
+                        AnalysisIndicators.WMA20 -> analysis.data.wma20
+                        AnalysisIndicators.WMA50 -> analysis.data.wma50
+                        AnalysisIndicators.WMA100 -> analysis.data.wma100
+                        AnalysisIndicators.WMA200 -> analysis.data.wma200
+                        AnalysisIndicators.VWMA20 -> analysis.data.vwma20
+                        AnalysisIndicators.RSI -> analysis.data.rsi14
+                        AnalysisIndicators.SRSI -> analysis.data.srsi14
+                        AnalysisIndicators.CCI -> analysis.data.cci20
+                        AnalysisIndicators.ADX -> analysis.data.adx14
+                        AnalysisIndicators.MACD -> analysis.data.macd.macd
+                        AnalysisIndicators.STOCH -> analysis.data.stoch
+                        AnalysisIndicators.AROON -> analysis.data.aroon.aroonUp
+                        AnalysisIndicators.BBANDS -> analysis.data.bBands.upperBand
+                        AnalysisIndicators.SUPERTREND -> analysis.data.superTrend.superTrend
+                        AnalysisIndicators.ICHIMOKUCLOUD -> analysis.data.ichimokuCloud.leadingSpanA
+                    }
+                    val base = when (indicator) {
+                        AnalysisIndicators.MACD -> analysis.data.macd.signal
+                        AnalysisIndicators.AROON -> analysis.data.aroon.aroonDown
+                        AnalysisIndicators.BBANDS -> analysis.data.bBands.lowerBand
+                        AnalysisIndicators.ICHIMOKUCLOUD -> analysis.data.ichimokuCloud.leadingSpanB
+                        else -> null
+                    }
+                    signals[indicator] = createSignal(
+                        context = context,
+                        value = value!!,
+                        base = base ?: 0.0,
+                        type = indicator,
+                        currentPrice = currentPrice,
+                    )
                 }
-                val base = when (indicator) {
-                    AnalysisIndicators.MACD -> analysis.data.macd.signal
-                    AnalysisIndicators.AROON -> analysis.data.aroon.aroonDown
-                    AnalysisIndicators.BBANDS -> analysis.data.bBands.lowerBand
-                    AnalysisIndicators.ICHIMOKUCLOUD -> analysis.data.ichimokuCloud.leadingSpanB
-                    else -> null
-                }
-                signals[indicator] = createSignal(
-                    context = context,
-                    value = value!!,
-                    base = base ?: 0.0,
-                    type = indicator,
-                    currentPrice = currentPrice,
-                )
             }
         }
         signals
@@ -180,9 +186,9 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
             emptyList()
         )
 
-    private val timeSeriesMap = mutableMapOf<TimePeriod, Resource<Map<String, HistoricalData>>>()
+    private val timeSeriesMap = mutableMapOf<TimePeriod, Resource<Map<String, HistoricalData>, DataError.Network>>()
 
-    private val analysisMap = mutableMapOf<Interval, Resource<Analysis>>()
+    private val analysisMap = mutableMapOf<Interval, Resource<Analysis?, DataError.Network>>()
 
     init {
         if (symbol.isNotEmpty()) {
