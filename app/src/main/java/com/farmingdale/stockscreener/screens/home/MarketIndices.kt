@@ -39,8 +39,8 @@ import java.util.Locale
 
 @Composable
 fun MarketIndices(
-    indices: Resource<List<MarketIndex>, DataError>,
-    refresh: () -> Unit,
+    indices: Resource<ImmutableList<MarketIndex>, DataError>,
+    snackbarHost: SnackbarHostState,
 ) {
     Column(
         modifier = Modifier

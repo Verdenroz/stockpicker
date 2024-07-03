@@ -44,15 +44,17 @@ import com.farmingdale.stockscreener.model.local.RegionFilter
 import com.farmingdale.stockscreener.model.local.SearchResult
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TypeFilter
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchBar(
     navController: NavController,
-    searchResults: List<SearchResult>?,
-    watchList: List<SimpleQuoteData>,
+    searchResults: ImmutableList<SearchResult>?,
+    watchList: ImmutableList<SimpleQuoteData>,
     regionFilter: RegionFilter,
-    typeFilters: List<TypeFilter>,
+    typeFilters: ImmutableSet<TypeFilter>,
     updateRegionFilter: (RegionFilter) -> Unit,
     toggleTypeFilter: (TypeFilter, Boolean) -> Unit,
     updateQuery: (String) -> Unit,
@@ -203,7 +205,7 @@ fun SearchBar(
 
 @Composable
 fun TypeCheckBoxContainer(
-    typeFilters: List<TypeFilter>,
+    typeFilters: ImmutableSet<TypeFilter>,
     toggleTypeFilter: (TypeFilter, Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {

@@ -35,8 +35,8 @@ import com.farmingdale.stockscreener.utils.Resource
 
 @Composable
 fun NewsFeed(
-    news: Resource<List<News>, DataError.Network>,
-    refresh: () -> Unit,
+    news: Resource<ImmutableList<News>, DataError.Network>,
+    snackbarHost: SnackbarHostState,
 ) {
     Column(
         modifier = Modifier

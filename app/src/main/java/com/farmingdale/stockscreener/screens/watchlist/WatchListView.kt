@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.views.watchlist
+package com.farmingdale.stockscreener.screens.watchlist
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,18 +17,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.ui.theme.negativeBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
+import kotlinx.collections.immutable.ImmutableList
 import java.util.Locale
 
 @Composable
 fun WatchListView(
     navController: NavHostController,
-    watchList: List<SimpleQuoteData>?,
+    watchList: ImmutableList<SimpleQuoteData>?,
     deleteFromWatchList: (String) -> Unit
 ) {
     LazyColumn(
@@ -39,8 +39,9 @@ fun WatchListView(
                 items = watchList ?: emptyList(),
                 key = { watchList -> watchList.symbol }
             ) { item ->
-                WatchListStock(item, navController, deleteFromWatchList
-            )
+                WatchListStock(
+                    item, navController, deleteFromWatchList
+                )
             }
         }
     )

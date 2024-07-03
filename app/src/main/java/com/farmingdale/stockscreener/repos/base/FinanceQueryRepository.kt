@@ -13,6 +13,7 @@ import com.farmingdale.stockscreener.model.local.TimePeriod
 import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.utils.isMarketOpen
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 
 abstract class FinanceQueryRepository {
@@ -30,32 +31,32 @@ abstract class FinanceQueryRepository {
     /**
      *  Market indices as list of [MarketIndex]
      */
-    abstract val indices: Flow<Resource<List<MarketIndex>, DataError.Network>>
+    abstract val indices: Flow<Resource<ImmutableList<MarketIndex>, DataError.Network>>
 
     /**
      * Active stocks as list of [MarketMover]
      */
-    abstract val actives: Flow<Resource<List<MarketMover>, DataError.Network>>
+    abstract val actives: Flow<Resource<ImmutableList<MarketMover>, DataError.Network>>
 
     /**
      * Losers as list of [MarketMover]
      */
-    abstract val losers: Flow<Resource<List<MarketMover>, DataError.Network>>
+    abstract val losers: Flow<Resource<ImmutableList<MarketMover>, DataError.Network>>
 
     /**
      * Gainers as list of [MarketMover]
      */
-    abstract val gainers: Flow<Resource<List<MarketMover>, DataError.Network>>
+    abstract val gainers: Flow<Resource<ImmutableList<MarketMover>, DataError.Network>>
 
     /**
      * Latest news headlines as list of [News]
      */
-    abstract val headlines: Flow<Resource<List<News>, DataError.Network>>
+    abstract val headlines: Flow<Resource<ImmutableList<News>, DataError.Network>>
 
     /**
      * Sectors as list of [MarketSector]
      */
-    abstract val sectors: Flow<Resource<List<MarketSector>, DataError.Network>>
+    abstract val sectors: Flow<Resource<ImmutableList<MarketSector>, DataError.Network>>
 
     /**
      * Refresh [indices], [actives], [losers], [gainers]

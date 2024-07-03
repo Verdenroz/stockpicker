@@ -53,10 +53,10 @@ import java.util.Locale
 fun MarketMovers(
     listState: LazyListState,
     navController: NavController,
-    actives: Resource<List<MarketMover>, DataError.Network>,
-    losers: Resource<List<MarketMover>, DataError.Network>,
-    gainers: Resource<List<MarketMover>, DataError.Network>,
-    refresh: () -> Unit,
+    snackbarHost: SnackbarHostState,
+    actives: Resource<ImmutableList<MarketMover>, DataError.Network>,
+    losers: Resource<ImmutableList<MarketMover>, DataError.Network>,
+    gainers: Resource<ImmutableList<MarketMover>, DataError.Network>,
 ) {
     val state = rememberPagerState(pageCount = { 3 })
     val scope = rememberCoroutineScope()
@@ -137,7 +137,7 @@ fun MarketMovers(
 
 @Composable
 fun MarketMoversList(
-    stocks: Resource<List<MarketMover>, DataError.Network>,
+    stocks: Resource<ImmutableList<MarketMover>, DataError.Network>,
     navController: NavController,
     refresh: () -> Unit
 ) {

@@ -8,6 +8,8 @@ import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TypeFilter
 import com.algolia.search.model.search.Query
 import com.farmingdale.stockscreener.utils.UiText
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -28,9 +30,9 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
     abstract val regionFilter: StateFlow<RegionFilter>
 
     /**
-     * The current [TypeFilter] to filter search results by stock type (stock, etf, trust)
+     * The [TypeFilter]s to filter search results by stock type (stock, etf, trust)
      */
-    abstract val typeFilter: StateFlow<List<TypeFilter>>
+    abstract val typeFilter: StateFlow<ImmutableSet<TypeFilter>>
 
     /**
      * The current query string in search bar
@@ -45,12 +47,12 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
     /**
      * The search results for the current query as a list of [SearchResult]
      */
-    abstract val searchResults: StateFlow<List<SearchResult>?>
+    abstract val searchResults: StateFlow<ImmutableList<SearchResult>?>
 
     /**
      * The user's watchlist as a list of [SimpleQuoteData]
      */
-    abstract val watchList: StateFlow<List<SimpleQuoteData>>
+    abstract val watchList: StateFlow<ImmutableList<SimpleQuoteData>>
 
     /**
      * Update the current [region] filter

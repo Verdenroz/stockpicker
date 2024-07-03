@@ -22,6 +22,10 @@ import com.farmingdale.stockscreener.utils.NetworkConnectionManagerImpl.Companio
 import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.viewmodels.base.MainEvent
 import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -35,14 +39,16 @@ import kotlinx.coroutines.launch
 
 class ImplMainViewModel(application: Application) : MainViewModel(application) {
     private val watchlistRepo = WatchlistRepository.get(application)
-    private val marketStatusChecker = MarketStatusChecker(watchlistRepo, FinanceQueryRepository.get())
+    private val marketStatusChecker =
+        MarketStatusChecker(watchlistRepo, FinanceQueryRepository.get())
     private val connectionManager = NetworkConnectionManager.get(application)
 
-    override val isNetworkConnected: StateFlow<Boolean> = connectionManager.isNetworkConnectedFlow.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(),
-        true
-    )
+    override val isNetworkConnected: StateFlow<Boolean> =
+        connectionManager.isNetworkConnectedFlow.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(),
+            true
+        )
 
     private val eventsChannel = Channel<MainEvent>()
     override val events: Flow<MainEvent> = eventsChannel.receiveAsFlow()
@@ -51,8 +57,8 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
     override val regionFilter: StateFlow<RegionFilter> = _regionFilter.asStateFlow()
 
     private val _typeFilter =
-        MutableStateFlow(listOf(TypeFilter.STOCK, TypeFilter.ETF, TypeFilter.TRUST))
-    override val typeFilter: StateFlow<List<TypeFilter>> = _typeFilter.asStateFlow()
+        MutableStateFlow(setOf(TypeFilter.STOCK, TypeFilter.ETF, TypeFilter.TRUST).toImmutableSet())
+    override val typeFilter: StateFlow<ImmutableSet<TypeFilter>> = _typeFilter.asStateFlow()
 
     private val _query = MutableStateFlow("")
     override val query: StateFlow<String> = _query.asStateFlow()
@@ -66,14 +72,15 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
 
     override val searchQuery: StateFlow<Query> = _searchQuery.asStateFlow()
 
-    private val _searchResults = MutableStateFlow<List<SearchResult>?>(null)
-    override val searchResults: StateFlow<List<SearchResult>?> = _searchResults.asStateFlow()
+    private val _searchResults = MutableStateFlow(emptyList<SearchResult>().toImmutableList())
+    override val searchResults: StateFlow<ImmutableList<SearchResult>?> =
+        _searchResults.asStateFlow()
 
-    override val watchList: StateFlow<List<SimpleQuoteData>> =
+    override val watchList: StateFlow<ImmutableList<SimpleQuoteData>> =
         watchlistRepo.watchlist.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(),
-            emptyList()
+            emptyList<SimpleQuoteData>().toImmutableList()
         )
 
     private val index = IndexName("stocks")
@@ -91,7 +98,7 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
         searcher.response.subscribe { response ->
             _searchResults.value = response?.hits?.take(5)?.mapNotNull { hit ->
                 hit.deserialize(SearchResult.serializer()).takeIf { it.name.isNotBlank() }
-            }
+            }?.toImmutableList() ?: emptyList<SearchResult>().toImmutableList()
         }
     }
 
@@ -122,10 +129,14 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
     override fun toggleTypeFilter(type: TypeFilter, isChecked: Boolean) {
         if (isChecked) {
             if (!_typeFilter.value.contains(type)) {
-                _typeFilter.value += type
+                val newFilters = _typeFilter.value.toMutableSet()
+                newFilters.add(type)
+                _typeFilter.value = newFilters.toImmutableSet()
             }
         } else {
-            _typeFilter.value -= type
+            val newFilters = _typeFilter.value.toMutableSet()
+            newFilters.remove(type)
+            _typeFilter.value = newFilters.toImmutableSet()
         }
 
         searcher.query.facetFilters = (listOf(
@@ -142,11 +153,8 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
 
     override fun search(query: String) {
         if (query.isEmpty()) {
-            _searchResults.value = null
+            _searchResults.value = emptyList<SearchResult>().toImmutableList()
         } else {
-            println(typeFilter.value)
-            println(searchQuery.value.facetFilters)
-
             searcher.setQuery(query)
             searcher.searchAsync()
         }
@@ -158,6 +166,7 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
                 is Resource.Error -> {
                     eventsChannel.send(MainEvent.Error(result.error.asUiText()))
                 }
+
                 else -> {
                     // Do nothing
                 }

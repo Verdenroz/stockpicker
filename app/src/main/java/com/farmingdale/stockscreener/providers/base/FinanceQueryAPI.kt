@@ -10,6 +10,7 @@ import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
+import kotlinx.collections.immutable.ImmutableList
 
 interface FinanceQueryAPI {
 
@@ -49,14 +50,14 @@ interface FinanceQueryAPI {
      * Get current market indices in the US
      * @return a list of [MarketIndex]
      */
-    suspend fun getIndices(): List<MarketIndex>
+    suspend fun getIndices(): ImmutableList<MarketIndex>
 
 
     /**
      * Get market sectors in the US
      * @return a list of [MarketSector]
      */
-    suspend fun getSectors(): List<MarketSector>
+    suspend fun getSectors(): ImmutableList<MarketSector>
 
     /**
      * Get a specific market sector by symbol
@@ -68,25 +69,25 @@ interface FinanceQueryAPI {
      * Get active stocks in the US
      * @return a list of [MarketMover]
      */
-    suspend fun getActives(): List<MarketMover>
+    suspend fun getActives(): ImmutableList<MarketMover>
 
     /**
      * Get stocks with the highest percentage gain in the US
      * @return a list of [MarketMover]
      */
-    suspend fun getGainers(): List<MarketMover>
+    suspend fun getGainers(): ImmutableList<MarketMover>
 
     /**
      * Get stocks with the highest percentage loss in the US
      * @return a list of [MarketMover]
      */
-    suspend fun getLosers(): List<MarketMover>
+    suspend fun getLosers(): ImmutableList<MarketMover>
 
     /**
      * Get the latest general financial news
      * @return a list of [News]
      */
-    suspend fun getNews(): List<News>
+    suspend fun getNews(): ImmutableList<News>
 
     /**
      * Get the latest financial news for a stock

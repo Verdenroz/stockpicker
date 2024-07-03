@@ -36,10 +36,8 @@ import com.farmingdale.stockscreener.utils.UiText
 import com.farmingdale.stockscreener.viewmodels.ImplMainViewModel
 import com.farmingdale.stockscreener.viewmodels.base.MainEvent
 import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
-import com.farmingdale.stockscreener.views.Screen
-import com.farmingdale.stockscreener.views.home.HomeView
-import com.farmingdale.stockscreener.views.stock.StockView
-import com.farmingdale.stockscreener.views.watchlist.WatchListView
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.coroutines.delay
 
 @Composable
@@ -104,10 +102,10 @@ fun MainView() {
 @Composable
 fun MainContent(
     snackbarHost: SnackbarHostState,
-    searchResults: List<SearchResult>?,
-    watchList: List<SimpleQuoteData>,
+    searchResults: ImmutableList<SearchResult>?,
+    watchList: ImmutableList<SimpleQuoteData>,
     regionFilter: RegionFilter,
-    typeFilters: List<TypeFilter>,
+    typeFilters: ImmutableSet<TypeFilter>,
     updateRegionFilter: (RegionFilter) -> Unit,
     toggleTypeFilter: (TypeFilter, Boolean) -> Unit,
     updateQuery: (String) -> Unit,
@@ -151,7 +149,7 @@ fun MainContent(
                 contentColor = MaterialTheme.colorScheme.onSurface,
             ) {
                 val currentDestination = navBackStackEntry?.destination
-                val items = listOf(
+                val items = immutableListOf(
                     Screen.Home,
                     Screen.Watchlist,
                     Screen.Simulate,

@@ -1,5 +1,6 @@
 package com.farmingdale.stockscreener.repos
 
+import android.util.Log
 import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.HistoricalData
@@ -19,6 +20,7 @@ import com.farmingdale.stockscreener.utils.HttpException
 import com.farmingdale.stockscreener.utils.NetworkException
 import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.utils.UnknownException
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -37,29 +39,29 @@ import kotlinx.serialization.SerializationException
 class ImplFinanceQueryRepository : FinanceQueryRepository() {
     private val api = ImplFinanceQueryAPI(okHttpClient)
     private val indicesChannel =
-        Channel<Resource<List<MarketIndex>, DataError.Network>>(Channel.CONFLATED)
+        Channel<Resource<ImmutableList<MarketIndex>, DataError.Network>>(Channel.CONFLATED)
     private val activesChannel =
-        Channel<Resource<List<MarketMover>, DataError.Network>>(Channel.CONFLATED)
+        Channel<Resource<ImmutableList<MarketMover>, DataError.Network>>(Channel.CONFLATED)
     private val losersChannel =
-        Channel<Resource<List<MarketMover>, DataError.Network>>(Channel.CONFLATED)
+        Channel<Resource<ImmutableList<MarketMover>, DataError.Network>>(Channel.CONFLATED)
     private val gainersChannel =
-        Channel<Resource<List<MarketMover>, DataError.Network>>(Channel.CONFLATED)
+        Channel<Resource<ImmutableList<MarketMover>, DataError.Network>>(Channel.CONFLATED)
     private val headlinesChannel =
-        Channel<Resource<List<News>, DataError.Network>>(Channel.CONFLATED)
+        Channel<Resource<ImmutableList<News>, DataError.Network>>(Channel.CONFLATED)
     private val sectorsChannel =
-        Channel<Resource<List<MarketSector>, DataError.Network>>(Channel.CONFLATED)
+        Channel<Resource<ImmutableList<MarketSector>, DataError.Network>>(Channel.CONFLATED)
 
-    override val indices: Flow<Resource<List<MarketIndex>, DataError.Network>> =
+    override val indices: Flow<Resource<ImmutableList<MarketIndex>, DataError.Network>> =
         indicesChannel.receiveAsFlow()
-    override val actives: Flow<Resource<List<MarketMover>, DataError.Network>> =
+    override val actives: Flow<Resource<ImmutableList<MarketMover>, DataError.Network>> =
         activesChannel.receiveAsFlow()
-    override val losers: Flow<Resource<List<MarketMover>, DataError.Network>> =
+    override val losers: Flow<Resource<ImmutableList<MarketMover>, DataError.Network>> =
         losersChannel.receiveAsFlow()
-    override val gainers: Flow<Resource<List<MarketMover>, DataError.Network>> =
+    override val gainers: Flow<Resource<ImmutableList<MarketMover>, DataError.Network>> =
         gainersChannel.receiveAsFlow()
-    override val headlines: Flow<Resource<List<News>, DataError.Network>> =
+    override val headlines: Flow<Resource<ImmutableList<News>, DataError.Network>> =
         headlinesChannel.receiveAsFlow()
-    override val sectors: Flow<Resource<List<MarketSector>, DataError.Network>> =
+    override val sectors: Flow<Resource<ImmutableList<MarketSector>, DataError.Network>> =
         sectorsChannel.receiveAsFlow()
 
 
@@ -211,7 +213,8 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
     override suspend fun refreshNews() {
         try {
             withContext(Dispatchers.IO) {
-                headlinesChannel.send(Resource.Success(api.getNews()))
+                val news = api.getNews()
+                headlinesChannel.send(Resource.Success(news))
             }
         } catch (e: DataException) {
             when (e) {
@@ -238,7 +241,8 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
     override suspend fun refreshSectors() {
         try {
             withContext(Dispatchers.IO) {
-                sectorsChannel.send(Resource.Success(api.getSectors()))
+                val sectors = api.getSectors()
+                sectorsChannel.send(Resource.Success(sectors))
             }
         } catch (e: DataException) {
             when (e) {
@@ -380,7 +384,9 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
             } catch (e: DataException) {
                 when (e) {
                     is HttpException -> {
+                        Log.d("ImplFinanceQueryRepository", "getSimilarStocks: ${e.code}")
                         when (e.code) {
+
                             // If 404, it means there are no similar stocks
                             404 -> emit(Resource.Success(emptyList()))
 
@@ -390,11 +396,16 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                             429 -> emit(Resource.Error(DataError.Network.THROTTLED))
                             500, 504 -> emit(Resource.Error(DataError.Network.SERVER_DOWN))
                             else -> emit(Resource.Error(DataError.Network.UNKNOWN))
+
                         }
                     }
 
                     is NetworkException -> emit(Resource.Error(DataError.Network.NO_INTERNET))
-                    is UnknownException -> emit(Resource.Error(DataError.Network.UNKNOWN))
+                    is UnknownException ->  {
+                        Log.d("ImplFinanceQueryRepository", "getSimilarStocks: UnknownException")
+                        emit(Resource.Error(DataError.Network.UNKNOWN))
+                    }
+
                 }
             } catch (e: SerializationException) {
                 emit(Resource.Error(DataError.Network.SERIALIZATION))

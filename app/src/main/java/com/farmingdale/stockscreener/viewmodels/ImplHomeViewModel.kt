@@ -15,6 +15,7 @@ import com.farmingdale.stockscreener.utils.NetworkConnectionManager
 import com.farmingdale.stockscreener.utils.NetworkConnectionManagerImpl.Companion.get
 import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.viewmodels.base.HomeViewModel
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.SharingStarted
@@ -33,38 +34,38 @@ class ImplHomeViewModel(application: Application) : HomeViewModel(application) {
         true
     )
 
-    override val news: StateFlow<Resource<List<News>, DataError.Network>> = financeQueryRepo.headlines.stateIn(
+    override val news: StateFlow<Resource<ImmutableList<News>, DataError.Network>> = financeQueryRepo.headlines.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(),
         Resource.Loading(true)
     )
 
-    override val indices: StateFlow<Resource<List<MarketIndex>, DataError.Network>> = financeQueryRepo.indices.stateIn(
+    override val indices: StateFlow<Resource<ImmutableList<MarketIndex>, DataError.Network>> = financeQueryRepo.indices.stateIn(
         viewModelScope,
         SharingStarted.Lazily,
         Resource.Loading(true)
     )
 
-    override val sectors: StateFlow<Resource<List<MarketSector>, DataError.Network>> =
+    override val sectors: StateFlow<Resource<ImmutableList<MarketSector>, DataError.Network>> =
         financeQueryRepo.sectors.stateIn(
             viewModelScope,
             SharingStarted.Lazily,
             Resource.Loading(true)
         )
 
-    override val actives: StateFlow<Resource<List<MarketMover>, DataError.Network>> = financeQueryRepo.actives.stateIn(
+    override val actives: StateFlow<Resource<ImmutableList<MarketMover>, DataError.Network>> = financeQueryRepo.actives.stateIn(
         viewModelScope,
         SharingStarted.Lazily,
         Resource.Loading(true)
     )
 
-    override val losers: StateFlow<Resource<List<MarketMover>, DataError.Network>> = financeQueryRepo.losers.stateIn(
+    override val losers: StateFlow<Resource<ImmutableList<MarketMover>, DataError.Network>> = financeQueryRepo.losers.stateIn(
         viewModelScope,
         SharingStarted.Lazily,
         Resource.Loading(true)
     )
 
-    override val gainers: StateFlow<Resource<List<MarketMover>, DataError.Network>> = financeQueryRepo.gainers.stateIn(
+    override val gainers: StateFlow<Resource<ImmutableList<MarketMover>, DataError.Network>> = financeQueryRepo.gainers.stateIn(
         viewModelScope,
         SharingStarted.Lazily,
         Resource.Loading(true)
@@ -75,10 +76,12 @@ class ImplHomeViewModel(application: Application) : HomeViewModel(application) {
             val refreshDataDeferred = async { financeQueryRepo.refreshMarketData() }
             val refreshNewsDeferred = async { financeQueryRepo.refreshNews() }
             val refreshWatchlistDeferred = async { watchlistRepo.refreshWatchList() }
+            val refreshSectorsDeferred = async { financeQueryRepo.refreshSectors() }
 
             refreshDataDeferred.await()
             refreshNewsDeferred.await()
             refreshWatchlistDeferred.await()
+            refreshSectorsDeferred.await()
         }
     }
 }

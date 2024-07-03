@@ -119,6 +119,7 @@ dependencies {
     //Algolia
     implementation("com.algolia:instantsearch-android:3.3.0")
     implementation("com.algolia:instantsearch-compose:3.3.0")
-
+    //Utils
     implementation("org.slf4j:slf4j-nop:1.7.25")
+    implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.7")
 }

@@ -13,6 +13,8 @@ import com.farmingdale.stockscreener.utils.HttpException
 import com.farmingdale.stockscreener.utils.NetworkException
 import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.utils.UnknownException
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -20,6 +22,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 
@@ -29,8 +32,10 @@ class ImplWatchlistRepository(
     private val db = AppDatabase.get(application).quoteDao()
     private val api = ImplFinanceQueryAPI(okHttpClient)
 
-    override val watchlist: Flow<List<SimpleQuoteData>> =
-        db.getAllQuoteDataFlow().flowOn(Dispatchers.IO)
+    override val watchlist: Flow<ImmutableList<SimpleQuoteData>> =
+        db.getAllQuoteDataFlow()
+            .map { list -> list.toImmutableList() }
+            .flowOn(Dispatchers.IO)
 
     init {
         refreshWatchListPeriodically()

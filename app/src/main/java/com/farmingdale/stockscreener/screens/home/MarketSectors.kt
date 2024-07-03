@@ -39,8 +39,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MarketSectors(
-    sectors: Resource<List<MarketSector>, DataError.Network>,
-    refresh: () -> Unit,
+    sectors: Resource<ImmutableList<MarketSector>, DataError.Network>,
+    snackbarHost: SnackbarHostState,
 ) {
     Column(
         modifier = Modifier
