@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.views.stock.analysis
+package com.farmingdale.stockscreener.screens.stock.analysis
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -49,7 +49,7 @@ import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
-import com.farmingdale.stockscreener.views.stock.StockError
+import com.farmingdale.stockscreener.screens.stock.StockError
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

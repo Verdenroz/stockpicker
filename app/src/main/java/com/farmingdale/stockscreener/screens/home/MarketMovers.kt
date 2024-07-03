@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.views.home
+package com.farmingdale.stockscreener.screens.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -18,18 +18,24 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,6 +51,8 @@ import com.farmingdale.stockscreener.ui.theme.positiveBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
+import com.farmingdale.stockscreener.utils.UiText
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -104,6 +112,7 @@ fun MarketMovers(
         HorizontalPager(
             state = state,
             modifier = Modifier
+                .fillMaxWidth()
                 .padding(horizontal = 16.dp)
         ) { page ->
             when (page) {
@@ -111,7 +120,7 @@ fun MarketMovers(
                     MarketMoversList(
                         stocks = actives,
                         navController = navController,
-                        refresh = refresh
+                        snackbarHost = snackbarHost,
                     )
                 }
 
@@ -119,7 +128,7 @@ fun MarketMovers(
                     MarketMoversList(
                         stocks = gainers,
                         navController = navController,
-                        refresh = refresh
+                        snackbarHost = snackbarHost,
                     )
                 }
 
@@ -127,7 +136,7 @@ fun MarketMovers(
                     MarketMoversList(
                         stocks = losers,
                         navController = navController,
-                        refresh = refresh
+                        snackbarHost = snackbarHost,
                     )
                 }
             }
@@ -139,49 +148,38 @@ fun MarketMovers(
 fun MarketMoversList(
     stocks: Resource<ImmutableList<MarketMover>, DataError.Network>,
     navController: NavController,
-    refresh: () -> Unit
+    snackbarHost: SnackbarHostState,
 ) {
+    val context = LocalContext.current
+
     when (stocks) {
         is Resource.Loading -> {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                CircularProgressIndicator()
-            }
+            MarketMoversSkeleton()
         }
 
         is Resource.Error -> {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                ErrorCard(refresh = refresh)
+            MarketIndexSkeleton()
+
+            LaunchedEffect(stocks.error) {
+                snackbarHost.showSnackbar(
+                    message = stocks.error.asUiText().asString(context),
+                    actionLabel = UiText.StringResource(R.string.dismiss).asString(context),
+                    duration = SnackbarDuration.Short
+                )
             }
         }
 
         is Resource.Success -> {
-            if (stocks.data.isEmpty()) {
-                ErrorCard(refresh = refresh)
-            } else {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        items(
-                            items = stocks.data,
-                            key = { stock -> stock.symbol }
-                        ) { stock ->
-                            MarketMoverStock(stock = stock, navController = navController)
-                        }
-                    }
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(
+                    items = stocks.data,
+                    key = { stock -> stock.symbol }
+                ) { stock ->
+                    MarketMoverStock(stock = stock, navController = navController)
                 }
             }
         }
@@ -272,4 +270,27 @@ fun PreviewMarketMoverStock() {
         ),
         navController = rememberNavController()
     )
+}
+
+@Composable
+fun MarketMoversSkeleton(
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.surfaceContainer
+) {
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        repeat(5) {
+            item(key = it) {
+                Card(
+                    modifier = modifier
+                        .padding(top = 8.dp)
+                        .fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = color)
+                ) {
+                    // skeleton
+                }
+            }
+        }
+    }
 }

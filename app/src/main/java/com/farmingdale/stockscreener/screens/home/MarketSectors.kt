@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.views.home
+package com.farmingdale.stockscreener.screens.home
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,19 +11,23 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,6 +39,8 @@ import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
+import com.farmingdale.stockscreener.utils.UiText
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
 
 @Composable
@@ -42,6 +48,7 @@ fun MarketSectors(
     sectors: Resource<ImmutableList<MarketSector>, DataError.Network>,
     snackbarHost: SnackbarHostState,
 ) {
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 4.dp)
@@ -56,23 +63,27 @@ fun MarketSectors(
         )
         when (sectors) {
             is Resource.Loading -> {
-                CircularProgressIndicator()
+                MarketSectorsSkeleton()
             }
 
             is Resource.Error -> {
-                ErrorCard(refresh = refresh)
+                MarketSectorsSkeleton()
+
+                LaunchedEffect(sectors.error) {
+                    snackbarHost.showSnackbar(
+                        message = sectors.error.asUiText().asString(context),
+                        actionLabel = UiText.StringResource(R.string.dismiss).asString(context),
+                        duration = SnackbarDuration.Short
+                    )
+                }
             }
 
             is Resource.Success -> {
-                if (sectors.data.isEmpty()) {
-                    ErrorCard(refresh = refresh)
-                } else {
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(sectors.data) { sector ->
-                            MarketSectorCard(sector = sector)
-                        }
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(sectors.data) { sector ->
+                        MarketSectorCard(sector = sector)
                     }
                 }
             }
@@ -171,4 +182,31 @@ fun PreviewMarketSectors() {
             fiveYearReturn = "+90.12%",
         )
     )
+}
+
+@Composable
+fun MarketSectorsSkeleton(
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.surfaceContainer
+) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        repeat(5) {
+            item(key = it) {
+                Card(
+                    modifier = modifier.size(175.dp, 100.dp),
+                    colors = CardDefaults.cardColors(containerColor = color)
+                ) {
+                    // skeleton
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun PreviewMarketSectorsSkeleton() {
+    MarketSectorsSkeleton()
 }

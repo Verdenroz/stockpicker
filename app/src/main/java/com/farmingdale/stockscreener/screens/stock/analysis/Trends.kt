@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.views.stock.analysis
+package com.farmingdale.stockscreener.screens.stock.analysis
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable

@@ -138,7 +138,7 @@
     <string name="last_capital_gain">Last Cap Gain</string>
     <string name="error">Error</string>
     <string name="error_loading_data">Unable to retrieve data</string>
-    <string name="no_internet">No Internet</string>
+    <string name="no_internet">No connection</string>
     <string name="timeout">Data timed out</string>
     <string name="bad_request">Bad request</string>
     <string name="denied">Denied access</string>

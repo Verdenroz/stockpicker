@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.views.home
+package com.farmingdale.stockscreener.screens.home
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
@@ -18,11 +19,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.farmingdale.stockscreener.model.local.MarketIndex
 import com.farmingdale.stockscreener.model.local.MarketMover
 import com.farmingdale.stockscreener.model.local.MarketSector
@@ -31,11 +30,13 @@ import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.viewmodels.ImplHomeViewModel
 import com.farmingdale.stockscreener.viewmodels.base.HomeViewModel
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.delay
 
 @Composable
-fun HomeView(
-    navController: NavController
+fun HomeScreen(
+    navController: NavController,
+    snackbarHost: SnackbarHostState
 ) {
     val homeViewModel: HomeViewModel = viewModel<ImplHomeViewModel>()
     val sectors by homeViewModel.sectors.collectAsState()
@@ -57,9 +58,9 @@ fun HomeView(
         initialCompositionCompleted.value = true
     }
 
-
     HomeContent(
         navController = navController,
+        snackbarHost = snackbarHost,
         sectors = sectors,
         news = news,
         indices = indices,
@@ -74,20 +75,23 @@ fun HomeView(
 @Composable
 fun HomeContent(
     navController: NavController,
-    sectors: Resource<List<MarketSector>, DataError.Network>,
-    news: Resource<List<News>, DataError.Network>,
-    indices: Resource<List<MarketIndex>, DataError.Network>,
-    actives: Resource<List<MarketMover>, DataError.Network>,
-    losers: Resource<List<MarketMover>, DataError.Network>,
-    gainers: Resource<List<MarketMover>, DataError.Network>,
+    snackbarHost: SnackbarHostState,
+    sectors: Resource<ImmutableList<MarketSector>, DataError.Network>,
+    news: Resource<ImmutableList<News>, DataError.Network>,
+    indices: Resource<ImmutableList<MarketIndex>, DataError.Network>,
+    actives: Resource<ImmutableList<MarketMover>, DataError.Network>,
+    losers: Resource<ImmutableList<MarketMover>, DataError.Network>,
+    gainers: Resource<ImmutableList<MarketMover>, DataError.Network>,
     refresh: () -> Unit,
 ) {
     val pullRefreshState = rememberPullToRefreshState()
     if (pullRefreshState.isRefreshing) {
         LaunchedEffect(true) {
             refresh()
-            delay(1000L)
-            pullRefreshState.endRefresh()
+            delay(500)
+            if (listOf(sectors, news, indices, actives, losers, gainers).all { it is Resource.Success }) {
+                pullRefreshState.endRefresh()
+            }
         }
     }
     val listState = rememberLazyListState()
@@ -103,29 +107,29 @@ fun HomeContent(
             item {
                 MarketIndices(
                     indices = indices,
-                    refresh = refresh,
+                    snackbarHost = snackbarHost,
                 )
             }
             item {
                 MarketSectors(
                     sectors = sectors,
-                    refresh = refresh,
+                    snackbarHost = snackbarHost,
                 )
             }
             item {
                 NewsFeed(
                     news = news,
-                    refresh = refresh,
+                    snackbarHost = snackbarHost,
                 )
             }
             item {
                 MarketMovers(
                     listState = listState,
                     navController = navController,
+                    snackbarHost = snackbarHost,
                     actives = actives,
                     losers = losers,
                     gainers = gainers,
-                    refresh = refresh,
                 )
             }
         }
@@ -136,19 +140,4 @@ fun HomeContent(
                 .offset(y = (-16).dp)
         )
     }
-}
-
-@Preview
-@Composable
-fun PreviewHomeContent() {
-    HomeContent(
-        navController = rememberNavController(),
-        sectors = Resource.Success(emptyList()),
-        news = Resource.Success(emptyList()),
-        indices = Resource.Success(emptyList()),
-        actives = Resource.Success(emptyList()),
-        losers = Resource.Success(emptyList()),
-        gainers = Resource.Success(emptyList()),
-        refresh = {},
-    )
 }

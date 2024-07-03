@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.views.stock
+package com.farmingdale.stockscreener.screens.stock
 
 import android.content.Intent
 import android.net.Uri
@@ -98,7 +98,7 @@ fun StockNewsFeed(
                     ) {
                         items(
                             items = news.data,
-                            key = { news -> news.title },
+                            key = { news -> news.link },
                         ) { item ->
                             StockNewsItem(news = item)
                         }
@@ -119,20 +119,19 @@ fun StockNewsItem(news: News) {
                 model = news.img,
                 contentDescription = stringResource(id = R.string.news_image),
                 loading = {
-                    CircularProgressIndicator()
+                    Card(
+                        modifier = Modifier.fillMaxSize(.33f),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.scrim)
+                    ) {}
                 },
                 error = {
                     Card(
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        shape = RoundedCornerShape(10),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
-                        )
+                        modifier = Modifier.fillMaxSize(.33f),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.scrim)
                     ) {
                         Icon(
                             Icons.Default.Warning,
-                            contentDescription = stringResource(id = R.string.notLoaded)
+                            contentDescription = stringResource(id = R.string.error_loading_data)
                         )
                     }
                 },

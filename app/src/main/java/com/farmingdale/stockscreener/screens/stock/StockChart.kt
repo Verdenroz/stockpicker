@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.views.stock
+package com.farmingdale.stockscreener.screens.stock
 
 import android.graphics.Paint
 import androidx.compose.foundation.background

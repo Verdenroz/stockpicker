@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.views.stock
+package com.farmingdale.stockscreener.screens.stock
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,7 +27,7 @@ import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.indicators.AnalysisIndicators
 import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
-import com.farmingdale.stockscreener.views.stock.analysis.StockAnalysis
+import com.farmingdale.stockscreener.screens.stock.analysis.StockAnalysis
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 

@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.views
+package com.farmingdale.stockscreener.screens
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons

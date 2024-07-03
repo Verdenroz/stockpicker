@@ -1,6 +1,10 @@
-package com.farmingdale.stockscreener.views.main
+package com.farmingdale.stockscreener.screens.main
 
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -12,14 +16,18 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -31,6 +39,10 @@ import com.farmingdale.stockscreener.model.local.RegionFilter
 import com.farmingdale.stockscreener.model.local.SearchResult
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TypeFilter
+import com.farmingdale.stockscreener.screens.Screen
+import com.farmingdale.stockscreener.screens.home.HomeScreen
+import com.farmingdale.stockscreener.screens.stock.StockView
+import com.farmingdale.stockscreener.screens.watchlist.WatchListView
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
 import com.farmingdale.stockscreener.utils.UiText
 import com.farmingdale.stockscreener.viewmodels.ImplMainViewModel
@@ -39,9 +51,10 @@ import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.coroutines.delay
+import okhttp3.internal.immutableListOf
 
 @Composable
-fun MainView() {
+fun MainScreen() {
     val mainViewModel: MainViewModel = viewModel<ImplMainViewModel>()
     val query by mainViewModel.query.collectAsState()
     val searchResults by mainViewModel.searchResults.collectAsState()
@@ -53,7 +66,7 @@ fun MainView() {
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
-    LaunchedEffect(key1 = query) {
+    LaunchedEffect(query) {
         delay(250)
         mainViewModel.search(query)
     }
@@ -91,7 +104,12 @@ fun MainView() {
             regionFilter = regionFilter,
             typeFilters = typeFilters,
             updateRegionFilter = { region -> mainViewModel.updateRegionFilter(region) },
-            toggleTypeFilter = { type, isChecked -> mainViewModel.toggleTypeFilter(type, isChecked) },
+            toggleTypeFilter = { type, isChecked ->
+                mainViewModel.toggleTypeFilter(
+                    type,
+                    isChecked
+                )
+            },
             updateQuery = { query -> mainViewModel.updateQuery(query) },
             addToWatchList = { symbol -> mainViewModel.addToWatchList(symbol) },
             deleteFromWatchList = { symbol -> mainViewModel.deleteFromWatchList(symbol) },
@@ -116,17 +134,6 @@ fun MainContent(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     Scaffold(
-        snackbarHost = { SnackbarHost(
-            hostState = snackbarHost,
-            snackbar = { data ->
-                Snackbar(
-                    snackbarData = data,
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                    contentColor = MaterialTheme.colorScheme.onSurface,
-                    dismissActionContentColor = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-        ) },
         topBar = {
             if (currentRoute != "stock/{symbol}") {
                 SearchBar(
@@ -177,6 +184,42 @@ fun MainContent(
                     )
                 }
             }
+            if (snackbarHost.currentSnackbarData != null) {
+                SnackbarHost(
+                    hostState = snackbarHost,
+                    snackbar = { data ->
+                        Snackbar(
+                            containerColor = MaterialTheme.colorScheme.scrim,
+                            contentColor = MaterialTheme.colorScheme.onSurface,
+                            dismissActionContentColor = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(vertical = 16.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = if (data.visuals.actionLabel != null) Arrangement.SpaceEvenly else Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = data.visuals.message,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Black
+                                )
+
+                                data.visuals.actionLabel?.let { actionLabel ->
+                                    TextButton(onClick = { data.dismiss() }) {
+                                        Text(
+                                            text = actionLabel,
+                                            style = MaterialTheme.typography.labelLarge,
+                                            fontWeight = FontWeight.Black
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    modifier = Modifier.offset(y = 16.dp)
+                )
+            }
         }
     ) { padding ->
         NavHost(
@@ -185,8 +228,9 @@ fun MainContent(
             modifier = Modifier.padding(padding)
         ) {
             composable(Screen.Home.route) {
-                HomeView(
+                HomeScreen(
                     navController = navController,
+                    snackbarHost = snackbarHost,
                 )
             }
             composable(Screen.Watchlist.route) {

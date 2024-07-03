@@ -9,7 +9,6 @@ import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 abstract class HomeViewModel(application: Application) : AndroidViewModel(application) {

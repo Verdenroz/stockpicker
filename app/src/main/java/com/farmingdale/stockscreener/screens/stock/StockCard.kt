@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.views.stock
+package com.farmingdale.stockscreener.screens.stock
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

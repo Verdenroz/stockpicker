@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.views.stock.analysis
+package com.farmingdale.stockscreener.screens.stock.analysis
 
 import android.content.Context
 import androidx.compose.foundation.background

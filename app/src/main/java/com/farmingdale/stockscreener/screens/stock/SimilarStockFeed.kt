@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.views.stock
+package com.farmingdale.stockscreener.screens.stock
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -46,13 +46,7 @@ fun SimilarStockFeed(
         }
 
         is Resource.Success -> {
-            if (similarStocks.data.isEmpty()) {
-                StockError(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp)
-                )
-            } else {
+            if (similarStocks.data.isNotEmpty()) {
                 Column(
                     modifier = Modifier
                         .padding(horizontal = 8.dp)

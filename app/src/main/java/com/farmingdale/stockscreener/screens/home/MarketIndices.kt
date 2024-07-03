@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.views.home
+package com.farmingdale.stockscreener.screens.home
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,18 +11,23 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,6 +39,8 @@ import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
+import com.farmingdale.stockscreener.utils.UiText
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -42,6 +49,7 @@ fun MarketIndices(
     indices: Resource<ImmutableList<MarketIndex>, DataError>,
     snackbarHost: SnackbarHostState,
 ) {
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .padding(horizontal = 16.dp, vertical = 4.dp)
@@ -56,38 +64,30 @@ fun MarketIndices(
         )
         when (indices) {
             is Resource.Loading -> {
-                CircularProgressIndicator()
+                MarketIndexSkeleton()
             }
 
             is Resource.Error -> {
-                var error = stringResource(id = R.string.error_loading_data)
-                when (indices.error) {
-                    DataError.Network.NO_INTERNET -> error = "No internet connection"
-                    DataError.Network.TIMEOUT -> error = "Timeout error"
-                    DataError.Network.BAD_REQUEST -> error = "Bad request"
-                    DataError.Network.DENIED -> error = "Access denied"
-                    DataError.Network.NOT_FOUND -> error = "Not found"
-                    DataError.Network.THROTTLED -> error = "Throttled"
-                    DataError.Network.SERVER_DOWN -> error = "Server down"
-                    DataError.Network.SERIALIZATION -> error = "Serialization error"
-                    DataError.Network.UNKNOWN -> error = "Unknown error"
+                MarketIndexSkeleton()
+
+                LaunchedEffect(indices.error) {
+                    snackbarHost.showSnackbar(
+                        message = indices.error.asUiText().asString(context),
+                        actionLabel = UiText.StringResource(R.string.dismiss).asString(context),
+                        duration = SnackbarDuration.Short
+                    )
                 }
-                ErrorCard(refresh = refresh, message = error)
             }
 
             is Resource.Success -> {
-                if (indices.data.isEmpty()) {
-                    ErrorCard(refresh = refresh)
-                } else {
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(
-                            items = indices.data,
-                            key = { index -> index.name }
-                        ) { index ->
-                            MarketIndexCard(index = index)
-                        }
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(
+                        items = indices.data,
+                        key = { index -> index.name }
+                    ) { index ->
+                        MarketIndexCard(index = index)
                     }
                 }
             }
@@ -172,4 +172,29 @@ fun PreviewMarketIndexCard() {
             )
         )
     }
+}
+
+@Composable
+fun MarketIndexSkeleton(
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.surfaceContainer
+) {
+    LazyRow(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        repeat(5) {
+            item(key = it) {
+                Card(
+                    modifier = Modifier.size(125.dp, 75.dp),
+                    colors = CardDefaults.cardColors(containerColor = color)
+                ) {
+                    // Content of the card, leave it empty for skeleton
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun PreviewMarketIndexSkeleton() {
+    MarketIndexSkeleton()
 }

@@ -1,4 +1,4 @@
-package com.farmingdale.stockscreener.views.stock
+package com.farmingdale.stockscreener.screens.stock
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -317,7 +317,9 @@ fun StockDetailCell(
 @Composable
 fun PriceRangeLine(low: Double, high: Double, current: Double) {
     val fraction = ((current - low) / (high - low)).toFloat().coerceAtLeast(.01f)
-
+    if (fraction.isNaN()) {
+        return
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth(.65f),
