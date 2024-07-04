@@ -20,6 +20,11 @@ import com.farmingdale.stockscreener.repos.base.WatchlistRepository
 import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.viewmodels.base.StockViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,19 +40,24 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
     private val financeQueryRepo = FinanceQueryRepository.get()
     private val watchlistRepo = WatchlistRepository.get(application)
 
-    override val quote: StateFlow<Resource<FullQuoteData, DataError.Network>> = financeQueryRepo.getFullQuote(symbol)
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000L, 15000L),
-            Resource.Loading(true)
-        )
+    override val quote: StateFlow<Resource<FullQuoteData, DataError.Network>> =
+        financeQueryRepo.getFullQuote(symbol)
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5000L, 15000L),
+                Resource.Loading(true)
+            )
 
     private val _timeSeries =
-        MutableStateFlow<Resource<Map<String, HistoricalData>, DataError.Network>>(Resource.Loading(true))
-    override val timeSeries: StateFlow<Resource<Map<String, HistoricalData>, DataError.Network>> =
+        MutableStateFlow<Resource<ImmutableMap<String, HistoricalData>, DataError.Network>>(
+            Resource.Loading(
+                true
+            )
+        )
+    override val timeSeries: StateFlow<Resource<ImmutableMap<String, HistoricalData>, DataError.Network>> =
         _timeSeries.asStateFlow()
 
-    override val similarStocks: StateFlow<Resource<List<SimpleQuoteData>, DataError.Network>> =
+    override val similarStocks: StateFlow<Resource<ImmutableList<SimpleQuoteData>, DataError.Network>> =
         financeQueryRepo.getSimilarStocks(symbol)
             .stateIn(
                 viewModelScope,
@@ -55,17 +65,20 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
                 Resource.Loading(true)
             )
 
-    override val sectorPerformance: StateFlow<Resource<MarketSector?, DataError.Network>> = financeQueryRepo.getSectorBySymbol(symbol)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), Resource.Loading(true))
+    override val sectorPerformance: StateFlow<Resource<MarketSector?, DataError.Network>> =
+        financeQueryRepo.getSectorBySymbol(symbol)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), Resource.Loading(true))
 
-    override val news: StateFlow<Resource<List<News>, DataError.Network>> =
+    override val news: StateFlow<Resource<ImmutableList<News>, DataError.Network>> =
         financeQueryRepo.getNewsForSymbol(symbol)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), Resource.Loading(true))
 
-    private val _analysis = MutableStateFlow<Resource<Analysis?, DataError.Network>>(Resource.Loading(true))
-    override val analysis: StateFlow<Resource<Analysis?, DataError.Network>> = _analysis.asStateFlow()
+    private val _analysis =
+        MutableStateFlow<Resource<Analysis?, DataError.Network>>(Resource.Loading(true))
+    override val analysis: StateFlow<Resource<Analysis?, DataError.Network>> =
+        _analysis.asStateFlow()
 
-    override val signals: StateFlow<Map<AnalysisIndicators, String>> = combine(
+    override val signals: StateFlow<ImmutableMap<AnalysisIndicators, String>> = combine(
         quote,
         analysis
     ) { quote, analysis ->
@@ -122,8 +135,8 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
                 }
             }
         }
-        signals
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), emptyMap())
+        signals.toImmutableMap()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), persistentMapOf())
 
     override val movingAveragesSummary: StateFlow<Double> = signals.map { signalMap ->
         val movingAverageSignals = signalMap.filterKeys { it in AnalysisIndicators.MOVING_AVERAGES }
@@ -176,16 +189,16 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
         (movingAverages + oscillators + trends) / 3
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), 0.0)
 
-    override val watchList: StateFlow<List<SimpleQuoteData>> =
+    override val watchList: StateFlow<ImmutableList<SimpleQuoteData>> =
         watchlistRepo.watchlist.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(),
-            emptyList()
+            emptyList<SimpleQuoteData>().toImmutableList()
         )
 
-    private val timeSeriesMap = mutableMapOf<TimePeriod, Resource<Map<String, HistoricalData>, DataError.Network>>()
+    private val timeSeriesMap = persistentMapOf<TimePeriod, Resource<ImmutableMap<String, HistoricalData>, DataError.Network>>()
 
-    private val analysisMap = mutableMapOf<Interval, Resource<Analysis?, DataError.Network>>()
+    private val analysisMap = persistentMapOf<Interval, Resource<Analysis?, DataError.Network>>()
 
     init {
         if (symbol.isNotEmpty()) {
@@ -243,7 +256,7 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
     private fun loadTimeSeries(symbol: String, timePeriod: TimePeriod, interval: Interval) {
         viewModelScope.launch(Dispatchers.IO) {
             financeQueryRepo.getTimeSeries(symbol, timePeriod, interval).collect {
-                timeSeriesMap[timePeriod] = it
+                timeSeriesMap.put(timePeriod, it)
             }
         }
     }
@@ -251,7 +264,7 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
     private fun loadAnalysis(symbol: String, interval: Interval) {
         viewModelScope.launch(Dispatchers.IO) {
             financeQueryRepo.getAnalysis(symbol, interval).collect {
-                analysisMap[interval] = it
+                analysisMap.put(interval, it)
             }
         }
     }

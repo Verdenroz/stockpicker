@@ -11,6 +11,7 @@ import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
 
 interface FinanceQueryAPI {
 
@@ -33,7 +34,7 @@ interface FinanceQueryAPI {
      * @param symbols a variable number of strings to identify the requested quote
      * @return a list of [SimpleQuoteData]
      */
-    suspend fun getBulkQuote(symbols: List<String>): List<SimpleQuoteData>
+    suspend fun getBulkQuote(symbols: List<String>): ImmutableList<SimpleQuoteData>
 
     /**
      * Get historical prices (OHLCV) for a stock
@@ -44,7 +45,7 @@ interface FinanceQueryAPI {
      * @see Interval
      * @see TimePeriod
      */
-    suspend fun getHistoricalData(symbol: String, time: TimePeriod, interval: Interval): Map<String, HistoricalData>
+    suspend fun getHistoricalData(symbol: String, time: TimePeriod, interval: Interval): ImmutableMap<String, HistoricalData>
 
     /**
      * Get current market indices in the US
@@ -94,14 +95,14 @@ interface FinanceQueryAPI {
      * @param symbol the stock to get news for
      * @return a list of [News]
      */
-    suspend fun getNewsForSymbol(symbol: String): List<News>
+    suspend fun getNewsForSymbol(symbol: String): ImmutableList<News>
 
     /**
      * Find similar stocks to a given symbol
      * @param symbol the stock to find similar stocks for
      * @return a list of [SimpleQuoteData]
      */
-    suspend fun getSimilarSymbols(symbol: String): List<SimpleQuoteData>
+    suspend fun getSimilarSymbols(symbol: String): ImmutableList<SimpleQuoteData>
 
     suspend fun getTechnicalIndicator(symbol: String)
 

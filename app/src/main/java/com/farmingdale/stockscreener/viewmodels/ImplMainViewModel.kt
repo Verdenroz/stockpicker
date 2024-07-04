@@ -24,8 +24,8 @@ import com.farmingdale.stockscreener.viewmodels.base.MainEvent
 import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -57,7 +57,7 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
     override val regionFilter: StateFlow<RegionFilter> = _regionFilter.asStateFlow()
 
     private val _typeFilter =
-        MutableStateFlow(setOf(TypeFilter.STOCK, TypeFilter.ETF, TypeFilter.TRUST).toImmutableSet())
+        MutableStateFlow(persistentSetOf(TypeFilter.STOCK, TypeFilter.ETF, TypeFilter.TRUST))
     override val typeFilter: StateFlow<ImmutableSet<TypeFilter>> = _typeFilter.asStateFlow()
 
     private val _query = MutableStateFlow("")
@@ -129,14 +129,10 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
     override fun toggleTypeFilter(type: TypeFilter, isChecked: Boolean) {
         if (isChecked) {
             if (!_typeFilter.value.contains(type)) {
-                val newFilters = _typeFilter.value.toMutableSet()
-                newFilters.add(type)
-                _typeFilter.value = newFilters.toImmutableSet()
+                _typeFilter.value = _typeFilter.value.add(type)
             }
         } else {
-            val newFilters = _typeFilter.value.toMutableSet()
-            newFilters.remove(type)
-            _typeFilter.value = newFilters.toImmutableSet()
+            _typeFilter.value = _typeFilter.value.remove(type)
         }
 
         searcher.query.facetFilters = (listOf(

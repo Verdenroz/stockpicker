@@ -1,5 +1,7 @@
 package com.farmingdale.stockscreener.model.local
 
+import androidx.compose.runtime.Immutable
+
 /**
  * Local data class for basic stock data used in the watchlist
  * @param symbol the stock symbol
@@ -8,6 +10,7 @@ package com.farmingdale.stockscreener.model.local
  * @param change the price change
  * @param percentChange the percentage change
  */
+@Immutable
 data class SimpleQuoteData(
     val symbol: String,
     val name: String,
@@ -58,6 +61,7 @@ data class SimpleQuoteData(
  * @param fiveYearReturn the five year return
  * @param logo the URL of the company logo
  */
+@Immutable
 data class FullQuoteData(
     val symbol: String,
     val name: String,

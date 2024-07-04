@@ -1,11 +1,16 @@
 package com.farmingdale.stockscreener.model.local
 
+import androidx.compose.runtime.Immutable
 import com.farmingdale.stockscreener.model.local.indicators.Aroon
 import com.farmingdale.stockscreener.model.local.indicators.BBands
 import com.farmingdale.stockscreener.model.local.indicators.IchimokuCloud
 import com.farmingdale.stockscreener.model.local.indicators.Macd
 import com.farmingdale.stockscreener.model.local.indicators.SuperTrend
 
+/**
+ * Represents the analysis of a stock that encompasses MAs, trends, and oscillators
+ */
+@Immutable
 data class Analysis(
     val sma10: Double,
     val sma20: Double,

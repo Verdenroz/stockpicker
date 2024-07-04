@@ -14,6 +14,7 @@ import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.utils.isMarketOpen
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.flow.Flow
 
 abstract class FinanceQueryRepository {
@@ -86,17 +87,17 @@ abstract class FinanceQueryRepository {
     /**
      * Get simple quote data for a list of symbols as a list of [SimpleQuoteData]
      */
-    abstract suspend fun getBulkQuote(symbols: List<String>): Flow<Resource<List<SimpleQuoteData>, DataError.Network>>
+    abstract suspend fun getBulkQuote(symbols: List<String>): Flow<Resource<ImmutableList<SimpleQuoteData>, DataError.Network>>
 
     /**
      * Get news for a symbol as a list of [News]
      */
-    abstract fun getNewsForSymbol(symbol: String): Flow<Resource<List<News>, DataError.Network>>
+    abstract fun getNewsForSymbol(symbol: String): Flow<Resource<ImmutableList<News>, DataError.Network>>
 
     /**
      * Find similar stocks for a symbol as a list of [SimpleQuoteData]
      */
-    abstract fun getSimilarStocks(symbol: String): Flow<Resource<List<SimpleQuoteData>, DataError.Network>>
+    abstract fun getSimilarStocks(symbol: String): Flow<Resource<ImmutableList<SimpleQuoteData>, DataError.Network>>
 
     /**
      * Gets the [MarketSector] performance of the symbol if available
@@ -110,7 +111,7 @@ abstract class FinanceQueryRepository {
         symbol: String,
         timePeriod: TimePeriod,
         interval: Interval
-    ): Flow<Resource<Map<String, HistoricalData>, DataError.Network>>
+    ): Flow<Resource<ImmutableMap<String, HistoricalData>, DataError.Network>>
 
     /**
      * Get summary analysis for a symbol as [Analysis] given an [Interval]

@@ -6,11 +6,12 @@ import androidx.compose.ui.res.stringResource
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.indicators.AnalysisIndicators
+import kotlinx.collections.immutable.ImmutableMap
 
 @Composable
 fun OscillatorsSection(
     analysis: Analysis,
-    signals: Map<AnalysisIndicators, String>,
+    signals: ImmutableMap<AnalysisIndicators, String>,
 ) {
     Column {
         AnalysisDetail(

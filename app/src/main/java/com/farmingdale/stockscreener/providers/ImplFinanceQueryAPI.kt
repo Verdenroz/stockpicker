@@ -25,7 +25,9 @@ import com.farmingdale.stockscreener.utils.HttpException
 import com.farmingdale.stockscreener.utils.NetworkException
 import com.farmingdale.stockscreener.utils.executeAsync
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.builtins.ListSerializer
@@ -158,7 +160,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
         }.first()
     }
 
-    override suspend fun getBulkQuote(symbols: List<String>): List<SimpleQuoteData> {
+    override suspend fun getBulkQuote(symbols: List<String>): ImmutableList<SimpleQuoteData> {
         val symbolList = symbols.joinToString(",")
         val stream = getByteStream(
             FINANCE_QUERY_API_URL.newBuilder().apply {
@@ -182,14 +184,14 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 change = it.change,
                 percentChange = it.percentChange
             )
-        }
+        }.toImmutableList()
     }
 
     override suspend fun getHistoricalData(
         symbol: String,
         time: TimePeriod,
         interval: Interval
-    ): Map<String, HistoricalData> {
+    ): ImmutableMap<String, HistoricalData> {
         val stream = getByteStream(
             FINANCE_QUERY_API_URL.newBuilder().apply {
                 addPathSegments("historical")
@@ -229,7 +231,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 close = entry.value.adjClose,
                 volume = entry.value.volume
             )
-        }
+        }.toImmutableMap()
     }
 
     override suspend fun getIndices(): ImmutableList<MarketIndex> {
@@ -416,7 +418,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
         }.toImmutableList()
     }
 
-    override suspend fun getNewsForSymbol(symbol: String): List<News> {
+    override suspend fun getNewsForSymbol(symbol: String): ImmutableList<News> {
         val stream = getByteStream(
             FINANCE_QUERY_API_URL.newBuilder().apply {
                 addPathSegments("news")
@@ -441,10 +443,10 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 img = it.img,
                 time = it.time
             )
-        }
+        }.toImmutableList()
     }
 
-    override suspend fun getSimilarSymbols(symbol: String): List<SimpleQuoteData> {
+    override suspend fun getSimilarSymbols(symbol: String): ImmutableList<SimpleQuoteData> {
         val stream = getByteStream(
             FINANCE_QUERY_API_URL.newBuilder().apply {
                 addPathSegments("similar-stocks")
@@ -469,7 +471,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 change = it.change,
                 percentChange = it.percentChange
             )
-        }
+        }.toImmutableList()
     }
 
     override suspend fun getTechnicalIndicator(symbol: String) {

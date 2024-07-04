@@ -1,8 +1,11 @@
 package com.farmingdale.stockscreener.model.local
 
+import androidx.compose.runtime.Stable
+
 /**
  * The available intervals for technical analysis and historical data
  */
+@Stable
 enum class Interval(val value: String) {
     FIFTEEN_MINUTE("15m"),
     THIRTY_MINUTE("30m"),
@@ -16,6 +19,7 @@ enum class Interval(val value: String) {
 /**
  * The available time periods for technical analysis and historical data
  */
+@Stable
 enum class TimePeriod(val value: String) {
     ONE_DAY("1d"),
     FIVE_DAY("5d"),

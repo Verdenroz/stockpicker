@@ -41,7 +41,7 @@ import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TypeFilter
 import com.farmingdale.stockscreener.screens.Screen
 import com.farmingdale.stockscreener.screens.home.HomeScreen
-import com.farmingdale.stockscreener.screens.stock.StockView
+import com.farmingdale.stockscreener.screens.stock.StockScreen
 import com.farmingdale.stockscreener.screens.watchlist.WatchListView
 import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
 import com.farmingdale.stockscreener.utils.UiText
@@ -251,9 +251,10 @@ fun MainContent(
             composable("stock/{symbol}") { backStackEntry ->
                 val symbol = backStackEntry.arguments?.getString("symbol")
                 if (symbol != null) {
-                    StockView(
+                    StockScreen(
                         symbol = symbol,
                         navController = navController,
+                        snackbarHost = snackbarHost,
                         addToWatchList = addToWatchList,
                         deleteFromWatchList = deleteFromWatchList
                     )

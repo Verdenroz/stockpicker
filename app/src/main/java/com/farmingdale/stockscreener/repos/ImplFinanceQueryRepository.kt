@@ -1,6 +1,5 @@
 package com.farmingdale.stockscreener.repos
 
-import android.util.Log
 import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
 import com.farmingdale.stockscreener.model.local.HistoricalData
@@ -20,6 +19,9 @@ import com.farmingdale.stockscreener.utils.HttpException
 import com.farmingdale.stockscreener.utils.NetworkException
 import com.farmingdale.stockscreener.utils.Resource
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -327,11 +329,11 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
             }
         }.flowOn(Dispatchers.IO)
 
-    override suspend fun getBulkQuote(symbols: List<String>): Flow<Resource<List<SimpleQuoteData>, DataError.Network>> =
+    override suspend fun getBulkQuote(symbols: List<String>): Flow<Resource<ImmutableList<SimpleQuoteData>, DataError.Network>> =
         flow {
             try {
                 val quotes = api.getBulkQuote(symbols)
-                emit(Resource.Success<List<SimpleQuoteData>, DataError.Network>(quotes))
+                emit(Resource.Success<ImmutableList<SimpleQuoteData>, DataError.Network>(quotes))
             } catch (e: DataException) {
                 when (e) {
                     is HttpException -> {
@@ -355,17 +357,17 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
             }
         }.flowOn(Dispatchers.IO)
 
-    override fun getNewsForSymbol(symbol: String): Flow<Resource<List<News>, DataError.Network>> =
+    override fun getNewsForSymbol(symbol: String): Flow<Resource<ImmutableList<News>, DataError.Network>> =
         flow {
             try {
                 val news = api.getNewsForSymbol(symbol)
-                emit(Resource.Success<List<News>, DataError.Network>(news))
+                emit(Resource.Success<ImmutableList<News>, DataError.Network>(news))
             } catch (e: DataException) {
                 when (e) {
                     is HttpException -> {
                         when (e.code) {
                             // If 404, it means there is no news for the symbol
-                            404 -> emit(Resource.Success(emptyList()))
+                            404 -> emit(Resource.Success(emptyList<News>().toImmutableList()))
 
                             400 -> emit(Resource.Error(DataError.Network.BAD_REQUEST))
                             401, 403 -> emit(Resource.Error(DataError.Network.DENIED))
@@ -385,19 +387,17 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
             }
         }.flowOn(Dispatchers.IO)
 
-    override fun getSimilarStocks(symbol: String): Flow<Resource<List<SimpleQuoteData>, DataError.Network>> =
+    override fun getSimilarStocks(symbol: String): Flow<Resource<ImmutableList<SimpleQuoteData>, DataError.Network>> =
         flow {
             try {
                 val similarStocks = api.getSimilarSymbols(symbol)
-                emit(Resource.Success<List<SimpleQuoteData>, DataError.Network>(similarStocks))
+                emit(Resource.Success<ImmutableList<SimpleQuoteData>, DataError.Network>(similarStocks))
             } catch (e: DataException) {
                 when (e) {
                     is HttpException -> {
-                        Log.d("ImplFinanceQueryRepository", "getSimilarStocks: ${e.code}")
                         when (e.code) {
-
                             // If 404, it means there are no similar stocks
-                            404 -> emit(Resource.Success(emptyList()))
+                            404 -> emit(Resource.Success(emptyList<SimpleQuoteData>().toImmutableList()))
 
                             400 -> emit(Resource.Error(DataError.Network.BAD_REQUEST))
                             401, 403 -> emit(Resource.Error(DataError.Network.DENIED))
@@ -452,10 +452,10 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
         symbol: String,
         timePeriod: TimePeriod,
         interval: Interval,
-    ): Flow<Resource<Map<String, HistoricalData>, DataError.Network>> = flow {
+    ): Flow<Resource<ImmutableMap<String, HistoricalData>, DataError.Network>> = flow {
         try {
             val timeSeries = api.getHistoricalData(symbol, timePeriod, interval)
-            emit(Resource.Success<Map<String, HistoricalData>, DataError.Network>(timeSeries))
+            emit(Resource.Success<ImmutableMap<String, HistoricalData>, DataError.Network>(timeSeries))
         } catch (e: DataException) {
             when (e) {
                 is HttpException -> {

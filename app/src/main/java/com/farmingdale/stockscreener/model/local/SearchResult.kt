@@ -1,5 +1,6 @@
 package com.farmingdale.stockscreener.model.local
 
+import androidx.compose.runtime.Immutable
 import kotlinx.serialization.Serializable
 
 /**
@@ -11,6 +12,7 @@ import kotlinx.serialization.Serializable
  * @param type the type of security (stock, etf, trust)
  */
 @Serializable
+@Immutable
 data class SearchResult(
     val symbol: String,
     val name: String,
