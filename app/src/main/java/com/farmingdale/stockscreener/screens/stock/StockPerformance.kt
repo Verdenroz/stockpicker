@@ -5,17 +5,21 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.Card
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -27,23 +31,30 @@ import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
+import com.farmingdale.stockscreener.utils.UiText
 
 @Composable
 fun StockPerformance(
+    snackbarHost: SnackbarHostState,
     quote: FullQuoteData,
     sectorPerformance: Resource<MarketSector?, DataError.Network>
 ) {
+    val context = LocalContext.current
     when (sectorPerformance) {
         is Resource.Loading -> {
-            LinearProgressIndicator(Modifier.fillMaxWidth())
+            StockPerformanceSkeleton()
         }
 
         is Resource.Error -> {
-            StockError(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp)
-            )
+            StockPerformanceSkeleton()
+
+            LaunchedEffect(sectorPerformance.error) {
+                snackbarHost.showSnackbar(
+                    message = sectorPerformance.error.asUiText().asString(context),
+                    actionLabel = UiText.StringResource(R.string.dismiss).asString(context),
+                    duration = SnackbarDuration.Short
+                )
+            }
         }
 
         is Resource.Success -> {
@@ -178,8 +189,7 @@ fun PerformanceCard(
     sectorPerformance: String?
 ) {
     Card(
-        modifier = Modifier
-            .size(250.dp, 125.dp),
+        modifier = Modifier.size(275.dp, 125.dp),
     ) {
         Column(
             modifier = Modifier
@@ -231,6 +241,29 @@ fun PerformanceCard(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun StockPerformanceSkeleton(
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.surfaceContainer
+) {
+    LazyRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
+    ) {
+        repeat(3) {
+            item(key = it) {
+                Card(
+                    modifier = modifier.size(275.dp, 125.dp),
+                    colors = CardDefaults.cardColors(containerColor = color)
+                ) {
+                    // skeleton
+                }
+            }
+
         }
     }
 }

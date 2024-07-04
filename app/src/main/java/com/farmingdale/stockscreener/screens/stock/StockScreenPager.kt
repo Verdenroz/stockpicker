@@ -9,6 +9,7 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
@@ -17,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.farmingdale.stockscreener.R
@@ -28,16 +30,19 @@ import com.farmingdale.stockscreener.model.local.indicators.AnalysisIndicators
 import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.screens.stock.analysis.StockAnalysis
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StockViewPager(
+    snackbarHost: SnackbarHostState,
     quote: FullQuoteData,
-    news: Resource<List<News>, DataError.Network>,
+    news: Resource<ImmutableList<News>, DataError.Network>,
     analysis: Resource<Analysis?, DataError.Network>,
-    signals: Map<AnalysisIndicators, String>,
+    signals: ImmutableMap<AnalysisIndicators, String>,
     movingAverageSummary: Double,
     oscillatorsSummary: Double,
     trendsSummary: Double,
@@ -75,12 +80,16 @@ fun StockViewPager(
                 }
 
                 1 -> {
-                    StockNewsFeed(news = news)
+                    StockNewsFeed(
+                        snackbarHost = snackbarHost,
+                        news = news
+                    )
                 }
 
                 2 -> {
                     StockAnalysis(
                         symbol = quote.symbol,
+                        snackbarHost = snackbarHost,
                         analysis = analysis,
                         signals = signals,
                         movingAverageSummary = movingAverageSummary,

@@ -19,6 +19,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -31,6 +32,7 @@ import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -51,11 +53,14 @@ import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.viewmodels.ImplStockViewModel
 import com.farmingdale.stockscreener.viewmodels.base.StockViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
 
 @Composable
-fun StockView(
+fun StockScreen(
     symbol: String,
     navController: NavController,
+    snackbarHost: SnackbarHostState,
     addToWatchList: (String) -> Unit,
     deleteFromWatchList: (String) -> Unit
 ) {
@@ -67,12 +72,12 @@ fun StockView(
                 return ImplStockViewModel(symbol, application) as T
             }
         })
-    val quote by stockViewModel.quote.collectAsState<Resource<FullQuoteData, DataError.Network>>()
-    val timeSeries by stockViewModel.timeSeries.collectAsState<Resource<Map<String, HistoricalData>, DataError.Network>>()
-    val similarStocks by stockViewModel.similarStocks.collectAsState<Resource<List<SimpleQuoteData>, DataError.Network>>()
-    val sectorPerformance by stockViewModel.sectorPerformance.collectAsState<Resource<MarketSector?, DataError.Network>>()
-    val news by stockViewModel.news.collectAsState<Resource<List<News>, DataError.Network>>()
-    val analysis by stockViewModel.analysis.collectAsState<Resource<Analysis?, DataError.Network>>()
+    val quote by stockViewModel.quote.collectAsState()
+    val timeSeries by stockViewModel.timeSeries.collectAsState()
+    val similarStocks by stockViewModel.similarStocks.collectAsState()
+    val sectorPerformance by stockViewModel.sectorPerformance.collectAsState()
+    val news by stockViewModel.news.collectAsState()
+    val analysis by stockViewModel.analysis.collectAsState()
     val signals by stockViewModel.signals.collectAsState()
     val movingAverageSummary by stockViewModel.movingAveragesSummary.collectAsState()
     val oscillatorsSummary by stockViewModel.oscillatorsSummary.collectAsState()
@@ -82,6 +87,7 @@ fun StockView(
     StockScreenerTheme {
         StockContent(
             navController = navController,
+            snackbarHost = snackbarHost,
             symbol = symbol,
             quote = quote,
             timeSeries = timeSeries,
@@ -106,20 +112,21 @@ fun StockView(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StockContent(
-    navController: NavController,
     symbol: String,
+    navController: NavController,
+    snackbarHost: SnackbarHostState,
     quote: Resource<FullQuoteData, DataError.Network>,
-    timeSeries: Resource<Map<String, HistoricalData>, DataError.Network>,
-    similarStocks: Resource<List<SimpleQuoteData>, DataError.Network>,
+    timeSeries: Resource<ImmutableMap<String, HistoricalData>, DataError.Network>,
+    similarStocks: Resource<ImmutableList<SimpleQuoteData>, DataError.Network>,
     sectorPerformance: Resource<MarketSector?, DataError.Network>,
-    news: Resource<List<News>, DataError.Network>,
+    news: Resource<ImmutableList<News>, DataError.Network>,
     analysis: Resource<Analysis?, DataError.Network>,
-    signals: Map<AnalysisIndicators, String>,
+    signals: ImmutableMap<AnalysisIndicators, String>,
     movingAverageSummary: Double,
     oscillatorsSummary: Double,
     trendsSummary: Double,
     overallSummary: Double,
-    watchList: List<SimpleQuoteData> = emptyList(),
+    watchList: ImmutableList<SimpleQuoteData>,
     updateTimeSeries: (String, TimePeriod, Interval) -> Unit,
     updateAnalysisInterval: (String, Interval) -> Unit,
     addToWatchList: (String) -> Unit,
@@ -148,18 +155,30 @@ fun StockContent(
             is Resource.Loading -> {
                 Column(
                     modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
+                    verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     CircularProgressIndicator()
-                    Text(text = stringResource(id = R.string.loading_quote))
+                    Text(
+                        text = stringResource(id = R.string.loading_quote),
+                        style = MaterialTheme.typography.titleMedium,
+                        letterSpacing = 1.5.sp
+                    )
                 }
             }
 
             is Resource.Error -> {
-                StockError(
-                    modifier = Modifier.fillMaxSize()
-                )
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = stringResource(id = R.string.error)
+                    )
+                    Text(text = stringResource(id = R.string.error_loading_data))
+                }
             }
 
             is Resource.Success -> {
@@ -185,6 +204,7 @@ fun StockContent(
                                     .fillMaxWidth()
                                     .heightIn(min = 200.dp, max = 400.dp),
                                 listState = listState,
+                                snackbarHost = snackbarHost,
                                 symbol = quote.data.symbol,
                                 timeSeries = timeSeries,
                                 backgroundColor = bg,
@@ -195,6 +215,7 @@ fun StockContent(
                         quote.data.ytdReturn?.let {
                             item {
                                 StockPerformance(
+                                    snackbarHost = snackbarHost,
                                     quote = quote.data,
                                     sectorPerformance = sectorPerformance
                                 )
@@ -205,12 +226,14 @@ fun StockContent(
                             SimilarStockFeed(
                                 symbol = quote.data.symbol,
                                 similarStocks = similarStocks,
-                                navController = navController
+                                navController = navController,
+                                snackbarHost = snackbarHost
                             )
                         }
 
                         item {
                             StockViewPager(
+                                snackbarHost = snackbarHost,
                                 quote = quote.data,
                                 news = news,
                                 analysis = analysis,
@@ -229,28 +252,12 @@ fun StockContent(
     }
 }
 
-@Composable
-fun StockError(
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            imageVector = Icons.Default.Warning,
-            contentDescription = stringResource(id = R.string.error)
-        )
-        Text(text = stringResource(id = R.string.error_loading_data))
-    }
-}
-
 @Preview
 @Composable
 fun PreviewStockView() {
-    StockView(
+    StockScreen(
         symbol = "AAPL",
+        snackbarHost = SnackbarHostState(),
         navController = rememberNavController(),
         addToWatchList = {},
         deleteFromWatchList = {}

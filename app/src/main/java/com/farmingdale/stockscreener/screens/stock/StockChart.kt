@@ -1,6 +1,7 @@
 package com.farmingdale.stockscreener.screens.stock
 
 import android.graphics.Paint
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -9,15 +10,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +43,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -56,6 +61,8 @@ import com.farmingdale.stockscreener.ui.theme.positiveBackgroundColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
+import com.farmingdale.stockscreener.utils.UiText
+import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.launch
 import java.lang.Math.round
 import java.text.SimpleDateFormat
@@ -70,186 +77,184 @@ private const val SPACING = 75f
 fun StockChart(
     modifier: Modifier = Modifier,
     listState: LazyListState,
+    snackbarHost: SnackbarHostState,
     symbol: String,
-    timeSeries: Resource<Map<String, HistoricalData>, DataError.Network>,
+    timeSeries: Resource<ImmutableMap<String, HistoricalData>, DataError.Network>,
     isDarkTheme: Boolean = isSystemInDarkTheme(),
     updateTimeSeries: (String, TimePeriod, Interval) -> Unit,
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
 ) {
+    val context = LocalContext.current
     when (timeSeries) {
         is Resource.Loading -> {
-            LinearProgressIndicator(Modifier.fillMaxWidth())
+            StockChartSkeleton()
         }
 
         is Resource.Error -> {
-            StockError(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(400.dp)
-            )
+            StockChartSkeleton()
+
+            LaunchedEffect(timeSeries.error) {
+                snackbarHost.showSnackbar(
+                    message = timeSeries.error.asUiText().asString(context),
+                    actionLabel = UiText.StringResource(R.string.dismiss).asString(context),
+                    duration = SnackbarDuration.Short
+                )
+            }
         }
 
         is Resource.Success -> {
-            if (timeSeries.data.isEmpty()) {
-                StockError(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(400.dp)
+            val density = LocalDensity.current
+            val scope = rememberCoroutineScope()
+
+            val data = timeSeries.data.entries.toList()
+                .asReversed()
+                .associate { it.key to it.value }
+
+            val guidelineColor = MaterialTheme.colorScheme.outline
+
+            val positiveChart = remember(data) {
+                timeSeries.data.values.first().close > timeSeries.data.values.last().close
+            }
+
+            val upperValue = remember(data) {
+                data.values.maxOf { it.close }.plus(1)
+            }
+            val lowerValue = remember(data) {
+                data.values.minOf { it.close }.minus(1)
+            }
+
+            val selectedData = rememberSaveable {
+                mutableStateOf<Pair<String, HistoricalData>?>(null)
+            }
+
+            Text(
+                text = selectedData.value.let {
+                    it?.let { (_, historicalData) ->
+                        "${historicalData.close}"
+                    } ?: ""
+                },
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Black,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = selectedData.value.let {
+                        it?.let { (date, _) ->
+                            date
+                        } ?: ""
+                    },
+                    style = MaterialTheme.typography.labelLarge,
+                    letterSpacing = 1.25.sp,
                 )
-            } else {
-                val density = LocalDensity.current
-                val scope = rememberCoroutineScope()
-
-                val data = timeSeries.data.entries.toList()
-                    .asReversed()
-                    .associate { it.key to it.value }
-
-                val guidelineColor = MaterialTheme.colorScheme.outline
-
-                val positiveChart = remember(data) {
-                    timeSeries.data.values.first().close > timeSeries.data.values.last().close
-                }
-
-                val upperValue = remember(data) {
-                    data.values.maxOf { it.close }.plus(1)
-                }
-                val lowerValue = remember(data) {
-                    data.values.minOf { it.close }.minus(1)
-                }
-
-                val selectedData = rememberSaveable {
-                    mutableStateOf<Pair<String, HistoricalData>?>(null)
-                }
-
                 Text(
                     text = selectedData.value.let {
                         it?.let { (_, historicalData) ->
-                            "${historicalData.close}"
+                            stringResource(R.string.volume) + " ${formatVolume(historicalData.volume)}"
                         } ?: ""
                     },
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Black,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    style = MaterialTheme.typography.labelLarge,
+                    letterSpacing = 1.25.sp,
                 )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 32.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = selectedData.value.let {
-                            it?.let { (date, _) ->
-                                date
-                            } ?: ""
-                        },
-                        style = MaterialTheme.typography.labelLarge,
-                        letterSpacing = 1.25.sp,
-                    )
-                    Text(
-                        text = selectedData.value.let {
-                            it?.let { (_, historicalData) ->
-                                stringResource(R.string.volume) + " ${formatVolume(historicalData.volume)}"
-                            } ?: ""
-                        },
-                        style = MaterialTheme.typography.labelLarge,
-                        letterSpacing = 1.25.sp,
-                    )
-                }
+            }
 
-                Column(
-                    modifier = Modifier
-                        .padding(start = 16.dp, end = 16.dp, top = 32.dp)
-                        .background(backgroundColor)
-                ) {
-                    Box(modifier = modifier
-                        .pointerInput(data) {
-                            detectTapGestures(
-                                onPress = { offset ->
-                                    val spacePerHour = (size.width - SPACING) / data.size
-                                    val index = ((offset.x - SPACING) / spacePerHour).toInt()
+            Column(
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 16.dp, top = 32.dp)
+                    .background(backgroundColor)
+            ) {
+                Box(modifier = modifier
+                    .pointerInput(data) {
+                        detectTapGestures(
+                            onPress = { offset ->
+                                val spacePerHour = (size.width - SPACING) / data.size
+                                val index = ((offset.x - SPACING) / spacePerHour).toInt()
 
-                                    if (index in data.entries.indices) {
-                                        selectedData.value = data.entries
-                                            .elementAt(index)
-                                            .toPair()
-                                    } else {
-                                        selectedData.value = null
-                                    }
-                                    scope.launch { listState.animateScrollToItem(0) }
-                                },
-                                onDoubleTap = {
-                                    selectedData.value = null
-                                },
-                                onTap = {
+                                if (index in data.entries.indices) {
+                                    selectedData.value = data.entries
+                                        .elementAt(index)
+                                        .toPair()
+                                } else {
                                     selectedData.value = null
                                 }
-                            )
-                        }
-                        .pointerInput(data) {
-                            detectDragGestures(
-                                onDrag = { change, _ ->
-                                    val spacePerHour = (size.width - SPACING) / data.size
-                                    // Calculate the index of the selected data based on the x-coordinate of the drag
-                                    val index =
-                                        ((change.position.x - SPACING) / spacePerHour).toInt()
-                                    if (index in data.entries.indices
-                                    ) {
-                                        // Update the selected data
-                                        selectedData.value = data.entries
-                                            .elementAt(index)
-                                            .toPair()
-                                    } else {
-                                        // Clear the selected data if the drag is outside the data range
-                                        selectedData.value = null
-                                    }
-                                    scope.launch { listState.animateScrollToItem(0) }
-                                },
-                                onDragEnd = {
-                                    // Clear the selected data when the drag ends
+                                scope.launch { listState.animateScrollToItem(0) }
+                            },
+                            onDoubleTap = {
+                                selectedData.value = null
+                            },
+                            onTap = {
+                                selectedData.value = null
+                            }
+                        )
+                    }
+                    .pointerInput(data) {
+                        detectDragGestures(
+                            onDrag = { change, _ ->
+                                val spacePerHour = (size.width - SPACING) / data.size
+                                // Calculate the index of the selected data based on the x-coordinate of the drag
+                                val index =
+                                    ((change.position.x - SPACING) / spacePerHour).toInt()
+                                if (index in data.entries.indices
+                                ) {
+                                    // Update the selected data
+                                    selectedData.value = data.entries
+                                        .elementAt(index)
+                                        .toPair()
+                                } else {
+                                    // Clear the selected data if the drag is outside the data range
                                     selectedData.value = null
                                 }
+                                scope.launch { listState.animateScrollToItem(0) }
+                            },
+                            onDragEnd = {
+                                // Clear the selected data when the drag ends
+                                selectedData.value = null
+                            }
+                        )
+                    }
+                    .drawWithCache {
+                        val topShader =
+                            if (positiveChart) positiveTextColor.copy(alpha = .5f) else negativeTextColor.copy(
+                                alpha = .5f
+                            )
+                        val bottomShader =
+                            if (positiveChart) positiveBackgroundColor else negativeBackgroundColor
+                        val textColor =
+                            if (isDarkTheme) android.graphics.Color.WHITE else android.graphics.Color.BLACK
+                        val textPaint = Paint().apply {
+                            color = textColor
+                            textAlign = Paint.Align.CENTER
+                            textSize = density.run { 12.sp.toPx() }
+                            typeface = android.graphics.Typeface.DEFAULT_BOLD
+                        }
+                        onDrawBehind {
+                            drawChart(
+                                timeSeries = data,
+                                size = size,
+                                lowerValue = lowerValue,
+                                upperValue = upperValue,
+                                topShader = topShader,
+                                bottomShader = bottomShader,
+                                guidelineColor = guidelineColor,
+                                textPaint = textPaint,
+                                density = density,
+                                selectedData = selectedData
                             )
                         }
-                        .drawWithCache {
-                            val topShader =
-                                if (positiveChart) positiveTextColor.copy(alpha = .5f) else negativeTextColor.copy(
-                                    alpha = .5f
-                                )
-                            val bottomShader =
-                                if (positiveChart) positiveBackgroundColor else negativeBackgroundColor
-                            val textColor =
-                                if (isDarkTheme) android.graphics.Color.WHITE else android.graphics.Color.BLACK
-                            val textPaint = Paint().apply {
-                                color = textColor
-                                textAlign = Paint.Align.CENTER
-                                textSize = density.run { 12.sp.toPx() }
-                                typeface = android.graphics.Typeface.DEFAULT_BOLD
-                            }
-                            onDrawBehind {
-                                drawChart(
-                                    timeSeries = data,
-                                    size = size,
-                                    lowerValue = lowerValue,
-                                    upperValue = upperValue,
-                                    topShader = topShader,
-                                    bottomShader = bottomShader,
-                                    guidelineColor = guidelineColor,
-                                    textPaint = textPaint,
-                                    density = density,
-                                    selectedData = selectedData
-                                )
-                            }
-                        }
-                    )
+                    }
+                )
 
-                    TimePeriodBar(
-                        modifier = Modifier.fillMaxWidth(),
-                        symbol = symbol,
-                        updateTimeSeries = updateTimeSeries
-                    )
-                }
+                TimePeriodBar(
+                    modifier = Modifier.fillMaxWidth(),
+                    symbol = symbol,
+                    updateTimeSeries = updateTimeSeries
+                )
             }
         }
     }
@@ -307,6 +312,51 @@ fun TimePeriodButton(
             text = timePeriod.value.uppercase(),
             style = MaterialTheme.typography.labelMedium
         )
+    }
+}
+
+@Composable
+fun StockChartSkeleton(
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.surfaceContainer
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(200.dp) // Adjust the height as needed
+            .padding(16.dp)
+            .background(color)
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val canvasWidth = size.width
+            val canvasHeight = size.height
+
+            // Draw the horizontal axis
+            drawLine(
+                start = Offset(x = 0f, y = canvasHeight - 20f),
+                end = Offset(x = canvasWidth, y = canvasHeight - 20f),
+                color = Color.LightGray,
+                strokeWidth = 4f
+            )
+
+            // Draw the vertical axis
+            drawLine(
+                start = Offset(x = 20f, y = 0f),
+                end = Offset(x = 20f, y = canvasHeight),
+                color = Color.LightGray,
+                strokeWidth = 4f
+            )
+
+            // Optionally, draw some lines or dots to mimic data points
+            val step = canvasWidth / 10
+            for (i in 1..9) {
+                drawCircle(
+                    center = Offset(x = step * i, y = canvasHeight / 2),
+                    radius = 4f,
+                    color = Color.Gray
+                )
+            }
+        }
     }
 }
 
@@ -641,178 +691,3 @@ fun formatVolume(volume: Long): String {
         else -> volume.toString()
     }
 }
-
-//@Preview
-//@Composable
-//fun PreviewStockChart() {
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .padding(16.dp)
-//            .verticalScroll(rememberScrollState()),
-//        verticalArrangement = Arrangement.spacedBy(16.dp)
-//    ) {
-//        val api = ImplFinanceQueryAPI(okHttpClient)
-//        val timeSeries = runBlocking {
-//            api.getHistoricalData(
-//                "TSLA",
-//                TimePeriod.ONE_DAY,
-//                Interval.FIFTEEN_MINUTE
-//            )
-//        }
-//        val timeSeries2 = runBlocking {
-//            api.getHistoricalData(
-//                "TSLA",
-//                TimePeriod.FIVE_DAY,
-//                Interval.FIFTEEN_MINUTE
-//            )
-//        }
-//        val timeSeries3 = runBlocking {
-//            api.getHistoricalData(
-//                "TSLA",
-//                TimePeriod.ONE_MONTH,
-//                Interval.DAILY
-//            )
-//        }
-//        val timeSeries4 = runBlocking {
-//            api.getHistoricalData(
-//                "TSLA",
-//                TimePeriod.THREE_MONTH,
-//                Interval.DAILY
-//            )
-//        }
-//        val timeSeries5 = runBlocking {
-//            api.getHistoricalData(
-//                "TSLA",
-//                TimePeriod.SIX_MONTH,
-//                Interval.DAILY
-//            )
-//        }
-//        val timeSeries6 = runBlocking {
-//            api.getHistoricalData(
-//                "TSLA",
-//                TimePeriod.ONE_YEAR,
-//                Interval.DAILY
-//            )
-//        }
-//        val timeSeries7 = runBlocking {
-//            api.getHistoricalData(
-//                "TSLA",
-//                TimePeriod.FIVE_YEAR,
-//                Interval.DAILY
-//            )
-//        }
-//        val timeSeries8 = runBlocking {
-//            api.getHistoricalData(
-//                "TSLA",
-//                TimePeriod.TEN_YEAR,
-//                Interval.DAILY
-//            )
-//        }
-//        val timeSeries9 = runBlocking {
-//            api.getHistoricalData(
-//                "TSLA",
-//                TimePeriod.YEAR_TO_DATE,
-//                Interval.DAILY
-//            )
-//        }
-//        val timeSeries10 = runBlocking {
-//            api.getHistoricalData(
-//                "TSLA",
-//                TimePeriod.MAX,
-//                Interval.DAILY
-//            )
-//        }
-//        StockChart(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(200.dp),
-//            symbol = "TSLA",
-//            timeSeries = timeSeries,
-//            positiveChart = true,
-//            updateTimeSeries = { _, _, _ -> },
-//        )
-//
-//        StockChart(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(200.dp),
-//            symbol = "TSLA",
-//            timeSeries = timeSeries2,
-//            positiveChart = true,
-//            updateTimeSeries = { _, _, _ -> },
-//        )
-//        StockChart(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(200.dp),
-//            symbol = "TSLA",
-//            timeSeries = timeSeries3,
-//            positiveChart = false,
-//            updateTimeSeries = { _, _, _ -> },
-//        )
-//        StockChart(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(200.dp),
-//            symbol = "TSLA",
-//            timeSeries = timeSeries4,
-//            positiveChart = true,
-//            updateTimeSeries = { _, _, _ -> },
-//        )
-//        StockChart(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(200.dp),
-//            symbol = "TSLA",
-//            timeSeries = timeSeries5,
-//            positiveChart = false,
-//            updateTimeSeries = { _, _, _ -> },
-//        )
-//        StockChart(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(200.dp),
-//            symbol = "TSLA",
-//            timeSeries = timeSeries6,
-//            positiveChart = true,
-//            updateTimeSeries = { _, _, _ -> },
-//        )
-//        StockChart(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(200.dp),
-//            symbol = "TSLA",
-//            timeSeries = timeSeries7,
-//            positiveChart = false,
-//            updateTimeSeries = { _, _, _ -> },
-//        )
-//        StockChart(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(200.dp),
-//            symbol = "TSLA",
-//            timeSeries = timeSeries8,
-//            positiveChart = true,
-//            updateTimeSeries = { _, _, _ -> },
-//        )
-//        StockChart(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(200.dp),
-//            symbol = "TSLA",
-//            timeSeries = timeSeries9,
-//            positiveChart = false,
-//            updateTimeSeries = { _, _, _ -> },
-//        )
-//        StockChart(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(200.dp),
-//            symbol = "TSLA",
-//            timeSeries = timeSeries10,
-//            positiveChart = true,
-//            updateTimeSeries = { _, _, _ -> },
-//        )
-//    }
-//}

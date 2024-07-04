@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,15 +18,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -40,29 +42,31 @@ import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
+import com.farmingdale.stockscreener.utils.UiText
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun StockNewsFeed(
-    news: Resource<List<News>, DataError.Network>
+    snackbarHost: SnackbarHostState,
+    news: Resource<ImmutableList<News>, DataError.Network>
 ) {
-
+    val context = LocalContext.current
     when (news) {
-        is Resource.Error -> {
-            StockError(
-                modifier = Modifier
-                    .height(300.dp)
-                    .fillMaxWidth(),
-            )
-        }
 
         is Resource.Loading -> {
-            Box(
-                modifier = Modifier
-                    .height(300.dp)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
+            StockNewsFeedSkeleton()
+        }
+
+        is Resource.Error -> {
+            StockNewsFeedSkeleton()
+
+            LaunchedEffect(news.error) {
+                snackbarHost.showSnackbar(
+                    message = news.error.asUiText().asString(context),
+                    actionLabel = UiText.StringResource(R.string.dismiss).asString(context),
+                    duration = SnackbarDuration.Short
+                )
             }
         }
 
@@ -86,22 +90,18 @@ fun StockNewsFeed(
                     )
                 }
             } else {
-                Column(
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.surfaceContainer),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        items(
-                            items = news.data,
-                            key = { news -> news.link },
-                        ) { item ->
-                            StockNewsItem(news = item)
-                        }
+                    items(
+                        items = news.data,
+                        key = { news -> news.link },
+                    ) { item ->
+                        StockNewsItem(news = item)
                     }
                 }
             }
@@ -121,13 +121,15 @@ fun StockNewsItem(news: News) {
                 loading = {
                     Card(
                         modifier = Modifier.fillMaxSize(.33f),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.scrim)
-                    ) {}
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onSurface)
+                    ) {
+                        // Loading
+                    }
                 },
                 error = {
                     Card(
                         modifier = Modifier.fillMaxSize(.33f),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.scrim)
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onSurface)
                     ) {
                         Icon(
                             Icons.Default.Warning,
@@ -179,8 +181,9 @@ fun StockNewsItem(news: News) {
 @Composable
 fun Preview() {
     StockNewsFeed(
+        snackbarHost = SnackbarHostState(),
         news = Resource.Success(
-            listOf(
+            persistentListOf(
                 News(
                     title = "Title",
                     link = "https://www.google.com",
@@ -194,8 +197,31 @@ fun Preview() {
                     source = "Source",
                     time = "Time",
                     img = "img"
-                ),
+                )
             )
         )
     )
+}
+
+@Composable
+fun StockNewsFeedSkeleton(
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.surfaceContainerLow
+) {
+    LazyColumn(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        repeat(5) {
+            item(key = it) {
+                ListItem(
+                    headlineContent = { /*skeleton*/ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(color)
+                )
+            }
+        }
+    }
 }

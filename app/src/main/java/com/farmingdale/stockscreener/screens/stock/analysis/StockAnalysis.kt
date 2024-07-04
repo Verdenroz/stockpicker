@@ -13,14 +13,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -28,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -49,37 +54,39 @@ import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 import com.farmingdale.stockscreener.utils.DataError
 import com.farmingdale.stockscreener.utils.Resource
-import com.farmingdale.stockscreener.screens.stock.StockError
+import com.farmingdale.stockscreener.utils.UiText
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.toImmutableMap
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StockAnalysis(
     symbol: String,
+    snackbarHost: SnackbarHostState,
     analysis: Resource<Analysis?, DataError.Network>,
-    signals: Map<AnalysisIndicators, String>,
+    signals: ImmutableMap<AnalysisIndicators, String>,
     movingAverageSummary: Double,
     oscillatorSummary: Double,
     trendSummary: Double,
     overallSummary: Double,
     updateInterval: (String, Interval) -> Unit
 ) {
+    val context = LocalContext.current
     when (analysis) {
-        is Resource.Error -> {
-            StockError(
-                modifier = Modifier
-                    .height(300.dp)
-                    .fillMaxWidth(),
-            )
+        is Resource.Loading -> {
+            StockAnalysisSkeleton()
         }
 
-        is Resource.Loading -> {
-            Box(
-                modifier = Modifier
-                    .height(300.dp)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
+        is Resource.Error -> {
+            StockAnalysisSkeleton()
+
+            LaunchedEffect(analysis.error) {
+                snackbarHost.showSnackbar(
+                    message = analysis.error.asUiText().asString(context),
+                    actionLabel = UiText.StringResource(R.string.dismiss).asString(context),
+                    duration = SnackbarDuration.Short
+                )
+
             }
         }
 
@@ -193,7 +200,7 @@ fun StockAnalysis(
 
 @Composable
 fun AnalysisDetail(
-    signals: Map<AnalysisIndicators, String>,
+    signals: ImmutableMap<AnalysisIndicators, String>,
     title: String,
     value: Double,
     type: AnalysisIndicators
@@ -301,6 +308,7 @@ fun PreviewStockAnalysis() {
     Surface {
         StockAnalysis(
             symbol = "AAPL",
+            snackbarHost = SnackbarHostState(),
             analysis = Resource.Success(
                 Analysis(
                     sma10 = 100.0,
@@ -336,12 +344,27 @@ fun PreviewStockAnalysis() {
                 AnalysisIndicators.SMA50 to "Buy",
                 AnalysisIndicators.RSI to "Sell",
                 AnalysisIndicators.ADX to "Buy"
-            ),
+            ).toImmutableMap(),
             movingAverageSummary = 0.0,
             oscillatorSummary = 0.0,
             trendSummary = 0.0,
             overallSummary = 0.0,
             updateInterval = { _, _ -> }
         )
+    }
+}
+
+@Composable
+fun StockAnalysisSkeleton(
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.surfaceContainer
+) {
+    Card(
+        modifier = modifier
+            .height(300.dp)
+            .fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = color)
+    ) {
+        // skeleton
     }
 }
