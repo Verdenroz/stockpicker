@@ -23,10 +23,3 @@ data class HttpException(
 data class NetworkException(
     override val cause: Throwable? = null,
 ) : DataException()
-
-/**
- * Represents an error that occurred due to an unknown issue.
- */
-data class UnknownException(
-    override val cause: Throwable? = null,
-) : DataException()

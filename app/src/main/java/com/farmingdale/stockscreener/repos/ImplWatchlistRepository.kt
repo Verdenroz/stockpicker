@@ -12,7 +12,6 @@ import com.farmingdale.stockscreener.utils.DataException
 import com.farmingdale.stockscreener.utils.HttpException
 import com.farmingdale.stockscreener.utils.NetworkException
 import com.farmingdale.stockscreener.utils.Resource
-import com.farmingdale.stockscreener.utils.UnknownException
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
@@ -71,11 +70,13 @@ class ImplWatchlistRepository(
                         else -> Resource.Error(DataError.Network.UNKNOWN)
                     }
                 }
+
                 is NetworkException -> Resource.Error(DataError.Network.NO_INTERNET)
-                is UnknownException -> Resource.Error(DataError.Network.UNKNOWN)
             }
         } catch (e: SerializationException) {
             Resource.Error(DataError.Network.SERIALIZATION)
+        } catch (e: Exception) {
+            Resource.Error(DataError.Network.UNKNOWN)
         }
     }
 
@@ -99,10 +100,11 @@ class ImplWatchlistRepository(
                 }
 
                 is NetworkException -> Resource.Error(DataError.Network.NO_INTERNET)
-                is UnknownException -> Resource.Error(DataError.Network.UNKNOWN)
             }
         } catch (e: SerializationException) {
             Resource.Error(DataError.Network.SERIALIZATION)
+        } catch (e: Exception) {
+            Resource.Error(DataError.Network.UNKNOWN)
         }
     }
 

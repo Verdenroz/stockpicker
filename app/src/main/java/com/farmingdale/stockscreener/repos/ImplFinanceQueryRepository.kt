@@ -19,7 +19,6 @@ import com.farmingdale.stockscreener.utils.DataException
 import com.farmingdale.stockscreener.utils.HttpException
 import com.farmingdale.stockscreener.utils.NetworkException
 import com.farmingdale.stockscreener.utils.Resource
-import com.farmingdale.stockscreener.utils.UnknownException
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -125,11 +124,10 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                 }
 
                 is NetworkException -> indicesChannel.send(Resource.Error(DataError.Network.NO_INTERNET))
-                is UnknownException -> indicesChannel.send(Resource.Error(DataError.Network.UNKNOWN))
             }
         } catch (e: SerializationException) {
             indicesChannel.send(Resource.Error(DataError.Network.SERIALIZATION))
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             indicesChannel.send(Resource.Error(DataError.Network.UNKNOWN))
         }
     }
@@ -153,11 +151,10 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                 }
 
                 is NetworkException -> activesChannel.send(Resource.Error(DataError.Network.NO_INTERNET))
-                is UnknownException -> activesChannel.send(Resource.Error(DataError.Network.UNKNOWN))
             }
         } catch (e: SerializationException) {
             activesChannel.send(Resource.Error(DataError.Network.SERIALIZATION))
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             activesChannel.send(Resource.Error(DataError.Network.UNKNOWN))
         }
     }
@@ -181,11 +178,10 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                 }
 
                 is NetworkException -> losersChannel.send(Resource.Error(DataError.Network.NO_INTERNET))
-                is UnknownException -> losersChannel.send(Resource.Error(DataError.Network.UNKNOWN))
             }
         } catch (e: SerializationException) {
             losersChannel.send(Resource.Error(DataError.Network.SERIALIZATION))
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             losersChannel.send(Resource.Error(DataError.Network.UNKNOWN))
         }
     }
@@ -209,11 +205,10 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                 }
 
                 is NetworkException -> gainersChannel.send(Resource.Error(DataError.Network.NO_INTERNET))
-                is UnknownException -> gainersChannel.send(Resource.Error(DataError.Network.UNKNOWN))
             }
         } catch (e: SerializationException) {
             gainersChannel.send(Resource.Error(DataError.Network.SERIALIZATION))
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             gainersChannel.send(Resource.Error(DataError.Network.UNKNOWN))
         }
     }
@@ -239,11 +234,10 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                 }
 
                 is NetworkException -> headlinesChannel.send(Resource.Error(DataError.Network.NO_INTERNET))
-                is UnknownException -> headlinesChannel.send(Resource.Error(DataError.Network.UNKNOWN))
             }
         } catch (e: SerializationException) {
             headlinesChannel.send(Resource.Error(DataError.Network.SERIALIZATION))
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             headlinesChannel.send(Resource.Error(DataError.Network.UNKNOWN))
         }
     }
@@ -269,11 +263,10 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                 }
 
                 is NetworkException -> sectorsChannel.send(Resource.Error(DataError.Network.NO_INTERNET))
-                is UnknownException -> sectorsChannel.send(Resource.Error(DataError.Network.UNKNOWN))
             }
         } catch (e: SerializationException) {
             sectorsChannel.send(Resource.Error(DataError.Network.SERIALIZATION))
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             sectorsChannel.send(Resource.Error(DataError.Network.UNKNOWN))
         }
     }
@@ -298,11 +291,10 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                     }
 
                     is NetworkException -> emit(Resource.Error(DataError.Network.NO_INTERNET))
-                    is UnknownException -> emit(Resource.Error(DataError.Network.UNKNOWN))
                 }
             } catch (e: SerializationException) {
                 emit(Resource.Error(DataError.Network.SERIALIZATION))
-            } catch(e: Exception) {
+            } catch (e: Exception) {
                 emit(Resource.Error(DataError.Network.UNKNOWN))
             }
         }.flowOn(Dispatchers.IO)
@@ -327,11 +319,10 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                     }
 
                     is NetworkException -> emit(Resource.Error(DataError.Network.NO_INTERNET))
-                    is UnknownException -> emit(Resource.Error(DataError.Network.UNKNOWN))
                 }
             } catch (e: SerializationException) {
                 emit(Resource.Error(DataError.Network.SERIALIZATION))
-            } catch(e: Exception) {
+            } catch (e: Exception) {
                 emit(Resource.Error(DataError.Network.UNKNOWN))
             }
         }.flowOn(Dispatchers.IO)
@@ -356,11 +347,10 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                     }
 
                     is NetworkException -> emit(Resource.Error(DataError.Network.NO_INTERNET))
-                    is UnknownException -> emit(Resource.Error(DataError.Network.UNKNOWN))
                 }
             } catch (e: SerializationException) {
                 emit(Resource.Error(DataError.Network.SERIALIZATION))
-            } catch(e: Exception) {
+            } catch (e: Exception) {
                 emit(Resource.Error(DataError.Network.UNKNOWN))
             }
         }.flowOn(Dispatchers.IO)
@@ -387,11 +377,10 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                     }
 
                     is NetworkException -> emit(Resource.Error(DataError.Network.NO_INTERNET))
-                    is UnknownException -> emit(Resource.Error(DataError.Network.UNKNOWN))
                 }
             } catch (e: SerializationException) {
                 emit(Resource.Error(DataError.Network.SERIALIZATION))
-            } catch(e: Exception) {
+            } catch (e: Exception) {
                 emit(Resource.Error(DataError.Network.UNKNOWN))
             }
         }.flowOn(Dispatchers.IO)
@@ -421,15 +410,10 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                     }
 
                     is NetworkException -> emit(Resource.Error(DataError.Network.NO_INTERNET))
-                    is UnknownException ->  {
-                        Log.d("ImplFinanceQueryRepository", "getSimilarStocks: UnknownException")
-                        emit(Resource.Error(DataError.Network.UNKNOWN))
-                    }
-
                 }
             } catch (e: SerializationException) {
                 emit(Resource.Error(DataError.Network.SERIALIZATION))
-            } catch(e: Exception) {
+            } catch (e: Exception) {
                 emit(Resource.Error(DataError.Network.UNKNOWN))
             }
         }.flowOn(Dispatchers.IO)
@@ -456,11 +440,10 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                     }
 
                     is NetworkException -> emit(Resource.Error(DataError.Network.NO_INTERNET))
-                    is UnknownException -> emit(Resource.Error(DataError.Network.UNKNOWN))
                 }
             } catch (e: SerializationException) {
                 emit(Resource.Error(DataError.Network.SERIALIZATION))
-            } catch(e: Exception) {
+            } catch (e: Exception) {
                 emit(Resource.Error(DataError.Network.UNKNOWN))
             }
         }
@@ -488,11 +471,10 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                 }
 
                 is NetworkException -> emit(Resource.Error(DataError.Network.NO_INTERNET))
-                is UnknownException -> emit(Resource.Error(DataError.Network.UNKNOWN))
             }
         } catch (e: SerializationException) {
             emit(Resource.Error(DataError.Network.SERIALIZATION))
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             emit(Resource.Error(DataError.Network.UNKNOWN))
         }
     }.flowOn(Dispatchers.IO)
@@ -519,12 +501,11 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                 }
 
                 is NetworkException -> emit(Resource.Error(DataError.Network.NO_INTERNET))
-                is UnknownException -> emit(Resource.Error(DataError.Network.UNKNOWN))
             }
         } catch (e: SerializationException) {
             // Occurs when the API returns fields with null values
             emit(Resource.Success(null))
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             emit(Resource.Error(DataError.Network.UNKNOWN))
         }
     }.flowOn(Dispatchers.IO)

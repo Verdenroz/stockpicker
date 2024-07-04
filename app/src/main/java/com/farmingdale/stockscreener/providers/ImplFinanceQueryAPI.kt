@@ -23,7 +23,6 @@ import com.farmingdale.stockscreener.providers.base.FinanceQueryAPI
 import com.farmingdale.stockscreener.utils.FINANCE_QUERY_API_URL
 import com.farmingdale.stockscreener.utils.HttpException
 import com.farmingdale.stockscreener.utils.NetworkException
-import com.farmingdale.stockscreener.utils.UnknownException
 import com.farmingdale.stockscreener.utils.executeAsync
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
