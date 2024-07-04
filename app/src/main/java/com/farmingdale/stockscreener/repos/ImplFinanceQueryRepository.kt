@@ -129,6 +129,8 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
             }
         } catch (e: SerializationException) {
             indicesChannel.send(Resource.Error(DataError.Network.SERIALIZATION))
+        } catch(e: Exception) {
+            indicesChannel.send(Resource.Error(DataError.Network.UNKNOWN))
         }
     }
 
@@ -155,6 +157,8 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
             }
         } catch (e: SerializationException) {
             activesChannel.send(Resource.Error(DataError.Network.SERIALIZATION))
+        } catch(e: Exception) {
+            activesChannel.send(Resource.Error(DataError.Network.UNKNOWN))
         }
     }
 
@@ -181,6 +185,8 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
             }
         } catch (e: SerializationException) {
             losersChannel.send(Resource.Error(DataError.Network.SERIALIZATION))
+        } catch(e: Exception) {
+            losersChannel.send(Resource.Error(DataError.Network.UNKNOWN))
         }
     }
 
@@ -207,6 +213,8 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
             }
         } catch (e: SerializationException) {
             gainersChannel.send(Resource.Error(DataError.Network.SERIALIZATION))
+        } catch(e: Exception) {
+            gainersChannel.send(Resource.Error(DataError.Network.UNKNOWN))
         }
     }
 
@@ -235,6 +243,8 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
             }
         } catch (e: SerializationException) {
             headlinesChannel.send(Resource.Error(DataError.Network.SERIALIZATION))
+        } catch(e: Exception) {
+            headlinesChannel.send(Resource.Error(DataError.Network.UNKNOWN))
         }
     }
 
@@ -263,6 +273,8 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
             }
         } catch (e: SerializationException) {
             sectorsChannel.send(Resource.Error(DataError.Network.SERIALIZATION))
+        } catch(e: Exception) {
+            sectorsChannel.send(Resource.Error(DataError.Network.UNKNOWN))
         }
     }
 
@@ -290,6 +302,8 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                 }
             } catch (e: SerializationException) {
                 emit(Resource.Error(DataError.Network.SERIALIZATION))
+            } catch(e: Exception) {
+                emit(Resource.Error(DataError.Network.UNKNOWN))
             }
         }.flowOn(Dispatchers.IO)
 
@@ -317,6 +331,8 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                 }
             } catch (e: SerializationException) {
                 emit(Resource.Error(DataError.Network.SERIALIZATION))
+            } catch(e: Exception) {
+                emit(Resource.Error(DataError.Network.UNKNOWN))
             }
         }.flowOn(Dispatchers.IO)
 
@@ -344,6 +360,8 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                 }
             } catch (e: SerializationException) {
                 emit(Resource.Error(DataError.Network.SERIALIZATION))
+            } catch(e: Exception) {
+                emit(Resource.Error(DataError.Network.UNKNOWN))
             }
         }.flowOn(Dispatchers.IO)
 
@@ -373,6 +391,8 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                 }
             } catch (e: SerializationException) {
                 emit(Resource.Error(DataError.Network.SERIALIZATION))
+            } catch(e: Exception) {
+                emit(Resource.Error(DataError.Network.UNKNOWN))
             }
         }.flowOn(Dispatchers.IO)
 
@@ -409,6 +429,8 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                 }
             } catch (e: SerializationException) {
                 emit(Resource.Error(DataError.Network.SERIALIZATION))
+            } catch(e: Exception) {
+                emit(Resource.Error(DataError.Network.UNKNOWN))
             }
         }.flowOn(Dispatchers.IO)
 
@@ -438,6 +460,8 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
                 }
             } catch (e: SerializationException) {
                 emit(Resource.Error(DataError.Network.SERIALIZATION))
+            } catch(e: Exception) {
+                emit(Resource.Error(DataError.Network.UNKNOWN))
             }
         }
 
@@ -468,6 +492,8 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
             }
         } catch (e: SerializationException) {
             emit(Resource.Error(DataError.Network.SERIALIZATION))
+        } catch(e: Exception) {
+            emit(Resource.Error(DataError.Network.UNKNOWN))
         }
     }.flowOn(Dispatchers.IO)
 
@@ -498,6 +524,8 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
         } catch (e: SerializationException) {
             // Occurs when the API returns fields with null values
             emit(Resource.Success(null))
+        } catch(e: Exception) {
+            emit(Resource.Error(DataError.Network.UNKNOWN))
         }
     }.flowOn(Dispatchers.IO)
 

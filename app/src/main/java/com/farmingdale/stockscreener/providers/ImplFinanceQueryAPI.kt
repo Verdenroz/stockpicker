@@ -66,15 +66,10 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 throw HttpException(code=response.code)
             }
             return response.body!!.byteStream()
-        } catch (e: HttpException) {
-            throw e
         } catch (e: UnknownHostException) {
             throw NetworkException(e)
         } catch (e: SocketTimeoutException) {
             throw NetworkException(e)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            throw UnknownException(e)
         }
     }
 
