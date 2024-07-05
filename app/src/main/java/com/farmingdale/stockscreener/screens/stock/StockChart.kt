@@ -284,8 +284,12 @@ fun TimePeriodBar(
                 TimePeriod.FIVE_YEAR
             )
         }.forEach { timePeriod ->
-            val interval =
-                if (timePeriod == TimePeriod.ONE_DAY || timePeriod == TimePeriod.FIVE_DAY) Interval.FIFTEEN_MINUTE else Interval.DAILY
+            val interval = when(timePeriod) {
+                TimePeriod.ONE_DAY -> Interval.ONE_MINUTE
+                TimePeriod.FIVE_DAY -> Interval.FIVE_MINUTE
+                TimePeriod.ONE_MONTH -> Interval.FIFTEEN_MINUTE
+                else -> Interval.DAILY
+            }
             TimePeriodButton(
                 timePeriod = timePeriod,
                 selected = timePeriod == selectedTimePeriod,
@@ -454,7 +458,7 @@ fun drawXAxis(
     spacePerHour: Float,
     data: Map<String, HistoricalData>
 ) {
-    val stepSize = getStepSize(earliestDate)
+    val stepSize = (data.size / 4.5).toInt()
     for (i in data.entries.indices step stepSize) {
         val date = data.entries.elementAt(i).key
         val formattedDate = formatDate(date, earliestDate)
@@ -589,30 +593,6 @@ fun drawSelectedData(
             center = Offset(x, y),
             radius = with(density) { 5.dp.toPx() }
         )
-    }
-}
-
-/**
- * Helper function to calculate the step size based on the number of days since the earliest date
- */
-fun getStepSize(earliestDateString: String): Int {
-    val formatter = DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a", Locale.US)
-    val earliestDate = LocalDate.parse(earliestDateString, formatter)
-    val now = LocalDate.now()
-    val daysSinceEarliestDate = ChronoUnit.DAYS.between(earliestDate, now)
-    return when {
-        daysSinceEarliestDate <= 4 -> 8 //TimePeriod.ONE_DAY
-        daysSinceEarliestDate <= 12 -> 32 //TimePeriod.FIVE_DAY
-        daysSinceEarliestDate <= 40 -> 7 //TimePeriod.ONE_MONTH
-        daysSinceEarliestDate <= 200 -> 30 //TimePeriod.THREE_MONTH, TimePeriod.SIX_MONTH
-        daysSinceEarliestDate <= 380 -> 60 //TimePeriod.ONE_YEAR
-        daysSinceEarliestDate <= 1850 -> 240 //TimePeriod.FIVE_YEAR
-        daysSinceEarliestDate <= 4000 -> 480 //TimePeriod.TEN_YEAR
-        else -> { //TimePeriod.MAX
-            val yearsSinceEarliestDate = ChronoUnit.YEARS.between(earliestDate, now)
-            val decadesSinceEarliestDate = yearsSinceEarliestDate / 10
-            480 * (decadesSinceEarliestDate.toInt() + 1) // Adjust step size based on the number of decades
-        }
     }
 }
 

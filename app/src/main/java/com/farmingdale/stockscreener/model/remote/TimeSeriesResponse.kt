@@ -8,7 +8,7 @@ data class HistoricalDataResponse(
     val open: Float,
     val high: Float,
     val low: Float,
-    val adjClose: Float,
+    val close: Float,
     val volume: Long
 )
 

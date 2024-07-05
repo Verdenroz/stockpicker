@@ -228,7 +228,7 @@ class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
                 open = entry.value.open,
                 high = entry.value.high,
                 low = entry.value.low,
-                close = entry.value.adjClose,
+                close = entry.value.close,
                 volume = entry.value.volume
             )
         }.toImmutableMap()

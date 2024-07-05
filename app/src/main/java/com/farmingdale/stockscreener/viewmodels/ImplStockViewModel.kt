@@ -207,11 +207,11 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
                 val deferredTimeSeriesYTD =
                     async { loadTimeSeries(symbol, TimePeriod.YEAR_TO_DATE, Interval.DAILY) }
                 val deferredTimeSeries1D =
-                    async { loadTimeSeries(symbol, TimePeriod.ONE_DAY, Interval.FIFTEEN_MINUTE) }
+                    async { loadTimeSeries(symbol, TimePeriod.ONE_DAY, Interval.ONE_MINUTE) }
                 val deferredTimeSeries5D =
-                    async { loadTimeSeries(symbol, TimePeriod.FIVE_DAY, Interval.FIFTEEN_MINUTE) }
+                    async { loadTimeSeries(symbol, TimePeriod.FIVE_DAY, Interval.FIVE_MINUTE) }
                 val deferredTimeSeries1M =
-                    async { loadTimeSeries(symbol, TimePeriod.ONE_MONTH, Interval.DAILY) }
+                    async { loadTimeSeries(symbol, TimePeriod.ONE_MONTH, Interval.FIFTEEN_MINUTE) }
                 val deferredTimeSeries6M =
                     async { loadTimeSeries(symbol, TimePeriod.SIX_MONTH, Interval.DAILY) }
                 val deferredTimeSeries1Y =
@@ -243,9 +243,9 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
 
                 // Set the default time series data (data should already be loaded)
                 val deferredTimeSeries =
-                    async { getTimeSeries(symbol, TimePeriod.YEAR_TO_DATE, Interval.DAILY) }
+                    async { updateTimeSeries(symbol, TimePeriod.YEAR_TO_DATE, Interval.DAILY) }
                 //Set the default analysis data (data should already be loaded)
-                val deferredAnalysis = async { getAnalysis(symbol, Interval.DAILY) }
+                val deferredAnalysis = async { updateAnalysis(symbol, Interval.DAILY) }
 
                 deferredAnalysis.await()
                 deferredTimeSeries.await()

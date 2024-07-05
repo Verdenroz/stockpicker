@@ -7,6 +7,8 @@ import androidx.compose.runtime.Stable
  */
 @Stable
 enum class Interval(val value: String) {
+    ONE_MINUTE("1m"),
+    FIVE_MINUTE("5m"),
     FIFTEEN_MINUTE("15m"),
     THIRTY_MINUTE("30m"),
     ONE_HOUR("1h"),
@@ -23,6 +25,7 @@ enum class Interval(val value: String) {
 enum class TimePeriod(val value: String) {
     ONE_DAY("1d"),
     FIVE_DAY("5d"),
+    ONE_WEEK("7d"),
     ONE_MONTH("1mo"),
     THREE_MONTH("3mo"),
     SIX_MONTH("6mo"),

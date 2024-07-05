@@ -53,7 +53,8 @@ class FinanceQueryTest {
     fun getHistoricalData() {
          runBlocking {
             println(api.getHistoricalData("AAPL", time = TimePeriod.FIVE_DAY, interval = Interval.FIFTEEN_MINUTE))
-            println(api.getHistoricalData("AAPL", time = TimePeriod.ONE_MONTH, interval = Interval.DAILY))
+            println(api.getHistoricalData("AAPL", time = TimePeriod.ONE_MONTH, interval = Interval.ONE_MINUTE))
+            println(api.getHistoricalData("AAPL", time = TimePeriod.ONE_YEAR, interval = Interval.DAILY))
         }
     }
 
