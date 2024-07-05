@@ -8,16 +8,18 @@ typealias RootError = Error
 sealed interface Resource<out D, out E : RootError> {
     /**
      * Represents a successful retrieval of a resource.
+     * @param data The data that was retrieved.
      */
-    data class Success<out D, out E : RootError>(val data: D) : Resource<D, E>
+    data class Success<out D>(val data: D) : Resource<D, Nothing>
 
     /**
      * Represents an error that occurred during the retrieval of a resource.
+     * @param error The error that occurred.
      */
-    data class Error<out D, out E : RootError>(val error: RootError, val data: D? = null) : Resource<D, E>
+    data class Error<out E : RootError>(val error: RootError) : Resource<Nothing, E>
 
     /**
      * Represents a loading state of a resource.
      */
-    data class Loading<out D, out E : RootError>(val isLoading: Boolean = true) : Resource<D, E>
+    data class Loading(val isLoading: Boolean = true) : Resource<Nothing, Nothing>
 }

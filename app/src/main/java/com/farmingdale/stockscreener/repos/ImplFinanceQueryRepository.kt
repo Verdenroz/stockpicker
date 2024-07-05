@@ -20,7 +20,6 @@ import com.farmingdale.stockscreener.utils.NetworkException
 import com.farmingdale.stockscreener.utils.Resource
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +28,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -115,22 +114,26 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
             when (e) {
                 is HttpException -> {
                     when (e.code) {
-                        400 -> indicesChannel.send(Resource.Error(DataError.Network.BAD_REQUEST))
-                        401, 403 -> indicesChannel.send(Resource.Error(DataError.Network.DENIED))
-                        404 -> indicesChannel.send(Resource.Error(DataError.Network.NOT_FOUND))
-                        408 -> indicesChannel.send(Resource.Error(DataError.Network.TIMEOUT))
-                        429 -> indicesChannel.send(Resource.Error(DataError.Network.THROTTLED))
-                        500, 504 -> indicesChannel.send(Resource.Error(DataError.Network.SERVER_DOWN))
-                        else -> indicesChannel.send(Resource.Error(DataError.Network.UNKNOWN))
+                        400 -> indicesChannel.send(Resource.Error<DataError.Network>(DataError.Network.BAD_REQUEST))
+                        401, 403 -> indicesChannel.send(Resource.Error<DataError.Network>(DataError.Network.DENIED))
+                        404 -> indicesChannel.send(Resource.Error<DataError.Network>(DataError.Network.NOT_FOUND))
+                        408 -> indicesChannel.send(Resource.Error<DataError.Network>(DataError.Network.TIMEOUT))
+                        429 -> indicesChannel.send(Resource.Error<DataError.Network>(DataError.Network.THROTTLED))
+                        500, 504 -> indicesChannel.send(Resource.Error<DataError.Network>(DataError.Network.SERVER_DOWN))
+                        else -> indicesChannel.send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
                     }
                 }
 
-                is NetworkException -> indicesChannel.send(Resource.Error(DataError.Network.NO_INTERNET))
+                is NetworkException -> indicesChannel.send(
+                    Resource.Error<DataError.Network>(
+                        DataError.Network.NO_INTERNET
+                    )
+                )
             }
         } catch (e: SerializationException) {
-            indicesChannel.send(Resource.Error(DataError.Network.SERIALIZATION))
+            indicesChannel.send(Resource.Error<DataError.Network>(DataError.Network.SERIALIZATION))
         } catch (e: Exception) {
-            indicesChannel.send(Resource.Error(DataError.Network.UNKNOWN))
+            indicesChannel.send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
         }
     }
 
@@ -142,22 +145,26 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
             when (e) {
                 is HttpException -> {
                     when (e.code) {
-                        400 -> activesChannel.send(Resource.Error(DataError.Network.BAD_REQUEST))
-                        401, 403 -> activesChannel.send(Resource.Error(DataError.Network.DENIED))
-                        404 -> activesChannel.send(Resource.Error(DataError.Network.NOT_FOUND))
-                        408 -> activesChannel.send(Resource.Error(DataError.Network.TIMEOUT))
-                        429 -> activesChannel.send(Resource.Error(DataError.Network.THROTTLED))
-                        500, 504 -> activesChannel.send(Resource.Error(DataError.Network.SERVER_DOWN))
-                        else -> activesChannel.send(Resource.Error(DataError.Network.UNKNOWN))
+                        400 -> activesChannel.send(Resource.Error<DataError.Network>(DataError.Network.BAD_REQUEST))
+                        401, 403 -> activesChannel.send(Resource.Error<DataError.Network>(DataError.Network.DENIED))
+                        404 -> activesChannel.send(Resource.Error<DataError.Network>(DataError.Network.NOT_FOUND))
+                        408 -> activesChannel.send(Resource.Error<DataError.Network>(DataError.Network.TIMEOUT))
+                        429 -> activesChannel.send(Resource.Error<DataError.Network>(DataError.Network.THROTTLED))
+                        500, 504 -> activesChannel.send(Resource.Error<DataError.Network>(DataError.Network.SERVER_DOWN))
+                        else -> activesChannel.send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
                     }
                 }
 
-                is NetworkException -> activesChannel.send(Resource.Error(DataError.Network.NO_INTERNET))
+                is NetworkException -> activesChannel.send(
+                    Resource.Error<DataError.Network>(
+                        DataError.Network.NO_INTERNET
+                    )
+                )
             }
         } catch (e: SerializationException) {
-            activesChannel.send(Resource.Error(DataError.Network.SERIALIZATION))
+            activesChannel.send(Resource.Error<DataError.Network>(DataError.Network.SERIALIZATION))
         } catch (e: Exception) {
-            activesChannel.send(Resource.Error(DataError.Network.UNKNOWN))
+            activesChannel.send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
         }
     }
 
@@ -169,22 +176,26 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
             when (e) {
                 is HttpException -> {
                     when (e.code) {
-                        400 -> losersChannel.send(Resource.Error(DataError.Network.BAD_REQUEST))
-                        401, 403 -> losersChannel.send(Resource.Error(DataError.Network.DENIED))
-                        404 -> losersChannel.send(Resource.Error(DataError.Network.NOT_FOUND))
-                        408 -> losersChannel.send(Resource.Error(DataError.Network.TIMEOUT))
-                        429 -> losersChannel.send(Resource.Error(DataError.Network.THROTTLED))
-                        500, 504 -> losersChannel.send(Resource.Error(DataError.Network.SERVER_DOWN))
-                        else -> losersChannel.send(Resource.Error(DataError.Network.UNKNOWN))
+                        400 -> losersChannel.send(Resource.Error<DataError.Network>(DataError.Network.BAD_REQUEST))
+                        401, 403 -> losersChannel.send(Resource.Error<DataError.Network>(DataError.Network.DENIED))
+                        404 -> losersChannel.send(Resource.Error<DataError.Network>(DataError.Network.NOT_FOUND))
+                        408 -> losersChannel.send(Resource.Error<DataError.Network>(DataError.Network.TIMEOUT))
+                        429 -> losersChannel.send(Resource.Error<DataError.Network>(DataError.Network.THROTTLED))
+                        500, 504 -> losersChannel.send(Resource.Error<DataError.Network>(DataError.Network.SERVER_DOWN))
+                        else -> losersChannel.send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
                     }
                 }
 
-                is NetworkException -> losersChannel.send(Resource.Error(DataError.Network.NO_INTERNET))
+                is NetworkException -> losersChannel.send(
+                    Resource.Error<DataError.Network>(
+                        DataError.Network.NO_INTERNET
+                    )
+                )
             }
         } catch (e: SerializationException) {
-            losersChannel.send(Resource.Error(DataError.Network.SERIALIZATION))
+            losersChannel.send(Resource.Error<DataError.Network>(DataError.Network.SERIALIZATION))
         } catch (e: Exception) {
-            losersChannel.send(Resource.Error(DataError.Network.UNKNOWN))
+            losersChannel.send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
         }
     }
 
@@ -196,22 +207,26 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
             when (e) {
                 is HttpException -> {
                     when (e.code) {
-                        400 -> gainersChannel.send(Resource.Error(DataError.Network.BAD_REQUEST))
-                        401, 403 -> gainersChannel.send(Resource.Error(DataError.Network.DENIED))
-                        404 -> gainersChannel.send(Resource.Error(DataError.Network.NOT_FOUND))
-                        408 -> gainersChannel.send(Resource.Error(DataError.Network.TIMEOUT))
-                        429 -> gainersChannel.send(Resource.Error(DataError.Network.THROTTLED))
-                        500, 504 -> gainersChannel.send(Resource.Error(DataError.Network.SERVER_DOWN))
-                        else -> gainersChannel.send(Resource.Error(DataError.Network.UNKNOWN))
+                        400 -> gainersChannel.send(Resource.Error<DataError.Network>(DataError.Network.BAD_REQUEST))
+                        401, 403 -> gainersChannel.send(Resource.Error<DataError.Network>(DataError.Network.DENIED))
+                        404 -> gainersChannel.send(Resource.Error<DataError.Network>(DataError.Network.NOT_FOUND))
+                        408 -> gainersChannel.send(Resource.Error<DataError.Network>(DataError.Network.TIMEOUT))
+                        429 -> gainersChannel.send(Resource.Error<DataError.Network>(DataError.Network.THROTTLED))
+                        500, 504 -> gainersChannel.send(Resource.Error<DataError.Network>(DataError.Network.SERVER_DOWN))
+                        else -> gainersChannel.send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
                     }
                 }
 
-                is NetworkException -> gainersChannel.send(Resource.Error(DataError.Network.NO_INTERNET))
+                is NetworkException -> gainersChannel.send(
+                    Resource.Error<DataError.Network>(
+                        DataError.Network.NO_INTERNET
+                    )
+                )
             }
         } catch (e: SerializationException) {
-            gainersChannel.send(Resource.Error(DataError.Network.SERIALIZATION))
+            gainersChannel.send(Resource.Error<DataError.Network>(DataError.Network.SERIALIZATION))
         } catch (e: Exception) {
-            gainersChannel.send(Resource.Error(DataError.Network.UNKNOWN))
+            gainersChannel.send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
         }
     }
 
@@ -225,22 +240,36 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
             when (e) {
                 is HttpException -> {
                     when (e.code) {
-                        400 -> headlinesChannel.send(Resource.Error(DataError.Network.BAD_REQUEST))
-                        401, 403 -> headlinesChannel.send(Resource.Error(DataError.Network.DENIED))
-                        404 -> headlinesChannel.send(Resource.Error(DataError.Network.NOT_FOUND))
-                        408 -> headlinesChannel.send(Resource.Error(DataError.Network.TIMEOUT))
-                        429 -> headlinesChannel.send(Resource.Error(DataError.Network.THROTTLED))
-                        500, 504 -> headlinesChannel.send(Resource.Error(DataError.Network.SERVER_DOWN))
-                        else -> headlinesChannel.send(Resource.Error(DataError.Network.UNKNOWN))
+                        400 -> headlinesChannel.send(Resource.Error<DataError.Network>(DataError.Network.BAD_REQUEST))
+                        401, 403 -> headlinesChannel.send(
+                            Resource.Error<DataError.Network>(
+                                DataError.Network.DENIED
+                            )
+                        )
+
+                        404 -> headlinesChannel.send(Resource.Error<DataError.Network>(DataError.Network.NOT_FOUND))
+                        408 -> headlinesChannel.send(Resource.Error<DataError.Network>(DataError.Network.TIMEOUT))
+                        429 -> headlinesChannel.send(Resource.Error<DataError.Network>(DataError.Network.THROTTLED))
+                        500, 504 -> headlinesChannel.send(
+                            Resource.Error<DataError.Network>(
+                                DataError.Network.SERVER_DOWN
+                            )
+                        )
+
+                        else -> headlinesChannel.send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
                     }
                 }
 
-                is NetworkException -> headlinesChannel.send(Resource.Error(DataError.Network.NO_INTERNET))
+                is NetworkException -> headlinesChannel.send(
+                    Resource.Error<DataError.Network>(
+                        DataError.Network.NO_INTERNET
+                    )
+                )
             }
         } catch (e: SerializationException) {
-            headlinesChannel.send(Resource.Error(DataError.Network.SERIALIZATION))
+            headlinesChannel.send(Resource.Error<DataError.Network>(DataError.Network.SERIALIZATION))
         } catch (e: Exception) {
-            headlinesChannel.send(Resource.Error(DataError.Network.UNKNOWN))
+            headlinesChannel.send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
         }
     }
 
@@ -254,259 +283,266 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
             when (e) {
                 is HttpException -> {
                     when (e.code) {
-                        400 -> sectorsChannel.send(Resource.Error(DataError.Network.BAD_REQUEST))
-                        401, 403 -> sectorsChannel.send(Resource.Error(DataError.Network.DENIED))
-                        404 -> sectorsChannel.send(Resource.Error(DataError.Network.NOT_FOUND))
-                        408 -> sectorsChannel.send(Resource.Error(DataError.Network.TIMEOUT))
-                        429 -> sectorsChannel.send(Resource.Error(DataError.Network.THROTTLED))
-                        500, 504 -> sectorsChannel.send(Resource.Error(DataError.Network.SERVER_DOWN))
-                        else -> sectorsChannel.send(Resource.Error(DataError.Network.UNKNOWN))
+                        400 -> sectorsChannel.send(Resource.Error<DataError.Network>(DataError.Network.BAD_REQUEST))
+                        401, 403 -> sectorsChannel.send(Resource.Error<DataError.Network>(DataError.Network.DENIED))
+                        404 -> sectorsChannel.send(Resource.Error<DataError.Network>(DataError.Network.NOT_FOUND))
+                        408 -> sectorsChannel.send(Resource.Error<DataError.Network>(DataError.Network.TIMEOUT))
+                        429 -> sectorsChannel.send(Resource.Error<DataError.Network>(DataError.Network.THROTTLED))
+                        500, 504 -> sectorsChannel.send(Resource.Error<DataError.Network>(DataError.Network.SERVER_DOWN))
+                        else -> sectorsChannel.send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
                     }
                 }
 
-                is NetworkException -> sectorsChannel.send(Resource.Error(DataError.Network.NO_INTERNET))
+                is NetworkException -> sectorsChannel.send(
+                    Resource.Error<DataError.Network>(
+                        DataError.Network.NO_INTERNET
+                    )
+                )
             }
         } catch (e: SerializationException) {
-            sectorsChannel.send(Resource.Error(DataError.Network.SERIALIZATION))
+            sectorsChannel.send(Resource.Error<DataError.Network>(DataError.Network.SERIALIZATION))
         } catch (e: Exception) {
-            sectorsChannel.send(Resource.Error(DataError.Network.UNKNOWN))
+            sectorsChannel.send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
         }
     }
 
     override fun getFullQuote(symbol: String): Flow<Resource<FullQuoteData, DataError.Network>> =
-        flow {
+        channelFlow {
             try {
                 val quote = api.getQuote(symbol)
-                emit(Resource.Success<FullQuoteData, DataError.Network>(quote))
+                send(Resource.Success<FullQuoteData>(quote))
             } catch (e: DataException) {
                 when (e) {
                     is HttpException -> {
                         when (e.code) {
-                            400 -> emit(Resource.Error(DataError.Network.BAD_REQUEST))
-                            401, 403 -> emit(Resource.Error(DataError.Network.DENIED))
-                            404 -> emit(Resource.Error(DataError.Network.NOT_FOUND))
-                            408 -> emit(Resource.Error(DataError.Network.TIMEOUT))
-                            429 -> emit(Resource.Error(DataError.Network.THROTTLED))
-                            500, 504 -> emit(Resource.Error(DataError.Network.SERVER_DOWN))
-                            else -> emit(Resource.Error(DataError.Network.UNKNOWN))
+                            400 -> send(Resource.Error<DataError.Network>(DataError.Network.BAD_REQUEST))
+                            401, 403 -> send(Resource.Error<DataError.Network>(DataError.Network.DENIED))
+                            404 -> send(Resource.Error<DataError.Network>(DataError.Network.NOT_FOUND))
+                            408 -> send(Resource.Error<DataError.Network>(DataError.Network.TIMEOUT))
+                            429 -> send(Resource.Error<DataError.Network>(DataError.Network.THROTTLED))
+                            500, 504 -> send(Resource.Error<DataError.Network>(DataError.Network.SERVER_DOWN))
+                            else -> send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
                         }
                     }
 
-                    is NetworkException -> emit(Resource.Error(DataError.Network.NO_INTERNET))
+                    is NetworkException -> send(Resource.Error<DataError.Network>(DataError.Network.NO_INTERNET))
                 }
             } catch (e: SerializationException) {
-                emit(Resource.Error(DataError.Network.SERIALIZATION))
+                send(Resource.Error<DataError.Network>(DataError.Network.SERIALIZATION))
             } catch (e: Exception) {
-                emit(Resource.Error(DataError.Network.UNKNOWN))
+                send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
             }
         }.flowOn(Dispatchers.IO)
 
     override suspend fun getSimpleQuote(symbol: String): Flow<Resource<SimpleQuoteData, DataError.Network>> =
-        flow {
+        channelFlow {
             try {
                 val simpleQuote = api.getSimpleQuote(symbol)
-                emit(Resource.Success<SimpleQuoteData, DataError.Network>(simpleQuote))
+                send(Resource.Success<SimpleQuoteData>(simpleQuote))
             } catch (e: DataException) {
                 when (e) {
                     is HttpException -> {
                         when (e.code) {
-                            400 -> emit(Resource.Error(DataError.Network.BAD_REQUEST))
-                            401, 403 -> emit(Resource.Error(DataError.Network.DENIED))
-                            404 -> emit(Resource.Error(DataError.Network.NOT_FOUND))
-                            408 -> emit(Resource.Error(DataError.Network.TIMEOUT))
-                            429 -> emit(Resource.Error(DataError.Network.THROTTLED))
-                            500, 504 -> emit(Resource.Error(DataError.Network.SERVER_DOWN))
-                            else -> emit(Resource.Error(DataError.Network.UNKNOWN))
+                            400 -> send(Resource.Error<DataError.Network>(DataError.Network.BAD_REQUEST))
+                            401, 403 -> send(Resource.Error<DataError.Network>(DataError.Network.DENIED))
+                            404 -> send(Resource.Error<DataError.Network>(DataError.Network.NOT_FOUND))
+                            408 -> send(Resource.Error<DataError.Network>(DataError.Network.TIMEOUT))
+                            429 -> send(Resource.Error<DataError.Network>(DataError.Network.THROTTLED))
+                            500, 504 -> send(Resource.Error<DataError.Network>(DataError.Network.SERVER_DOWN))
+                            else -> send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
                         }
                     }
 
-                    is NetworkException -> emit(Resource.Error(DataError.Network.NO_INTERNET))
+                    is NetworkException -> send(Resource.Error<DataError.Network>(DataError.Network.NO_INTERNET))
                 }
             } catch (e: SerializationException) {
-                emit(Resource.Error(DataError.Network.SERIALIZATION))
+                send(Resource.Error<DataError.Network>(DataError.Network.SERIALIZATION))
             } catch (e: Exception) {
-                emit(Resource.Error(DataError.Network.UNKNOWN))
+                send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
             }
         }.flowOn(Dispatchers.IO)
 
     override suspend fun getBulkQuote(symbols: List<String>): Flow<Resource<ImmutableList<SimpleQuoteData>, DataError.Network>> =
-        flow {
+        channelFlow {
             try {
                 val quotes = api.getBulkQuote(symbols)
-                emit(Resource.Success<ImmutableList<SimpleQuoteData>, DataError.Network>(quotes))
+                send(Resource.Success<ImmutableList<SimpleQuoteData>>(quotes))
             } catch (e: DataException) {
                 when (e) {
                     is HttpException -> {
                         when (e.code) {
-                            400 -> emit(Resource.Error(DataError.Network.BAD_REQUEST))
-                            401, 403 -> emit(Resource.Error(DataError.Network.DENIED))
-                            404 -> emit(Resource.Error(DataError.Network.NOT_FOUND))
-                            408 -> emit(Resource.Error(DataError.Network.TIMEOUT))
-                            429 -> emit(Resource.Error(DataError.Network.THROTTLED))
-                            500, 504 -> emit(Resource.Error(DataError.Network.SERVER_DOWN))
-                            else -> emit(Resource.Error(DataError.Network.UNKNOWN))
+                            400 -> send(Resource.Error<DataError.Network>(DataError.Network.BAD_REQUEST))
+                            401, 403 -> send(Resource.Error<DataError.Network>(DataError.Network.DENIED))
+                            404 -> send(Resource.Error<DataError.Network>(DataError.Network.NOT_FOUND))
+                            408 -> send(Resource.Error<DataError.Network>(DataError.Network.TIMEOUT))
+                            429 -> send(Resource.Error<DataError.Network>(DataError.Network.THROTTLED))
+                            500, 504 -> send(Resource.Error<DataError.Network>(DataError.Network.SERVER_DOWN))
+                            else -> send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
                         }
                     }
 
-                    is NetworkException -> emit(Resource.Error(DataError.Network.NO_INTERNET))
+                    is NetworkException -> send(Resource.Error<DataError.Network>(DataError.Network.NO_INTERNET))
                 }
             } catch (e: SerializationException) {
-                emit(Resource.Error(DataError.Network.SERIALIZATION))
+                send(Resource.Error<DataError.Network>(DataError.Network.SERIALIZATION))
             } catch (e: Exception) {
-                emit(Resource.Error(DataError.Network.UNKNOWN))
+                send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
             }
         }.flowOn(Dispatchers.IO)
 
     override fun getNewsForSymbol(symbol: String): Flow<Resource<ImmutableList<News>, DataError.Network>> =
-        flow {
+        channelFlow {
             try {
                 val news = api.getNewsForSymbol(symbol)
-                emit(Resource.Success<ImmutableList<News>, DataError.Network>(news))
+                send(Resource.Success<ImmutableList<News>>(news))
             } catch (e: DataException) {
                 when (e) {
                     is HttpException -> {
                         when (e.code) {
                             // If 404, it means there is no news for the symbol
-                            404 -> emit(Resource.Success(emptyList<News>().toImmutableList()))
+                            404 -> send(Resource.Success(emptyList<News>().toImmutableList()))
 
-                            400 -> emit(Resource.Error(DataError.Network.BAD_REQUEST))
-                            401, 403 -> emit(Resource.Error(DataError.Network.DENIED))
-                            408 -> emit(Resource.Error(DataError.Network.TIMEOUT))
-                            429 -> emit(Resource.Error(DataError.Network.THROTTLED))
-                            500, 504 -> emit(Resource.Error(DataError.Network.SERVER_DOWN))
-                            else -> emit(Resource.Error(DataError.Network.UNKNOWN))
+                            400 -> send(Resource.Error<DataError.Network>(DataError.Network.BAD_REQUEST))
+                            401, 403 -> send(Resource.Error<DataError.Network>(DataError.Network.DENIED))
+                            408 -> send(Resource.Error<DataError.Network>(DataError.Network.TIMEOUT))
+                            429 -> send(Resource.Error<DataError.Network>(DataError.Network.THROTTLED))
+                            500, 504 -> send(Resource.Error<DataError.Network>(DataError.Network.SERVER_DOWN))
+                            else -> send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
                         }
                     }
 
-                    is NetworkException -> emit(Resource.Error(DataError.Network.NO_INTERNET))
+                    is NetworkException -> send(Resource.Error<DataError.Network>(DataError.Network.NO_INTERNET))
                 }
             } catch (e: SerializationException) {
-                emit(Resource.Error(DataError.Network.SERIALIZATION))
+                send(Resource.Error<DataError.Network>(DataError.Network.SERIALIZATION))
             } catch (e: Exception) {
-                emit(Resource.Error(DataError.Network.UNKNOWN))
+                send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
             }
         }.flowOn(Dispatchers.IO)
 
     override fun getSimilarStocks(symbol: String): Flow<Resource<ImmutableList<SimpleQuoteData>, DataError.Network>> =
-        flow {
+        channelFlow {
             try {
                 val similarStocks = api.getSimilarSymbols(symbol)
-                emit(Resource.Success<ImmutableList<SimpleQuoteData>, DataError.Network>(similarStocks))
+                send(Resource.Success<ImmutableList<SimpleQuoteData>>(similarStocks))
             } catch (e: DataException) {
                 when (e) {
                     is HttpException -> {
                         when (e.code) {
                             // If 404, it means there are no similar stocks
-                            404 -> emit(Resource.Success(emptyList<SimpleQuoteData>().toImmutableList()))
+                            404 -> send(Resource.Success(emptyList<SimpleQuoteData>().toImmutableList()))
 
-                            400 -> emit(Resource.Error(DataError.Network.BAD_REQUEST))
-                            401, 403 -> emit(Resource.Error(DataError.Network.DENIED))
-                            408 -> emit(Resource.Error(DataError.Network.TIMEOUT))
-                            429 -> emit(Resource.Error(DataError.Network.THROTTLED))
-                            500, 504 -> emit(Resource.Error(DataError.Network.SERVER_DOWN))
-                            else -> emit(Resource.Error(DataError.Network.UNKNOWN))
+                            400 -> send(Resource.Error<DataError.Network>(DataError.Network.BAD_REQUEST))
+                            401, 403 -> send(Resource.Error<DataError.Network>(DataError.Network.DENIED))
+                            408 -> send(Resource.Error<DataError.Network>(DataError.Network.TIMEOUT))
+                            429 -> send(Resource.Error<DataError.Network>(DataError.Network.THROTTLED))
+                            500, 504 -> send(Resource.Error<DataError.Network>(DataError.Network.SERVER_DOWN))
+                            else -> send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
 
                         }
                     }
 
-                    is NetworkException -> emit(Resource.Error(DataError.Network.NO_INTERNET))
+                    is NetworkException -> send(Resource.Error<DataError.Network>(DataError.Network.NO_INTERNET))
                 }
             } catch (e: SerializationException) {
-                emit(Resource.Error(DataError.Network.SERIALIZATION))
+                send(Resource.Error<DataError.Network>(DataError.Network.SERIALIZATION))
             } catch (e: Exception) {
-                emit(Resource.Error(DataError.Network.UNKNOWN))
+                send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
             }
         }.flowOn(Dispatchers.IO)
 
     override fun getSectorBySymbol(symbol: String): Flow<Resource<MarketSector?, DataError.Network>> =
-        flow {
+        channelFlow {
             try {
                 val sector = api.getSectorBySymbol(symbol)
-                emit(Resource.Success<MarketSector?, DataError.Network>(sector))
+                send(Resource.Success<MarketSector?>(sector))
             } catch (e: DataException) {
                 when (e) {
                     is HttpException -> {
                         when (e.code) {
                             // If 404, it means the symbol has no sector
-                            404 -> emit(Resource.Success(null))
+                            404 -> send(Resource.Success(null))
 
-                            400 -> emit(Resource.Error(DataError.Network.BAD_REQUEST))
-                            401, 403 -> emit(Resource.Error(DataError.Network.DENIED))
-                            408 -> emit(Resource.Error(DataError.Network.TIMEOUT))
-                            429 -> emit(Resource.Error(DataError.Network.THROTTLED))
-                            500, 504 -> emit(Resource.Error(DataError.Network.SERVER_DOWN))
-                            else -> emit(Resource.Error(DataError.Network.UNKNOWN))
+                            400 -> send(Resource.Error<DataError.Network>(DataError.Network.BAD_REQUEST))
+                            401, 403 -> send(Resource.Error<DataError.Network>(DataError.Network.DENIED))
+                            408 -> send(Resource.Error<DataError.Network>(DataError.Network.TIMEOUT))
+                            429 -> send(Resource.Error<DataError.Network>(DataError.Network.THROTTLED))
+                            500, 504 -> send(Resource.Error<DataError.Network>(DataError.Network.SERVER_DOWN))
+                            else -> send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
                         }
                     }
 
-                    is NetworkException -> emit(Resource.Error(DataError.Network.NO_INTERNET))
+                    is NetworkException -> send(Resource.Error<DataError.Network>(DataError.Network.NO_INTERNET))
                 }
             } catch (e: SerializationException) {
-                emit(Resource.Error(DataError.Network.SERIALIZATION))
+                send(Resource.Error<DataError.Network>(DataError.Network.SERIALIZATION))
             } catch (e: Exception) {
-                emit(Resource.Error(DataError.Network.UNKNOWN))
+                send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
             }
-        }
+        }.flowOn(Dispatchers.IO)
 
     override suspend fun getTimeSeries(
         symbol: String,
         timePeriod: TimePeriod,
         interval: Interval,
-    ): Flow<Resource<ImmutableMap<String, HistoricalData>, DataError.Network>> = flow {
-        try {
-            val timeSeries = api.getHistoricalData(symbol, timePeriod, interval)
-            emit(Resource.Success<ImmutableMap<String, HistoricalData>, DataError.Network>(timeSeries))
-        } catch (e: DataException) {
-            when (e) {
-                is HttpException -> {
-                    when (e.code) {
-                        400 -> emit(Resource.Error(DataError.Network.BAD_REQUEST))
-                        401, 403 -> emit(Resource.Error(DataError.Network.DENIED))
-                        404 -> emit(Resource.Error(DataError.Network.NOT_FOUND))
-                        408 -> emit(Resource.Error(DataError.Network.TIMEOUT))
-                        429 -> emit(Resource.Error(DataError.Network.THROTTLED))
-                        500, 504 -> emit(Resource.Error(DataError.Network.SERVER_DOWN))
-                        else -> emit(Resource.Error(DataError.Network.UNKNOWN))
+    ): Flow<Resource<ImmutableMap<String, HistoricalData>, DataError.Network>> =
+        channelFlow {
+            try {
+                val timeSeries = api.getHistoricalData(symbol, timePeriod, interval)
+                send(Resource.Success<ImmutableMap<String, HistoricalData>>(timeSeries))
+            } catch (e: DataException) {
+                when (e) {
+                    is HttpException -> {
+                        when (e.code) {
+                            400 -> send(Resource.Error<DataError.Network>(DataError.Network.BAD_REQUEST))
+                            401, 403 -> send(Resource.Error<DataError.Network>(DataError.Network.DENIED))
+                            404 -> send(Resource.Error<DataError.Network>(DataError.Network.NOT_FOUND))
+                            408 -> send(Resource.Error<DataError.Network>(DataError.Network.TIMEOUT))
+                            429 -> send(Resource.Error<DataError.Network>(DataError.Network.THROTTLED))
+                            500, 504 -> send(Resource.Error<DataError.Network>(DataError.Network.SERVER_DOWN))
+                            else -> send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
+                        }
                     }
-                }
 
-                is NetworkException -> emit(Resource.Error(DataError.Network.NO_INTERNET))
+                    is NetworkException -> send(Resource.Error<DataError.Network>(DataError.Network.NO_INTERNET))
+                }
+            } catch (e: SerializationException) {
+                send(Resource.Error<DataError.Network>(DataError.Network.SERIALIZATION))
+            } catch (e: Exception) {
+                send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
             }
-        } catch (e: SerializationException) {
-            emit(Resource.Error(DataError.Network.SERIALIZATION))
-        } catch (e: Exception) {
-            emit(Resource.Error(DataError.Network.UNKNOWN))
-        }
-    }.flowOn(Dispatchers.IO)
+        }.flowOn(Dispatchers.IO)
 
     override fun getAnalysis(
         symbol: String,
         interval: Interval
-    ): Flow<Resource<Analysis?, DataError.Network>> = flow {
+    ): Flow<Resource<Analysis?, DataError.Network>> = channelFlow {
         try {
             val analysis = api.getSummaryAnalysis(symbol, interval)
-            emit(Resource.Success<Analysis?, DataError.Network>(analysis))
+            send(Resource.Success<Analysis?>(analysis))
         } catch (e: DataException) {
             when (e) {
                 is HttpException -> {
                     when (e.code) {
-                        400 -> emit(Resource.Error(DataError.Network.BAD_REQUEST))
-                        401, 403 -> emit(Resource.Error(DataError.Network.DENIED))
-                        404 -> emit(Resource.Error(DataError.Network.NOT_FOUND))
-                        408 -> emit(Resource.Error(DataError.Network.TIMEOUT))
-                        429 -> emit(Resource.Error(DataError.Network.THROTTLED))
-                        500, 504 -> emit(Resource.Error(DataError.Network.SERVER_DOWN))
-                        else -> emit(Resource.Error(DataError.Network.UNKNOWN))
+                        // If 404, it means there is no analysis for the symbol
+                        404 -> send(Resource.Success(null))
+
+                        400 -> send(Resource.Error<DataError.Network>(DataError.Network.BAD_REQUEST))
+                        401, 403 -> send(Resource.Error<DataError.Network>(DataError.Network.DENIED))
+                        408 -> send(Resource.Error<DataError.Network>(DataError.Network.TIMEOUT))
+                        429 -> send(Resource.Error<DataError.Network>(DataError.Network.THROTTLED))
+                        500, 504 -> send(Resource.Error<DataError.Network>(DataError.Network.SERVER_DOWN))
+                        else -> send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
                     }
                 }
 
-                is NetworkException -> emit(Resource.Error(DataError.Network.NO_INTERNET))
+                is NetworkException -> send(Resource.Error<DataError.Network>(DataError.Network.NO_INTERNET))
             }
         } catch (e: SerializationException) {
             // Occurs when the API returns fields with null values
-            emit(Resource.Success(null))
+            send(Resource.Success(null))
         } catch (e: Exception) {
-            emit(Resource.Error(DataError.Network.UNKNOWN))
+            send(Resource.Error<DataError.Network>(DataError.Network.UNKNOWN))
         }
     }.flowOn(Dispatchers.IO)
 
