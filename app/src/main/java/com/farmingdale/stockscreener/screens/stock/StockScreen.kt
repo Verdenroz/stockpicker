@@ -101,8 +101,8 @@ fun StockScreen(
             trendsSummary = trendsSummary,
             overallSummary = overallSummary,
             watchList = watchList,
-            updateTimeSeries = stockViewModel::getTimeSeries,
-            updateAnalysisInterval = stockViewModel::getAnalysis,
+            updateTimeSeries = stockViewModel::updateTimeSeries,
+            updateAnalysis = stockViewModel::updateAnalysis,
             addToWatchList = addToWatchList,
             deleteFromWatchList = deleteFromWatchList
         )
@@ -128,7 +128,7 @@ fun StockContent(
     overallSummary: Double,
     watchList: ImmutableList<SimpleQuoteData>,
     updateTimeSeries: (String, TimePeriod, Interval) -> Unit,
-    updateAnalysisInterval: (String, Interval) -> Unit,
+    updateAnalysis: (String, Interval) -> Unit,
     addToWatchList: (String) -> Unit,
     deleteFromWatchList: (String) -> Unit
 ) {
@@ -242,7 +242,7 @@ fun StockContent(
                                 oscillatorsSummary = oscillatorsSummary,
                                 trendsSummary = trendsSummary,
                                 overallSummary = overallSummary,
-                                updateAnalysisInterval = updateAnalysisInterval
+                                updateAnalysis = updateAnalysis,
                             )
                         }
                     }

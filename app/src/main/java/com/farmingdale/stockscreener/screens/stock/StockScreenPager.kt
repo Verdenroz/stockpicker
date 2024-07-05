@@ -18,7 +18,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.farmingdale.stockscreener.R
@@ -47,7 +46,7 @@ fun StockViewPager(
     oscillatorsSummary: Double,
     trendsSummary: Double,
     overallSummary: Double,
-    updateAnalysisInterval: (String, Interval) -> Unit
+    updateAnalysis: (String, Interval) -> Unit,
 ) {
     val state = rememberPagerState(pageCount = { 3 })
     val scope = rememberCoroutineScope()
@@ -58,7 +57,8 @@ fun StockViewPager(
                 min = 300.dp,
                 max = if (
                     (news is Resource.Success && news.data.size < 5 && state.currentPage == 1) ||
-                    (analysis is Resource.Success && analysis.data == null && state.currentPage == 2)
+                    (analysis is Resource.Success && analysis.data == null && state.currentPage == 2) ||
+                    (analysis is Resource.Error && state.currentPage == 2)
                 ) 300.dp else 900.dp
             )
             .fillMaxWidth(),
@@ -96,7 +96,7 @@ fun StockViewPager(
                         oscillatorSummary = oscillatorsSummary,
                         trendSummary = trendsSummary,
                         overallSummary = overallSummary,
-                        updateInterval = updateAnalysisInterval
+                        updateAnalysis = updateAnalysis,
                     )
                 }
             }

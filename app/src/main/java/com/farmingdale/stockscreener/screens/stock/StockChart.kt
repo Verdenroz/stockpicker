@@ -1,7 +1,6 @@
 package com.farmingdale.stockscreener.screens.stock
 
 import android.graphics.Paint
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -10,11 +9,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SnackbarDuration
@@ -81,8 +81,8 @@ fun StockChart(
     symbol: String,
     timeSeries: Resource<ImmutableMap<String, HistoricalData>, DataError.Network>,
     isDarkTheme: Boolean = isSystemInDarkTheme(),
+    backgroundColor: Color,
     updateTimeSeries: (String, TimePeriod, Interval) -> Unit,
-    backgroundColor: Color = MaterialTheme.colorScheme.surface,
 ) {
     val context = LocalContext.current
     when (timeSeries) {
@@ -92,6 +92,14 @@ fun StockChart(
 
         is Resource.Error -> {
             StockChartSkeleton()
+
+            TimePeriodBar(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                symbol = symbol,
+                updateTimeSeries = updateTimeSeries,
+            )
 
             LaunchedEffect(timeSeries.error) {
                 snackbarHost.showSnackbar(
@@ -253,7 +261,7 @@ fun StockChart(
                 TimePeriodBar(
                     modifier = Modifier.fillMaxWidth(),
                     symbol = symbol,
-                    updateTimeSeries = updateTimeSeries
+                    updateTimeSeries = updateTimeSeries,
                 )
             }
         }
@@ -264,7 +272,7 @@ fun StockChart(
 fun TimePeriodBar(
     modifier: Modifier = Modifier,
     symbol: String,
-    updateTimeSeries: (String, TimePeriod, Interval) -> Unit
+    updateTimeSeries: (String, TimePeriod, Interval) -> Unit,
 ) {
     var selectedTimePeriod by rememberSaveable { mutableStateOf(TimePeriod.YEAR_TO_DATE) }
     Row(
@@ -324,43 +332,14 @@ fun StockChartSkeleton(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.surfaceContainer
 ) {
-    Box(
+    Card(
         modifier = modifier
             .fillMaxWidth()
-            .height(200.dp) // Adjust the height as needed
-            .padding(16.dp)
-            .background(color)
+            .heightIn(min = 200.dp, max = 400.dp)
+            .padding(16.dp),
+        colors = CardDefaults.cardColors(containerColor = color)
     ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val canvasWidth = size.width
-            val canvasHeight = size.height
-
-            // Draw the horizontal axis
-            drawLine(
-                start = Offset(x = 0f, y = canvasHeight - 20f),
-                end = Offset(x = canvasWidth, y = canvasHeight - 20f),
-                color = Color.LightGray,
-                strokeWidth = 4f
-            )
-
-            // Draw the vertical axis
-            drawLine(
-                start = Offset(x = 20f, y = 0f),
-                end = Offset(x = 20f, y = canvasHeight),
-                color = Color.LightGray,
-                strokeWidth = 4f
-            )
-
-            // Optionally, draw some lines or dots to mimic data points
-            val step = canvasWidth / 10
-            for (i in 1..9) {
-                drawCircle(
-                    center = Offset(x = step * i, y = canvasHeight / 2),
-                    radius = 4f,
-                    color = Color.Gray
-                )
-            }
-        }
+        // skeleton
     }
 }
 

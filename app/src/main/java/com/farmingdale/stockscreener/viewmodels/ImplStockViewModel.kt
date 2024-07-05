@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.util.concurrent.ConcurrentHashMap
 
 class ImplStockViewModel(symbol: String, application: Application) : StockViewModel(application) {
     private val financeQueryRepo = FinanceQueryRepository.get()
@@ -196,9 +197,9 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
             emptyList<SimpleQuoteData>().toImmutableList()
         )
 
-    private val timeSeriesMap = persistentMapOf<TimePeriod, Resource<ImmutableMap<String, HistoricalData>, DataError.Network>>()
+    private val timeSeriesMap = ConcurrentHashMap<TimePeriod, Resource<ImmutableMap<String, HistoricalData>, DataError.Network>>(7)
 
-    private val analysisMap = persistentMapOf<Interval, Resource<Analysis?, DataError.Network>>()
+    private val analysisMap = ConcurrentHashMap<Interval, Resource<Analysis?, DataError.Network>>(6)
 
     init {
         if (symbol.isNotEmpty()) {
@@ -256,7 +257,7 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
     private fun loadTimeSeries(symbol: String, timePeriod: TimePeriod, interval: Interval) {
         viewModelScope.launch(Dispatchers.IO) {
             financeQueryRepo.getTimeSeries(symbol, timePeriod, interval).collect {
-                timeSeriesMap.put(timePeriod, it)
+                timeSeriesMap[timePeriod] = it
             }
         }
     }
@@ -264,12 +265,12 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
     private fun loadAnalysis(symbol: String, interval: Interval) {
         viewModelScope.launch(Dispatchers.IO) {
             financeQueryRepo.getAnalysis(symbol, interval).collect {
-                analysisMap.put(interval, it)
+                analysisMap[interval] = it
             }
         }
     }
 
-    override fun getTimeSeries(symbol: String, timePeriod: TimePeriod, interval: Interval) {
+    override fun updateTimeSeries(symbol: String, timePeriod: TimePeriod, interval: Interval) {
         // Check if the time series data has already been loaded
         viewModelScope.launch(Dispatchers.IO) {
             if (timeSeriesMap.containsKey(timePeriod)) {
@@ -283,7 +284,7 @@ class ImplStockViewModel(symbol: String, application: Application) : StockViewMo
         }
     }
 
-    override fun getAnalysis(symbol: String, interval: Interval) {
+    override fun updateAnalysis(symbol: String, interval: Interval) {
         viewModelScope.launch(Dispatchers.IO) {
             // Check if the analysis data has already been loaded
             if (analysisMap.containsKey(interval)) {

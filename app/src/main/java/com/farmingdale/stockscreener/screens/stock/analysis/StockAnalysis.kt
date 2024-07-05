@@ -3,7 +3,6 @@ package com.farmingdale.stockscreener.screens.stock.analysis
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -69,7 +68,7 @@ fun StockAnalysis(
     oscillatorSummary: Double,
     trendSummary: Double,
     overallSummary: Double,
-    updateInterval: (String, Interval) -> Unit
+    updateAnalysis: (String, Interval) -> Unit,
 ) {
     val context = LocalContext.current
     when (analysis) {
@@ -86,24 +85,32 @@ fun StockAnalysis(
                     actionLabel = UiText.StringResource(R.string.dismiss).asString(context),
                     duration = SnackbarDuration.Short
                 )
-
             }
         }
 
         is Resource.Success -> {
+            var selectedInterval by rememberSaveable { mutableStateOf(Interval.DAILY) }
             if (analysis.data == null) {
-                Box(
+                Column(
                     modifier = Modifier
                         .height(300.dp)
                         .background(MaterialTheme.colorScheme.surfaceContainer),
-                    contentAlignment = Alignment.Center
+                    verticalArrangement = Arrangement.SpaceBetween,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    AnalysisIntervalBar(
+                        modifier = Modifier.fillMaxWidth(),
+                        symbol = symbol,
+                        selectedInterval = selectedInterval,
+                        updateInterval = { selectedInterval = it },
+                        updateAnalysis = updateAnalysis,
+                    )
                     Text(
                         text = stringResource(id = R.string.no_analysis),
                         style = MaterialTheme.typography.titleSmall,
                         textAlign = TextAlign.Center,
                         modifier = Modifier
-                            .padding(16.dp)
+                            .padding(horizontal = 16.dp, vertical = 64.dp)
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(100))
                             .background(MaterialTheme.colorScheme.surfaceContainerHighest)
@@ -119,7 +126,9 @@ fun StockAnalysis(
                     AnalysisIntervalBar(
                         modifier = Modifier.fillMaxWidth(),
                         symbol = symbol,
-                        updateInterval = updateInterval
+                        selectedInterval = selectedInterval,
+                        updateInterval = { selectedInterval = it },
+                        updateAnalysis = updateAnalysis,
                     )
                     val listState = rememberLazyListState()
                     LazyColumn(
@@ -254,9 +263,10 @@ fun AnalysisDetail(
 fun AnalysisIntervalBar(
     modifier: Modifier = Modifier,
     symbol: String,
-    updateInterval: (String, Interval) -> Unit
+    selectedInterval: Interval,
+    updateInterval: (Interval) -> Unit,
+    updateAnalysis: (String, Interval) -> Unit,
 ) {
-    var selectedInterval by rememberSaveable { mutableStateOf(Interval.DAILY) }
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -277,8 +287,8 @@ fun AnalysisIntervalBar(
                 interval = interval,
                 selectedInterval = interval == selectedInterval,
                 onClick = {
-                    selectedInterval = interval
-                    updateInterval(symbol, interval)
+                    updateInterval(interval)
+                    updateAnalysis(symbol, interval)
                 }
             )
         }
@@ -349,7 +359,7 @@ fun PreviewStockAnalysis() {
             oscillatorSummary = 0.0,
             trendSummary = 0.0,
             overallSummary = 0.0,
-            updateInterval = { _, _ -> }
+            updateAnalysis = { _, _ -> },
         )
     }
 }

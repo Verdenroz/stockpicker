@@ -189,7 +189,7 @@ fun PerformanceCard(
     sectorPerformance: String?
 ) {
     Card(
-        modifier = Modifier.size(275.dp, 125.dp),
+        modifier = Modifier.size(300.dp, 125.dp),
     ) {
         Column(
             modifier = Modifier
@@ -257,7 +257,7 @@ fun StockPerformanceSkeleton(
         repeat(3) {
             item(key = it) {
                 Card(
-                    modifier = modifier.size(275.dp, 125.dp),
+                    modifier = modifier.size(300.dp, 125.dp),
                     colors = CardDefaults.cardColors(containerColor = color)
                 ) {
                     // skeleton

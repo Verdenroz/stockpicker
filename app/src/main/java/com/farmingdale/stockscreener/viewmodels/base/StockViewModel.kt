@@ -41,8 +41,8 @@ abstract class StockViewModel(application: Application) : AndroidViewModel(appli
     abstract val watchList: StateFlow<ImmutableList<SimpleQuoteData>>
 
 
-    abstract fun getTimeSeries(symbol: String, timePeriod: TimePeriod, interval: Interval)
+    abstract fun updateTimeSeries(symbol: String, timePeriod: TimePeriod, interval: Interval)
 
-    abstract fun getAnalysis(symbol: String, interval: Interval)
+    abstract fun updateAnalysis(symbol: String, interval: Interval)
 
 }
