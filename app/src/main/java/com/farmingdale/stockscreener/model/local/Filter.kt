@@ -1,12 +1,18 @@
 package com.farmingdale.stockscreener.model.local
 
+import androidx.compose.runtime.Stable
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentSetOf
+import kotlinx.collections.immutable.toImmutableSet
+
 /**
  * Filter for region of stock exchanges
  */
-enum class RegionFilter(val exchanges: List<String>) {
-    US(listOf("NASDAQ", "NYSE", "AMEX", "ETF", "CBOE")),
+@Stable
+enum class RegionFilter(val exchanges: ImmutableSet<String>) {
+    US(persistentSetOf("NASDAQ", "NYSE", "AMEX", "ETF", "CBOE")),
     NA(
-        listOf(
+        persistentSetOf(
             "NASDAQ",
             "NYSE",
             "AMEX",
@@ -23,9 +29,9 @@ enum class RegionFilter(val exchanges: List<String>) {
             "MEX"
         )
     ),
-    SA(listOf("SAO", "BUE", "SGO")),
+    SA(persistentSetOf("SAO", "BUE", "SGO")),
     EU(
-        listOf(
+        persistentSetOf(
             "LSE",
             "AQS",
             "XETRA",
@@ -59,7 +65,7 @@ enum class RegionFilter(val exchanges: List<String>) {
         )
     ),
     AS(
-        listOf(
+        persistentSetOf(
             "BSE",
             "NSE",
             "JPX",
@@ -76,17 +82,18 @@ enum class RegionFilter(val exchanges: List<String>) {
             "CAI"
         )
     ),
-    AF(listOf("JNB", "EGY", "CAI")),
-    AU(listOf("ASX", "NZE")),
-    ME(listOf("TLV", "SAU", "DOH", "DFM", "KUW")),
+    AF(persistentSetOf("JNB", "EGY", "CAI")),
+    AU(persistentSetOf("ASX", "NZE")),
+    ME(persistentSetOf("TLV", "SAU", "DOH", "DFM", "KUW")),
     GLOBAL(
-        NA.exchanges + SA.exchanges + EU.exchanges + AS.exchanges + AF.exchanges + AU.exchanges + ME.exchanges
+        (NA.exchanges + SA.exchanges + EU.exchanges + AS.exchanges + AF.exchanges + AU.exchanges + ME.exchanges).toImmutableSet()
     )
 }
 
 /**
  * Filter for type of stock
  */
+@Stable
 enum class TypeFilter(val type: String) {
     STOCK("stock"),
     ETF("etf"),

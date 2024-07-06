@@ -33,6 +33,11 @@ class MarketStatusChecker(
         }
     }
 
+    fun stopChecking() {
+        timer?.cancel()
+        timer = null
+    }
+
     private fun checkMarketStatus() {
         val isMarketOpen = isMarketOpen()
         if (isMarketOpen != isMarketCurrentlyOpen) {

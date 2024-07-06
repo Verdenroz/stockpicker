@@ -7,18 +7,32 @@ import com.farmingdale.stockscreener.model.local.SearchResult
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TypeFilter
 import com.algolia.search.model.search.Query
+import com.farmingdale.stockscreener.utils.UiText
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 abstract class MainViewModel(application: Application) : AndroidViewModel(application) {
     /**
-     * The current region to filter search results by exchanges
+     * A [StateFlow] that emits true if the device is connected to the internet, false otherwise
+     */
+    abstract val isNetworkConnected: StateFlow<Boolean>
+
+    /**
+     * A [Flow] of [MainEvent] that emits events to be handled by the UI
+     */
+    abstract val events: Flow<MainEvent>
+
+    /**
+     * The current [RegionFilter] to filter search results by exchanges
      */
     abstract val regionFilter: StateFlow<RegionFilter>
 
     /**
-     * The current type to filter search results by stock type (stock, etf, trust)
+     * The [TypeFilter]s to filter search results by stock type (stock, etf, trust)
      */
-    abstract val typeFilter: StateFlow<List<TypeFilter>>
+    abstract val typeFilter: StateFlow<ImmutableSet<TypeFilter>>
 
     /**
      * The current query string in search bar
@@ -33,15 +47,21 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
     /**
      * The search results for the current query as a list of [SearchResult]
      */
-    abstract val searchResults: StateFlow<List<SearchResult>?>
+    abstract val searchResults: StateFlow<ImmutableList<SearchResult>?>
 
     /**
      * The user's watchlist as a list of [SimpleQuoteData]
      */
-    abstract val watchList: StateFlow<List<SimpleQuoteData>>
+    abstract val watchList: StateFlow<ImmutableList<SimpleQuoteData>>
 
+    /**
+     * Update the current [region] filter
+     */
     abstract fun updateRegionFilter(region: RegionFilter)
 
+    /**
+     * Toggle the [type] filter on or off
+     */
     abstract fun toggleTypeFilter(type: TypeFilter, isChecked: Boolean)
 
     /**
@@ -69,4 +89,8 @@ abstract class MainViewModel(application: Application) : AndroidViewModel(applic
      */
     abstract fun deleteFromWatchList(symbol: String)
 
+}
+
+sealed interface MainEvent {
+    data class Error(val message: UiText) : MainEvent
 }

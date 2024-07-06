@@ -1,5 +1,7 @@
 package com.farmingdale.stockscreener.model.local
 
+import androidx.compose.runtime.Immutable
+
 /**
  * Local data class for individual news articles
  * @param title: The title of the article
@@ -8,6 +10,7 @@ package com.farmingdale.stockscreener.model.local
  * @param img: The image URL associated with the article
  * @param time: The time the article was published
  */
+@Immutable
 data class News(
     val title: String,
     val link: String,

@@ -2,15 +2,15 @@ package com.farmingdale.stockscreener
 
 import com.farmingdale.stockscreener.model.local.Interval
 import com.farmingdale.stockscreener.model.local.TimePeriod
-import com.farmingdale.stockscreener.providers.ImplFinanceQueryAPI
-import com.farmingdale.stockscreener.providers.base.FinanceQueryAPI
+import com.farmingdale.stockscreener.providers.ImplFinanceQueryDataSource
+import com.farmingdale.stockscreener.providers.base.FinanceQueryDataSource
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import org.junit.Before
 import org.junit.Test
 
 class FinanceQueryTest {
-    private lateinit var api: FinanceQueryAPI
+    private lateinit var api: FinanceQueryDataSource
 
     @Before
     fun setup() {
@@ -20,7 +20,7 @@ class FinanceQueryTest {
             it.proceed(request)
         }.build()
 
-        api = ImplFinanceQueryAPI(client)
+        api = ImplFinanceQueryDataSource(client)
     }
 
     @Test
@@ -53,7 +53,8 @@ class FinanceQueryTest {
     fun getHistoricalData() {
          runBlocking {
             println(api.getHistoricalData("AAPL", time = TimePeriod.FIVE_DAY, interval = Interval.FIFTEEN_MINUTE))
-            println(api.getHistoricalData("AAPL", time = TimePeriod.ONE_MONTH, interval = Interval.DAILY))
+            println(api.getHistoricalData("AAPL", time = TimePeriod.ONE_MONTH, interval = Interval.ONE_MINUTE))
+            println(api.getHistoricalData("AAPL", time = TimePeriod.ONE_YEAR, interval = Interval.DAILY))
         }
     }
 
@@ -69,6 +70,14 @@ class FinanceQueryTest {
     fun getSectors() {
         val info = runBlocking {
             api.getSectors()
+        }
+        println(info)
+    }
+
+    @Test
+    fun getSectorBySymbol() {
+        val info = runBlocking {
+            api.getSectorBySymbol("AAPL")
         }
         println(info)
     }

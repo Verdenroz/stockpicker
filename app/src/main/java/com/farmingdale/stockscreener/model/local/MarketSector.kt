@@ -1,5 +1,7 @@
 package com.farmingdale.stockscreener.model.local
 
+import androidx.compose.runtime.Immutable
+
 /**
  * Local data class for sector information
  * @param sector the sector name
@@ -9,6 +11,7 @@ package com.farmingdale.stockscreener.model.local
  * @param threeYearReturn the return for the past three years
  * @param fiveYearReturn the return for the past five years
  */
+@Immutable
 data class MarketSector(
     val sector: String,
     val dayReturn: String,

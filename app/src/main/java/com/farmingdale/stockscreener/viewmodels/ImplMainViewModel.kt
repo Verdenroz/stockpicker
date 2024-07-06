@@ -12,25 +12,53 @@ import com.farmingdale.stockscreener.model.local.RegionFilter
 import com.farmingdale.stockscreener.model.local.SearchResult
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TypeFilter
+import com.farmingdale.stockscreener.repos.ImplFinanceQueryRepository.Companion.get
 import com.farmingdale.stockscreener.repos.ImplWatchlistRepository.Companion.get
+import com.farmingdale.stockscreener.repos.base.FinanceQueryRepository
 import com.farmingdale.stockscreener.repos.base.WatchlistRepository
+import com.farmingdale.stockscreener.utils.MarketStatusChecker
+import com.farmingdale.stockscreener.utils.NetworkConnectionManager
+import com.farmingdale.stockscreener.utils.NetworkConnectionManagerImpl.Companion.get
+import com.farmingdale.stockscreener.utils.Resource
+import com.farmingdale.stockscreener.viewmodels.base.MainEvent
 import com.farmingdale.stockscreener.viewmodels.base.MainViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentSetOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class ImplMainViewModel(application: Application) : MainViewModel(application) {
     private val watchlistRepo = WatchlistRepository.get(application)
+    private val marketStatusChecker =
+        MarketStatusChecker(watchlistRepo, FinanceQueryRepository.get())
+    private val connectionManager = NetworkConnectionManager.get(application)
+
+    override val isNetworkConnected: StateFlow<Boolean> =
+        connectionManager.isNetworkConnectedFlow.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(),
+            true
+        )
+
+    private val eventsChannel = Channel<MainEvent>()
+    override val events: Flow<MainEvent> = eventsChannel.receiveAsFlow()
 
     private val _regionFilter = MutableStateFlow(RegionFilter.US)
     override val regionFilter: StateFlow<RegionFilter> = _regionFilter.asStateFlow()
 
-    private val _typeFilter = MutableStateFlow(listOf(TypeFilter.STOCK, TypeFilter.ETF, TypeFilter.TRUST))
-    override val typeFilter: StateFlow<List<TypeFilter>> = _typeFilter.asStateFlow()
+    private val _typeFilter =
+        MutableStateFlow(persistentSetOf(TypeFilter.STOCK, TypeFilter.ETF, TypeFilter.TRUST))
+    override val typeFilter: StateFlow<ImmutableSet<TypeFilter>> = _typeFilter.asStateFlow()
 
     private val _query = MutableStateFlow("")
     override val query: StateFlow<String> = _query.asStateFlow()
@@ -44,11 +72,16 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
 
     override val searchQuery: StateFlow<Query> = _searchQuery.asStateFlow()
 
-    private val _searchResults = MutableStateFlow<List<SearchResult>?>(null)
-    override val searchResults: StateFlow<List<SearchResult>?> = _searchResults.asStateFlow()
+    private val _searchResults = MutableStateFlow(emptyList<SearchResult>().toImmutableList())
+    override val searchResults: StateFlow<ImmutableList<SearchResult>?> =
+        _searchResults.asStateFlow()
 
-    override val watchList: StateFlow<List<SimpleQuoteData>> =
-        watchlistRepo.watchlist.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+    override val watchList: StateFlow<ImmutableList<SimpleQuoteData>> =
+        watchlistRepo.watchlist.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(),
+            emptyList<SimpleQuoteData>().toImmutableList()
+        )
 
     private val index = IndexName("stocks")
     private val searcher = HitsSearcher(
@@ -59,11 +92,21 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
     )
 
     init {
+        // Start checking the market status to update the refresh interval of the repositories
+        marketStatusChecker.startChecking()
+        connectionManager.startListenNetworkState()
         searcher.response.subscribe { response ->
             _searchResults.value = response?.hits?.take(5)?.mapNotNull { hit ->
                 hit.deserialize(SearchResult.serializer()).takeIf { it.name.isNotBlank() }
-            }
+            }?.toImmutableList() ?: emptyList<SearchResult>().toImmutableList()
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        searcher.cancel()
+        marketStatusChecker.stopChecking()
+        connectionManager.stopListenNetworkState()
     }
 
     override fun updateRegionFilter(region: RegionFilter) {
@@ -86,10 +129,10 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
     override fun toggleTypeFilter(type: TypeFilter, isChecked: Boolean) {
         if (isChecked) {
             if (!_typeFilter.value.contains(type)) {
-                _typeFilter.value += type
+                _typeFilter.value = _typeFilter.value.add(type)
             }
         } else {
-            _typeFilter.value -= type
+            _typeFilter.value = _typeFilter.value.remove(type)
         }
 
         searcher.query.facetFilters = (listOf(
@@ -100,22 +143,14 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
         searcher.searchAsync()
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        searcher.cancel()
-    }
-
     override fun updateQuery(query: String) {
         _query.value = query
     }
 
     override fun search(query: String) {
         if (query.isEmpty()) {
-            _searchResults.value = null
+            _searchResults.value = emptyList<SearchResult>().toImmutableList()
         } else {
-            println(typeFilter.value)
-            println(searchQuery.value.facetFilters)
-
             searcher.setQuery(query)
             searcher.searchAsync()
         }
@@ -123,14 +158,29 @@ class ImplMainViewModel(application: Application) : MainViewModel(application) {
 
     override fun refreshWatchList() {
         viewModelScope.launch(Dispatchers.IO) {
-            watchlistRepo.refreshWatchList()
+            when (val result = watchlistRepo.refreshWatchList()) {
+                is Resource.Error -> {
+                    eventsChannel.send(MainEvent.Error(result.error.asUiText()))
+                }
+
+                else -> {
+                    // Do nothing
+                }
+            }
         }
     }
 
     override fun addToWatchList(symbol: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            watchlistRepo.addToWatchList(symbol)
-            refreshWatchList()
+            when (val result = watchlistRepo.addToWatchList(symbol)) {
+                is Resource.Error -> {
+                    eventsChannel.send(MainEvent.Error(result.error.asUiText()))
+                }
+
+                else -> {
+                    refreshWatchList()
+                }
+            }
         }
     }
 

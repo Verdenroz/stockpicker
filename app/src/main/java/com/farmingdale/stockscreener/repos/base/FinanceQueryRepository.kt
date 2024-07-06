@@ -10,7 +10,11 @@ import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
+import com.farmingdale.stockscreener.utils.DataError
+import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.utils.isMarketOpen
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.flow.Flow
 
 abstract class FinanceQueryRepository {
@@ -28,32 +32,32 @@ abstract class FinanceQueryRepository {
     /**
      *  Market indices as list of [MarketIndex]
      */
-    abstract val indices: Flow<List<MarketIndex>?>
+    abstract val indices: Flow<Resource<ImmutableList<MarketIndex>, DataError.Network>>
 
     /**
      * Active stocks as list of [MarketMover]
      */
-    abstract val actives: Flow<List<MarketMover>?>
+    abstract val actives: Flow<Resource<ImmutableList<MarketMover>, DataError.Network>>
 
     /**
      * Losers as list of [MarketMover]
      */
-    abstract val losers: Flow<List<MarketMover>?>
+    abstract val losers: Flow<Resource<ImmutableList<MarketMover>, DataError.Network>>
 
     /**
      * Gainers as list of [MarketMover]
      */
-    abstract val gainers: Flow<List<MarketMover>?>
+    abstract val gainers: Flow<Resource<ImmutableList<MarketMover>, DataError.Network>>
 
     /**
      * Latest news headlines as list of [News]
      */
-    abstract val headlines: Flow<List<News>?>
+    abstract val headlines: Flow<Resource<ImmutableList<News>, DataError.Network>>
 
     /**
      * Sectors as list of [MarketSector]
      */
-    abstract val sectors: Flow<List<MarketSector>>
+    abstract val sectors: Flow<Resource<ImmutableList<MarketSector>, DataError.Network>>
 
     /**
      * Refresh [indices], [actives], [losers], [gainers]
@@ -73,27 +77,32 @@ abstract class FinanceQueryRepository {
     /**
      * Get full quote data for a stock with all available information as [FullQuoteData]
      */
-    abstract fun getFullQuote(symbol: String): Flow<FullQuoteData>
+    abstract fun getFullQuote(symbol: String): Flow<Resource<FullQuoteData, DataError.Network>>
 
     /**
      * Get simple quote data for a stock with basic information as [SimpleQuoteData]
      */
-    abstract suspend fun getSimpleQuote(symbol: String): Flow<SimpleQuoteData>
+    abstract suspend fun getSimpleQuote(symbol: String): Flow<Resource<SimpleQuoteData, DataError.Network>>
 
     /**
      * Get simple quote data for a list of symbols as a list of [SimpleQuoteData]
      */
-    abstract suspend fun getBulkQuote(symbols: List<String>): Flow<List<SimpleQuoteData>>
+    abstract suspend fun getBulkQuote(symbols: List<String>): Flow<Resource<ImmutableList<SimpleQuoteData>, DataError.Network>>
 
     /**
      * Get news for a symbol as a list of [News]
      */
-    abstract fun getNewsForSymbol(symbol: String): Flow<List<News>>
+    abstract fun getNewsForSymbol(symbol: String): Flow<Resource<ImmutableList<News>, DataError.Network>>
 
     /**
      * Find similar stocks for a symbol as a list of [SimpleQuoteData]
      */
-    abstract fun getSimilarStocks(symbol: String): Flow<List<SimpleQuoteData>>
+    abstract fun getSimilarStocks(symbol: String): Flow<Resource<ImmutableList<SimpleQuoteData>, DataError.Network>>
+
+    /**
+     * Gets the [MarketSector] performance of the symbol if available
+     */
+    abstract fun getSectorBySymbol(symbol: String): Flow<Resource<MarketSector?, DataError.Network>>
 
     /**
      * Get historical data for a symbol as a map of dates to [HistoricalData]
@@ -102,17 +111,12 @@ abstract class FinanceQueryRepository {
         symbol: String,
         timePeriod: TimePeriod,
         interval: Interval
-    ): Flow<Map<String, HistoricalData>>
+    ): Flow<Resource<ImmutableMap<String, HistoricalData>, DataError.Network>>
 
     /**
      * Get summary analysis for a symbol as [Analysis] given an [Interval]
      */
-    abstract fun getAnalysis(symbol: String, interval: Interval): Flow<Analysis>
-
-    /**
-     * Get a specific sector's performance as [MarketSector]
-     */
-    abstract fun getSectorPerformance(sector: String): Flow<MarketSector>
+    abstract fun getAnalysis(symbol: String, interval: Interval): Flow<Resource<Analysis?, DataError.Network>>
 
     companion object {
         const val NEWS_REFRESH_INTERVAL = 60000L

@@ -1,7 +1,10 @@
 package com.farmingdale.stockscreener.repos.base
 
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
+import com.farmingdale.stockscreener.utils.DataError
+import com.farmingdale.stockscreener.utils.Resource
 import com.farmingdale.stockscreener.utils.isMarketOpen
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 
 abstract class WatchlistRepository {
@@ -19,17 +22,17 @@ abstract class WatchlistRepository {
     /**
      * The user's watch list as a list of [SimpleQuoteData]
      */
-    abstract val watchlist: Flow<List<SimpleQuoteData>>
+    abstract val watchlist: Flow<ImmutableList<SimpleQuoteData>>
 
     /**
      * Refresh the user's watch list with new stock data
      */
-    abstract suspend fun refreshWatchList()
+    abstract suspend fun refreshWatchList(): Resource<Unit, DataError.Network>
 
     /**
      * Add a symbol to the user's watch list
      */
-    abstract suspend fun addToWatchList(symbol: String)
+    abstract suspend fun addToWatchList(symbol: String): Resource<Unit, DataError.Network>
 
     /**
      * Delete a symbol from the user's watch list
