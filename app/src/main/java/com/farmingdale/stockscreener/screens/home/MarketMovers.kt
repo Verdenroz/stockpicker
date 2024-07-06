@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -285,6 +286,7 @@ fun MarketMoversSkeleton(
                 Card(
                     modifier = modifier
                         .padding(top = 8.dp)
+                        .height(50.dp)
                         .fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = color)
                 ) {

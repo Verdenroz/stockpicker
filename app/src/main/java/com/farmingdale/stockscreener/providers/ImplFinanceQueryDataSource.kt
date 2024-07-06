@@ -19,7 +19,7 @@ import com.farmingdale.stockscreener.model.remote.NewsResponse
 import com.farmingdale.stockscreener.model.remote.SectorResponse
 import com.farmingdale.stockscreener.model.remote.SimpleQuoteResponse
 import com.farmingdale.stockscreener.model.remote.TimeSeriesResponse
-import com.farmingdale.stockscreener.providers.base.FinanceQueryAPI
+import com.farmingdale.stockscreener.providers.base.FinanceQueryDataSource
 import com.farmingdale.stockscreener.utils.FINANCE_QUERY_API_URL
 import com.farmingdale.stockscreener.utils.HttpException
 import com.farmingdale.stockscreener.utils.NetworkException
@@ -44,7 +44,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalSerializationApi::class)
-class ImplFinanceQueryAPI(private val client: OkHttpClient) : FinanceQueryAPI {
+class ImplFinanceQueryDataSource(private val client: OkHttpClient) : FinanceQueryDataSource {
 
     companion object {
         private val parser: Json by lazy {

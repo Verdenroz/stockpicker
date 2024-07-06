@@ -13,7 +13,7 @@ import com.farmingdale.stockscreener.model.local.TimePeriod
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 
-interface FinanceQueryAPI {
+interface FinanceQueryDataSource {
 
     /**
      * Get full quote data for a stock with all available information

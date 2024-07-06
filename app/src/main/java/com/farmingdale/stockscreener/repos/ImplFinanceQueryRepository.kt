@@ -10,7 +10,7 @@ import com.farmingdale.stockscreener.model.local.MarketSector
 import com.farmingdale.stockscreener.model.local.News
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
 import com.farmingdale.stockscreener.model.local.TimePeriod
-import com.farmingdale.stockscreener.providers.ImplFinanceQueryAPI
+import com.farmingdale.stockscreener.providers.ImplFinanceQueryDataSource
 import com.farmingdale.stockscreener.providers.okHttpClient
 import com.farmingdale.stockscreener.repos.base.FinanceQueryRepository
 import com.farmingdale.stockscreener.utils.DataError
@@ -37,7 +37,7 @@ import kotlinx.serialization.SerializationException
 
 @Suppress("RemoveExplicitTypeArguments")
 class ImplFinanceQueryRepository : FinanceQueryRepository() {
-    private val api = ImplFinanceQueryAPI(okHttpClient)
+    private val api = ImplFinanceQueryDataSource(okHttpClient)
     private val indicesChannel =
         Channel<Resource<ImmutableList<MarketIndex>, DataError.Network>>(Channel.CONFLATED)
     private val activesChannel =

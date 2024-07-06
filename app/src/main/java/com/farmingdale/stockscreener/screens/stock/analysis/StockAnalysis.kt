@@ -71,13 +71,30 @@ fun StockAnalysis(
     updateAnalysis: (String, Interval) -> Unit,
 ) {
     val context = LocalContext.current
+    var selectedInterval by rememberSaveable { mutableStateOf(Interval.DAILY) }
+
     when (analysis) {
         is Resource.Loading -> {
             StockAnalysisSkeleton()
         }
 
         is Resource.Error -> {
-            StockAnalysisSkeleton()
+            Column(
+                modifier = Modifier
+                    .height(300.dp)
+                    .background(MaterialTheme.colorScheme.surfaceContainer),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                AnalysisIntervalBar(
+                    modifier = Modifier.fillMaxWidth(),
+                    symbol = symbol,
+                    selectedInterval = selectedInterval,
+                    updateInterval = { selectedInterval = it },
+                    updateAnalysis = updateAnalysis,
+                )
+                StockAnalysisSkeleton()
+            }
 
             LaunchedEffect(analysis.error) {
                 snackbarHost.showSnackbar(
@@ -89,7 +106,6 @@ fun StockAnalysis(
         }
 
         is Resource.Success -> {
-            var selectedInterval by rememberSaveable { mutableStateOf(Interval.DAILY) }
             if (analysis.data == null) {
                 Column(
                     modifier = Modifier

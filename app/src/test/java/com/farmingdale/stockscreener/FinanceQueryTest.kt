@@ -2,15 +2,15 @@ package com.farmingdale.stockscreener
 
 import com.farmingdale.stockscreener.model.local.Interval
 import com.farmingdale.stockscreener.model.local.TimePeriod
-import com.farmingdale.stockscreener.providers.ImplFinanceQueryAPI
-import com.farmingdale.stockscreener.providers.base.FinanceQueryAPI
+import com.farmingdale.stockscreener.providers.ImplFinanceQueryDataSource
+import com.farmingdale.stockscreener.providers.base.FinanceQueryDataSource
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import org.junit.Before
 import org.junit.Test
 
 class FinanceQueryTest {
-    private lateinit var api: FinanceQueryAPI
+    private lateinit var api: FinanceQueryDataSource
 
     @Before
     fun setup() {
@@ -20,7 +20,7 @@ class FinanceQueryTest {
             it.proceed(request)
         }.build()
 
-        api = ImplFinanceQueryAPI(client)
+        api = ImplFinanceQueryDataSource(client)
     }
 
     @Test

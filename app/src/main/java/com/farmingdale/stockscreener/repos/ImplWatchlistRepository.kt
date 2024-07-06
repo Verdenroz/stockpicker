@@ -4,7 +4,7 @@ import android.content.Context
 import com.farmingdale.stockscreener.model.database.AppDatabase
 import com.farmingdale.stockscreener.model.database.DBQuoteData
 import com.farmingdale.stockscreener.model.local.SimpleQuoteData
-import com.farmingdale.stockscreener.providers.ImplFinanceQueryAPI
+import com.farmingdale.stockscreener.providers.ImplFinanceQueryDataSource
 import com.farmingdale.stockscreener.providers.okHttpClient
 import com.farmingdale.stockscreener.repos.base.WatchlistRepository
 import com.farmingdale.stockscreener.utils.DataError
@@ -29,7 +29,7 @@ class ImplWatchlistRepository(
     application: Context,
 ) : WatchlistRepository() {
     private val db = AppDatabase.get(application).quoteDao()
-    private val api = ImplFinanceQueryAPI(okHttpClient)
+    private val api = ImplFinanceQueryDataSource(okHttpClient)
 
     override val watchlist: Flow<ImmutableList<SimpleQuoteData>> =
         db.getAllQuoteDataFlow()
