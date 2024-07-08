@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Check
@@ -16,6 +17,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,6 +25,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
@@ -35,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -69,8 +73,15 @@ fun SearchBar(
             .fillMaxWidth()
             .padding(8.dp),
         colors = SearchBarDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.surfaceDim,
+            containerColor = MaterialTheme.colorScheme.surfaceBright,
             dividerColor = Color.Transparent,
+            inputFieldColors = SearchBarDefaults.inputFieldColors(
+                cursorColor = MaterialTheme.colorScheme.secondary,
+                selectionColors = TextSelectionColors(
+                    handleColor = MaterialTheme.colorScheme.secondary,
+                    backgroundColor = MaterialTheme.colorScheme.secondaryContainer
+                )
+            )
         ),
         query = query,
         onQueryChange = {
@@ -85,7 +96,8 @@ fun SearchBar(
         placeholder = {
             Text(
                 stringResource(id = R.string.search),
-                color = MaterialTheme.colorScheme.onSurface
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Black
             )
         },
         leadingIcon = {
@@ -197,7 +209,13 @@ fun SearchBar(
                             )
                         }
                     }
-                }
+                },
+                colors = ListItemDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    headlineColor = MaterialTheme.colorScheme.onSurface,
+                    supportingColor = MaterialTheme.colorScheme.onSurface,
+                    trailingIconColor = MaterialTheme.colorScheme.onSurface
+                )
             )
         }
     }
@@ -244,6 +262,11 @@ fun TypeCheckBox(
         Checkbox(
             checked = checked,
             onCheckedChange = onCheckedChange,
+            colors = CheckboxDefaults.colors(
+                checkedColor = MaterialTheme.colorScheme.secondaryContainer,
+                checkmarkColor = MaterialTheme.colorScheme.secondary,
+                uncheckedColor = MaterialTheme.colorScheme.surfaceBright
+            )
         )
         Text(
             text = when (type) {
@@ -312,7 +335,7 @@ fun RegionFilterChip(
                     contentDescription = stringResource(id = R.string.filter_selected)
                 )
             }
-        }
+        },
     )
 }
 

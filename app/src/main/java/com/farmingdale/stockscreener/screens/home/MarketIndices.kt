@@ -29,12 +29,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.MarketIndex
-import com.farmingdale.stockscreener.ui.theme.indexColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 import com.farmingdale.stockscreener.utils.DataError
@@ -52,7 +52,7 @@ fun MarketIndices(
     val context = LocalContext.current
     Column(
         modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .padding(horizontal = 16.dp)
             .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -60,6 +60,8 @@ fun MarketIndices(
         Text(
             text = stringResource(id = R.string.market_performance),
             style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.ExtraBold,
+            color = MaterialTheme.colorScheme.onPrimary,
             modifier = Modifier.fillMaxWidth()
         )
         when (indices) {
@@ -112,7 +114,11 @@ fun MarketIndexCard(index: MarketIndex) {
         Card(
             modifier = Modifier
                 .size(125.dp, 75.dp)
-                .clickable { scope.launch { tooltipState.show() } }
+                .clickable { scope.launch { tooltipState.show() } },
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            )
         ) {
             Column(
                 modifier = Modifier
@@ -123,13 +129,15 @@ fun MarketIndexCard(index: MarketIndex) {
                 Text(
                     text = index.name,
                     style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    color = indexColor
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
                     text = String.format(Locale.US, "%.2f", index.value.toDouble()),
-                    style = MaterialTheme.typography.titleSmall
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -177,7 +185,7 @@ fun PreviewMarketIndexCard() {
 @Composable
 fun MarketIndexSkeleton(
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.surfaceContainer
+    color: Color = MaterialTheme.colorScheme.primaryContainer
 ) {
     LazyRow(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         repeat(5) {

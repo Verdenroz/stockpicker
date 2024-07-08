@@ -1,9 +1,7 @@
 package com.farmingdale.stockscreener.screens.main
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
@@ -27,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -42,8 +41,7 @@ import com.farmingdale.stockscreener.model.local.TypeFilter
 import com.farmingdale.stockscreener.screens.Screen
 import com.farmingdale.stockscreener.screens.home.HomeScreen
 import com.farmingdale.stockscreener.screens.stock.StockScreen
-import com.farmingdale.stockscreener.screens.watchlist.WatchListView
-import com.farmingdale.stockscreener.ui.theme.StockScreenerTheme
+import com.farmingdale.stockscreener.screens.watchlist.WatchlistScreen
 import com.farmingdale.stockscreener.utils.UiText
 import com.farmingdale.stockscreener.viewmodels.ImplMainViewModel
 import com.farmingdale.stockscreener.viewmodels.base.MainEvent
@@ -96,25 +94,23 @@ fun MainScreen() {
         }
     }
 
-    StockScreenerTheme {
-        MainContent(
-            snackbarHost = snackbarHostState,
-            searchResults = searchResults,
-            watchList = watchList,
-            regionFilter = regionFilter,
-            typeFilters = typeFilters,
-            updateRegionFilter = { region -> mainViewModel.updateRegionFilter(region) },
-            toggleTypeFilter = { type, isChecked ->
-                mainViewModel.toggleTypeFilter(
-                    type,
-                    isChecked
-                )
-            },
-            updateQuery = { query -> mainViewModel.updateQuery(query) },
-            addToWatchList = { symbol -> mainViewModel.addToWatchList(symbol) },
-            deleteFromWatchList = { symbol -> mainViewModel.deleteFromWatchList(symbol) },
-        )
-    }
+    MainContent(
+        snackbarHost = snackbarHostState,
+        searchResults = searchResults,
+        watchList = watchList,
+        regionFilter = regionFilter,
+        typeFilters = typeFilters,
+        updateRegionFilter = { region -> mainViewModel.updateRegionFilter(region) },
+        toggleTypeFilter = { type, isChecked ->
+            mainViewModel.toggleTypeFilter(
+                type,
+                isChecked
+            )
+        },
+        updateQuery = { input -> mainViewModel.updateQuery(input) },
+        addToWatchList = { symbol -> mainViewModel.addToWatchList(symbol) },
+        deleteFromWatchList = { symbol -> mainViewModel.deleteFromWatchList(symbol) },
+    )
 }
 
 @Composable
@@ -133,6 +129,7 @@ fun MainContent(
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
     Scaffold(
         topBar = {
             if (currentRoute != "stock/{symbol}") {
@@ -152,7 +149,7 @@ fun MainContent(
         },
         bottomBar = {
             NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                 contentColor = MaterialTheme.colorScheme.onSurface,
             ) {
                 val currentDestination = navBackStackEntry?.destination
@@ -189,27 +186,33 @@ fun MainContent(
                     hostState = snackbarHost,
                     snackbar = { data ->
                         Snackbar(
-                            containerColor = MaterialTheme.colorScheme.scrim,
-                            contentColor = MaterialTheme.colorScheme.onSurface,
-                            dismissActionContentColor = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.padding(vertical = 16.dp)
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                            modifier = Modifier.padding(vertical = 32.dp)
                         ) {
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = if (data.visuals.actionLabel != null) Arrangement.SpaceEvenly else Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
                                     text = data.visuals.message,
                                     style = MaterialTheme.typography.labelLarge,
-                                    fontWeight = FontWeight.Black
+                                    color = MaterialTheme.colorScheme.tertiary,
+                                    fontWeight = FontWeight.Black,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(.6f)
                                 )
 
                                 data.visuals.actionLabel?.let { actionLabel ->
-                                    TextButton(onClick = { data.dismiss() }) {
+                                    TextButton(
+                                        onClick = { data.dismiss() },
+                                        modifier = Modifier.weight(.4f),
+                                    ) {
                                         Text(
                                             text = actionLabel,
                                             style = MaterialTheme.typography.labelLarge,
+                                            color = MaterialTheme.colorScheme.tertiary,
                                             fontWeight = FontWeight.Black
                                         )
                                     }
@@ -217,10 +220,12 @@ fun MainContent(
                             }
                         }
                     },
-                    modifier = Modifier.offset(y = 16.dp)
+                    modifier = Modifier.offset(y = 16.dp),
                 )
             }
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.primary,
     ) { padding ->
         NavHost(
             navController = navController,
@@ -234,18 +239,16 @@ fun MainContent(
                 )
             }
             composable(Screen.Watchlist.route) {
-                WatchListView(
+                WatchlistScreen(
                     navController = navController,
                     watchList = watchList,
                     deleteFromWatchList = deleteFromWatchList
                 )
             }
             composable(Screen.Simulate.route) {
-                Log.d("MainNavigation", "Simulation")
                 TODO("Simulation")
             }
             composable(Screen.Alerts.route) {
-                Log.d("MainNavigation", "Alerts")
                 TODO("Alerts")
             }
             composable("stock/{symbol}") { backStackEntry ->

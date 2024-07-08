@@ -1,7 +1,6 @@
 package com.farmingdale.stockscreener.screens.stock
 
 import android.graphics.Paint
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -17,6 +16,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -81,7 +81,6 @@ fun StockChart(
     symbol: String,
     timeSeries: Resource<ImmutableMap<String, HistoricalData>, DataError.Network>,
     isDarkTheme: Boolean = isSystemInDarkTheme(),
-    backgroundColor: Color,
     updateTimeSeries: (String, TimePeriod, Interval) -> Unit,
 ) {
     val context = LocalContext.current
@@ -173,9 +172,7 @@ fun StockChart(
             }
 
             Column(
-                modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp, top = 32.dp)
-                    .background(backgroundColor)
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 32.dp)
             ) {
                 Box(modifier = modifier
                     .pointerInput(data) {
@@ -319,10 +316,18 @@ fun TimePeriodButton(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        RadioButton(selected = selected, onClick = onClick)
+        RadioButton(
+            selected = selected,
+            onClick = onClick,
+            colors = RadioButtonDefaults.colors(
+                selectedColor = MaterialTheme.colorScheme.secondary,
+                unselectedColor = MaterialTheme.colorScheme.onSurface
+            )
+        )
         Text(
             text = timePeriod.value.uppercase(),
-            style = MaterialTheme.typography.labelMedium
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onPrimary
         )
     }
 }

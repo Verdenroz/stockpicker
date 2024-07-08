@@ -20,9 +20,9 @@ import kotlinx.coroutines.flow.Flow
 abstract class FinanceQueryRepository {
     /**
      * The refresh interval for the user's watch list depending on whether the market is open or not
-     * 15 seconds when the market is open, 30 minutes when the market is closed
+     * 15 seconds when the market is open, 60 minutes when the market is closed
      */
-    var refreshInterval = if (isMarketOpen()) 15000L else 1800000L
+    var refreshInterval = if (isMarketOpen()) 15000L else 3600000L
         private set
 
     fun updateRefreshInterval(interval: Long) {
@@ -119,8 +119,7 @@ abstract class FinanceQueryRepository {
     abstract fun getAnalysis(symbol: String, interval: Interval): Flow<Resource<Analysis?, DataError.Network>>
 
     companion object {
-        const val NEWS_REFRESH_INTERVAL = 60000L
-        const val SECTOR_REFRESH_INTERVAL = 3600000L
+        const val NEWS_SECTORS_REFRESH_INTERVAL = 3600000L
     }
 
 }

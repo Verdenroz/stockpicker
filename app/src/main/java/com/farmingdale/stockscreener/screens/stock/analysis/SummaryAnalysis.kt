@@ -94,10 +94,10 @@ fun FlowRowScope.SummaryBar(
                 color = when (suggestion) {
                     stringResource(id = R.string.buy) -> positiveTextColor
                     stringResource(id = R.string.sell) -> negativeTextColor
-                    else -> MaterialTheme.colorScheme.primary
+                    else -> MaterialTheme.colorScheme.onSurface
                 },
                 letterSpacing = 1.25.sp,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.ExtraBold,
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),

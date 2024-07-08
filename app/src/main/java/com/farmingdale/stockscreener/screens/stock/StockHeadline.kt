@@ -16,9 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -38,14 +35,12 @@ import java.util.Locale
 @Composable
 fun StockHeadline(
     quote: FullQuoteData,
-    bg: Color = MaterialTheme.colorScheme.surface
 ) {
     ListItem(
         overlineContent = {
             Text(
                 text = quote.name,
                 style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -60,7 +55,6 @@ fun StockHeadline(
                     text = String.format(Locale.US, "%.2f", quote.price),
                     style = MaterialTheme.typography.displaySmall,
                     fontWeight = FontWeight.Black,
-                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
                     text = quote.change,
@@ -85,7 +79,6 @@ fun StockHeadline(
                     Text(
                         text = stringResource(id = R.string.after_hours) + quote.postMarketPrice.toString(),
                         style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
                     )
                     Text(
                         text = String.format(
@@ -112,17 +105,13 @@ fun StockHeadline(
         },
         trailingContent = {
             if (quote.logo != null) {
-                // Filter the logo with the background color
                 AsyncImage(
                     model = quote.logo,
                     contentDescription = stringResource(id = R.string.logo),
                     imageLoader = ImageLoader(LocalContext.current),
-                    colorFilter = ColorFilter.lighting(
-                        add = Color.Transparent,
-                        multiply = bg
-                    ),
-                    filterQuality = FilterQuality.High,
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
                 )
             } else {
                 Box(
@@ -144,7 +133,10 @@ fun StockHeadline(
             }
         },
         colors = ListItemDefaults.colors(
-            containerColor = bg
+            containerColor = MaterialTheme.colorScheme.primary,
+            headlineColor = MaterialTheme.colorScheme.onPrimary,
+            overlineColor = MaterialTheme.colorScheme.onPrimary,
+            supportingColor = MaterialTheme.colorScheme.onPrimary,
         )
     )
     HorizontalDivider(

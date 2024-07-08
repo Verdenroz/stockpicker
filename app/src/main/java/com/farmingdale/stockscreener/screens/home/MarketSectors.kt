@@ -29,12 +29,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.MarketSector
-import com.farmingdale.stockscreener.ui.theme.indexColor
 import com.farmingdale.stockscreener.ui.theme.negativeTextColor
 import com.farmingdale.stockscreener.ui.theme.positiveTextColor
 import com.farmingdale.stockscreener.utils.DataError
@@ -51,7 +51,7 @@ fun MarketSectors(
     val context = LocalContext.current
     Column(
         modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .padding(horizontal = 16.dp)
             .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -59,6 +59,8 @@ fun MarketSectors(
         Text(
             text = stringResource(id = R.string.sector_performance),
             style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.ExtraBold,
+            color = MaterialTheme.colorScheme.onPrimary,
             modifier = Modifier.fillMaxWidth()
         )
         when (sectors) {
@@ -82,7 +84,10 @@ fun MarketSectors(
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(sectors.data) { sector ->
+                    items(
+                        sectors.data,
+                        key = { sector -> sector.sector }
+                    ) { sector ->
                         MarketSectorCard(sector = sector)
                     }
                 }
@@ -108,7 +113,11 @@ fun MarketSectorCard(sector: MarketSector) {
         Card(
             modifier = Modifier
                 .size(175.dp, 100.dp)
-                .clickable { scope.launch { tooltipState.show() } }
+                .clickable { scope.launch { tooltipState.show() } },
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            )
         ) {
             Column(
                 modifier = Modifier
@@ -119,9 +128,10 @@ fun MarketSectorCard(sector: MarketSector) {
                 Text(
                     text = sector.sector,
                     style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    color = indexColor,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
                 Column {
                     PerformanceRow(
@@ -187,7 +197,7 @@ fun PreviewMarketSectors() {
 @Composable
 fun MarketSectorsSkeleton(
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.surfaceContainer
+    color: Color = MaterialTheme.colorScheme.primaryContainer
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp)

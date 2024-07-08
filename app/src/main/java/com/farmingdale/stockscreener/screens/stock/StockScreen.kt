@@ -2,8 +2,6 @@ package com.farmingdale.stockscreener.screens.stock
 
 import android.app.Application
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,14 +28,12 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.farmingdale.stockscreener.R
 import com.farmingdale.stockscreener.model.local.Analysis
 import com.farmingdale.stockscreener.model.local.FullQuoteData
@@ -132,14 +128,6 @@ fun StockContent(
     addToWatchList: (String) -> Unit,
     deleteFromWatchList: (String) -> Unit
 ) {
-    // Adjust brightness of the background color based on the system theme (For better contrast on logos in dark theme)
-    val brightnessAdjustment = if (isSystemInDarkTheme()) 2f else 1f
-    val bg = MaterialTheme.colorScheme.surface.copy(
-        red = MaterialTheme.colorScheme.surface.red * brightnessAdjustment,
-        green = MaterialTheme.colorScheme.surface.green * brightnessAdjustment,
-        blue = MaterialTheme.colorScheme.surface.blue * brightnessAdjustment
-    )
-
     Scaffold(
         topBar = {
             StockTopBar(
@@ -149,7 +137,9 @@ fun StockContent(
                 addToWatchList = addToWatchList,
                 deleteFromWatchList = deleteFromWatchList
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
     ) { padding ->
         when (quote) {
             is Resource.Loading -> {
@@ -158,10 +148,11 @@ fun StockContent(
                     verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.secondary)
                     Text(
                         text = stringResource(id = R.string.loading_quote),
                         style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         letterSpacing = 1.5.sp
                     )
                 }
@@ -170,14 +161,19 @@ fun StockContent(
             is Resource.Error -> {
                 Column(
                     modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
+                    verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Icon(
                         imageVector = Icons.Default.Warning,
                         contentDescription = stringResource(id = R.string.error)
                     )
-                    Text(text = stringResource(id = R.string.error_loading_data))
+                    Text(
+                        text = stringResource(id = R.string.error_loading_data),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        letterSpacing = 1.5.sp
+                    )
                 }
             }
 
@@ -190,12 +186,11 @@ fun StockContent(
                         state = listState,
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(padding)
-                            .background(bg),
+                            .padding(padding),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         stickyHeader {
-                            StockHeadline(quote = quote.data, bg = bg)
+                            StockHeadline(quote = quote.data)
                         }
 
                         item {
@@ -207,7 +202,6 @@ fun StockContent(
                                 snackbarHost = snackbarHost,
                                 symbol = quote.data.symbol,
                                 timeSeries = timeSeries,
-                                backgroundColor = bg,
                                 updateTimeSeries = updateTimeSeries,
                             )
                         }
@@ -250,16 +244,4 @@ fun StockContent(
             }
         }
     }
-}
-
-@Preview
-@Composable
-fun PreviewStockView() {
-    StockScreen(
-        symbol = "AAPL",
-        snackbarHost = SnackbarHostState(),
-        navController = rememberNavController(),
-        addToWatchList = {},
-        deleteFromWatchList = {}
-    )
 }
