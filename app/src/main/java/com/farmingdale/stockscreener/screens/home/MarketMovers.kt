@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -88,6 +89,7 @@ fun MarketMovers(
             indicator = { tabPositions ->
                 SecondaryIndicator(
                     Modifier.tabIndicatorOffset(tabPositions[state.currentPage]),
+                    color = MaterialTheme.colorScheme.secondary
                 )
             },
             modifier = Modifier.fillMaxWidth()
@@ -106,15 +108,14 @@ fun MarketMovers(
                             )
                         }
                     },
-                    modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant)
                 )
             }
         }
         HorizontalPager(
             state = state,
             modifier = Modifier
+                .background(MaterialTheme.colorScheme.surfaceContainer)
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
         ) { page ->
             when (page) {
                 0 -> {
@@ -174,7 +175,9 @@ fun MarketMoversList(
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp, start = 8.dp, end = 8.dp)
             ) {
                 items(
                     items = stocks.data,
@@ -194,38 +197,43 @@ fun MarketMoverStock(
 ) {
     Row(
         modifier = Modifier
-            .padding(top = 8.dp)
+            .clip(RoundedCornerShape(25))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(8.dp)
             .clickable {
                 navController.navigate("stock/${stock.symbol}")
-            }
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+            },
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
-            modifier = Modifier
-                .weight(1f),
+            modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = stock.symbol,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSecondary,
+                color = MaterialTheme.colorScheme.inverseOnSurface,
                 modifier = Modifier
                     .clip(RoundedCornerShape(25))
-                    .background(MaterialTheme.colorScheme.secondary)
+                    .background(MaterialTheme.colorScheme.inverseSurface)
                     .padding(4.dp)
             )
             Text(
                 text = stock.name,
                 style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.Light,
-                maxLines = 2,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
         Spacer(modifier = Modifier.width(4.dp))
         Text(
             text = String.format(Locale.US, "%.2f", stock.price.toDouble()),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Black,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
                 .weight(1f)
                 .wrapContentSize()
@@ -234,10 +242,13 @@ fun MarketMoverStock(
         Spacer(modifier = Modifier.width(4.dp))
         Text(
             text = stock.change,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
             color = let { if (stock.change.startsWith("-")) negativeTextColor else positiveTextColor },
             modifier = Modifier
                 .weight(1f)
                 .wrapContentSize()
+                .clip(CircleShape)
                 .background(
                     if (stock.change.startsWith("-")) negativeBackgroundColor else positiveBackgroundColor
                 )
@@ -246,10 +257,13 @@ fun MarketMoverStock(
         Spacer(modifier = Modifier.width(4.dp))
         Text(
             text = stock.percentChange,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
             color = let { if (stock.change.startsWith("-")) negativeTextColor else positiveTextColor },
             modifier = Modifier
                 .weight(1f)
                 .wrapContentSize()
+                .clip(CircleShape)
                 .background(
                     if (stock.change.startsWith("-")) negativeBackgroundColor else positiveBackgroundColor
                 )
@@ -276,16 +290,19 @@ fun PreviewMarketMoverStock() {
 @Composable
 fun MarketMoversSkeleton(
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.surfaceContainer
+    color: Color = MaterialTheme.colorScheme.surfaceVariant
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surfaceContainer)
     ) {
         repeat(5) {
             item(key = it) {
                 Card(
                     modifier = modifier
-                        .padding(top = 8.dp)
+                        .padding(top = 8.dp, start = 8.dp, end = 8.dp)
                         .height(50.dp)
                         .fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = color)

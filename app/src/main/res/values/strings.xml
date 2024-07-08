@@ -26,7 +26,7 @@
     <string name="portfolio_empty">Portfolio is empty. Add stocks to your watchlist!</string>
     <string name="remove_description">Remove from watchlist</string>
     <string name="search">Search</string>
-    <string name="logo">Logo or placeholder</string>
+    <string name="logo">Logo of company</string>
     <string name="after_hours">"After Hours: "</string>
     <string name="back">Return to previous screen</string>
     <string name="filter">Filter</string>

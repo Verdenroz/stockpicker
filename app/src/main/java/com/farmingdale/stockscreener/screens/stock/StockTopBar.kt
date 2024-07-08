@@ -69,11 +69,11 @@ fun StockTopBar(
                 text = symbol,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = MaterialTheme.colorScheme.inverseOnSurface,
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .clip(RoundedCornerShape(25))
-                    .background(MaterialTheme.colorScheme.onPrimaryContainer)
+                    .background(MaterialTheme.colorScheme.inverseSurface)
                     .padding(4.dp)
             )
 

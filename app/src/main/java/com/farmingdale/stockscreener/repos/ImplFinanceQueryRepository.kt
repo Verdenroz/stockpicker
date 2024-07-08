@@ -83,14 +83,14 @@ class ImplFinanceQueryRepository : FinanceQueryRepository() {
     private fun refreshHeadlinesPeriodically() = CoroutineScope(Dispatchers.IO).launch {
         while (true) {
             refreshNews()
-            delay(NEWS_REFRESH_INTERVAL)
+            delay(NEWS_SECTORS_REFRESH_INTERVAL)
         }
     }
 
     private fun refreshSectorsPeriodically() = CoroutineScope(Dispatchers.IO).launch {
         while (true) {
             refreshSectors()
-            delay(SECTOR_REFRESH_INTERVAL)
+            delay(NEWS_SECTORS_REFRESH_INTERVAL)
         }
     }
 

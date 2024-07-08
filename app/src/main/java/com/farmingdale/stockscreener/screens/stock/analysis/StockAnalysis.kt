@@ -18,6 +18,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -320,7 +321,14 @@ fun IntervalButton(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        RadioButton(selected = selectedInterval, onClick = onClick)
+        RadioButton(
+            selected = selectedInterval,
+            onClick = onClick,
+            colors = RadioButtonDefaults.colors(
+                selectedColor = MaterialTheme.colorScheme.secondary,
+                unselectedColor = MaterialTheme.colorScheme.onSurface
+            )
+        )
         Text(
             text = interval.value.uppercase(),
             style = MaterialTheme.typography.labelMedium
